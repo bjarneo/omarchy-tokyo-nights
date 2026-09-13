@@ -1,0 +1,1706 @@
+{
+  "duration": 226.4,
+  "alignment": "Local speech-model timestamps with reviewed line boundaries.",
+  "sections": [
+    {
+      "id": "intro",
+      "label": "Nightfall",
+      "start": 0,
+      "end": 38.92
+    },
+    {
+      "id": "verse-1",
+      "label": "Verse 1",
+      "start": 38.92,
+      "end": 65.74
+    },
+    {
+      "id": "chorus-1",
+      "label": "Chorus 1",
+      "start": 65.74,
+      "end": 93.24
+    },
+    {
+      "id": "interlude",
+      "label": "Neon run",
+      "start": 93.24,
+      "end": 106.5
+    },
+    {
+      "id": "verse-2",
+      "label": "Verse 2",
+      "start": 106.5,
+      "end": 132.4
+    },
+    {
+      "id": "chorus-2",
+      "label": "Chorus 2",
+      "start": 132.4,
+      "end": 159.5
+    },
+    {
+      "id": "bridge",
+      "label": "Tunnel run",
+      "start": 159.5,
+      "end": 172.4
+    },
+    {
+      "id": "outro",
+      "label": "Tokyo Bay",
+      "start": 172.4,
+      "end": 226.4
+    }
+  ],
+  "lyrics": [
+    {
+      "start": 38.92,
+      "end": 42.3,
+      "text": "Rain on the asphalt, mirrors gleam bright",
+      "words": [
+        {
+          "text": "Rain",
+          "start": 38.92,
+          "end": 39.72
+        },
+        {
+          "text": "on",
+          "start": 39.72,
+          "end": 40.1
+        },
+        {
+          "text": "the",
+          "start": 40.1,
+          "end": 40.34
+        },
+        {
+          "text": "asphalt,",
+          "start": 40.34,
+          "end": 40.98
+        },
+        {
+          "text": "mirrors",
+          "start": 41.34,
+          "end": 41.44
+        },
+        {
+          "text": "gleam",
+          "start": 41.44,
+          "end": 41.94
+        },
+        {
+          "text": "bright",
+          "start": 41.94,
+          "end": 42.3
+        }
+      ]
+    },
+    {
+      "start": 42.3,
+      "end": 45.62,
+      "text": "Shinjuku glowing under electric light",
+      "words": [
+        {
+          "text": "Shinjuku",
+          "start": 42.3,
+          "end": 43.28
+        },
+        {
+          "text": "glowing",
+          "start": 43.28,
+          "end": 44.08
+        },
+        {
+          "text": "under",
+          "start": 44.08,
+          "end": 44.46
+        },
+        {
+          "text": "electric",
+          "start": 44.46,
+          "end": 45.12
+        },
+        {
+          "text": "light",
+          "start": 45.12,
+          "end": 45.62
+        }
+      ]
+    },
+    {
+      "start": 45.62,
+      "end": 48.96,
+      "text": "Yellow Aventador, cutting through the mist",
+      "words": [
+        {
+          "text": "Yellow",
+          "start": 45.62,
+          "end": 46.3
+        },
+        {
+          "text": "Aventador,",
+          "start": 46.3,
+          "end": 47.36
+        },
+        {
+          "text": "cutting",
+          "start": 47.82,
+          "end": 48.2
+        },
+        {
+          "text": "through",
+          "start": 48.32,
+          "end": 48.42
+        },
+        {
+          "text": "the",
+          "start": 48.42,
+          "end": 48.64
+        },
+        {
+          "text": "mist",
+          "start": 48.64,
+          "end": 48.96
+        }
+      ]
+    },
+    {
+      "start": 48.96,
+      "end": 52.32,
+      "text": "Omarchy on the dash, crossing off the list",
+      "words": [
+        {
+          "text": "Omarchy",
+          "start": 48.96,
+          "end": 49.74
+        },
+        {
+          "text": "on",
+          "start": 49.74,
+          "end": 50.14
+        },
+        {
+          "text": "the",
+          "start": 50.14,
+          "end": 50.28
+        },
+        {
+          "text": "dash,",
+          "start": 50.28,
+          "end": 50.8
+        },
+        {
+          "text": "crossing",
+          "start": 51.24,
+          "end": 51.6
+        },
+        {
+          "text": "off",
+          "start": 51.6,
+          "end": 51.76
+        },
+        {
+          "text": "the",
+          "start": 51.76,
+          "end": 52.0
+        },
+        {
+          "text": "list",
+          "start": 52.0,
+          "end": 52.32
+        }
+      ]
+    },
+    {
+      "start": 52.32,
+      "end": 55.54,
+      "text": "V12 screaming down the Shuto line",
+      "words": [
+        {
+          "text": "V12",
+          "start": 52.32,
+          "end": 53.52
+        },
+        {
+          "text": "screaming",
+          "start": 53.52,
+          "end": 54.06
+        },
+        {
+          "text": "down",
+          "start": 54.06,
+          "end": 54.28
+        },
+        {
+          "text": "the",
+          "start": 54.28,
+          "end": 54.46
+        },
+        {
+          "text": "Shuto",
+          "start": 54.46,
+          "end": 54.86
+        },
+        {
+          "text": "line",
+          "start": 54.86,
+          "end": 55.54
+        }
+      ]
+    },
+    {
+      "start": 55.54,
+      "end": 58.9,
+      "text": "Rainbow Bridge flashing, blur across time",
+      "words": [
+        {
+          "text": "Rainbow",
+          "start": 55.54,
+          "end": 56.44
+        },
+        {
+          "text": "Bridge",
+          "start": 56.44,
+          "end": 56.84
+        },
+        {
+          "text": "flashing,",
+          "start": 56.84,
+          "end": 57.38
+        },
+        {
+          "text": "blur",
+          "start": 57.46,
+          "end": 57.64
+        },
+        {
+          "text": "across",
+          "start": 57.64,
+          "end": 58.08
+        },
+        {
+          "text": "time",
+          "start": 58.08,
+          "end": 58.9
+        }
+      ]
+    },
+    {
+      "start": 58.9,
+      "end": 62.56,
+      "text": "Tower in the rearview, red into white",
+      "words": [
+        {
+          "text": "Tower",
+          "start": 58.9,
+          "end": 59.51
+        },
+        {
+          "text": "in",
+          "start": 59.51,
+          "end": 60.12
+        },
+        {
+          "text": "the",
+          "start": 60.12,
+          "end": 60.32
+        },
+        {
+          "text": "rearview,",
+          "start": 60.32,
+          "end": 60.96
+        },
+        {
+          "text": "red",
+          "start": 61.38,
+          "end": 61.773
+        },
+        {
+          "text": "into",
+          "start": 61.773,
+          "end": 62.167
+        },
+        {
+          "text": "white",
+          "start": 62.167,
+          "end": 62.56
+        }
+      ]
+    },
+    {
+      "start": 62.56,
+      "end": 65.74,
+      "text": "Rules getting shattered in the Tokyo night.",
+      "words": [
+        {
+          "text": "Rules",
+          "start": 62.56,
+          "end": 63.16
+        },
+        {
+          "text": "getting",
+          "start": 63.16,
+          "end": 63.52
+        },
+        {
+          "text": "shattered",
+          "start": 63.52,
+          "end": 63.92
+        },
+        {
+          "text": "in",
+          "start": 63.92,
+          "end": 64.3
+        },
+        {
+          "text": "the",
+          "start": 64.3,
+          "end": 64.48
+        },
+        {
+          "text": "Tokyo",
+          "start": 64.48,
+          "end": 65.02
+        },
+        {
+          "text": "night.",
+          "start": 65.02,
+          "end": 65.74
+        }
+      ]
+    },
+    {
+      "start": 65.74,
+      "end": 69.02,
+      "text": "Neon on yellow, roaring through the rain",
+      "words": [
+        {
+          "text": "Neon",
+          "start": 65.74,
+          "end": 66.48
+        },
+        {
+          "text": "on",
+          "start": 66.48,
+          "end": 66.86
+        },
+        {
+          "text": "yellow,",
+          "start": 66.86,
+          "end": 67.36
+        },
+        {
+          "text": "roaring",
+          "start": 67.96,
+          "end": 68.06
+        },
+        {
+          "text": "through",
+          "start": 68.06,
+          "end": 68.44
+        },
+        {
+          "text": "the",
+          "start": 68.44,
+          "end": 68.64
+        },
+        {
+          "text": "rain",
+          "start": 68.64,
+          "end": 69.02
+        }
+      ]
+    },
+    {
+      "start": 69.02,
+      "end": 72.4,
+      "text": "Omarchy moving fast, running through the veins",
+      "words": [
+        {
+          "text": "Omarchy",
+          "start": 69.02,
+          "end": 69.78
+        },
+        {
+          "text": "moving",
+          "start": 69.78,
+          "end": 70.18
+        },
+        {
+          "text": "fast,",
+          "start": 70.18,
+          "end": 70.98
+        },
+        {
+          "text": "running",
+          "start": 71.14,
+          "end": 71.38
+        },
+        {
+          "text": "through",
+          "start": 71.38,
+          "end": 71.76
+        },
+        {
+          "text": "the",
+          "start": 71.76,
+          "end": 72.0
+        },
+        {
+          "text": "veins",
+          "start": 72.0,
+          "end": 72.4
+        }
+      ]
+    },
+    {
+      "start": 72.4,
+      "end": 75.72,
+      "text": "Tokyo lights painted on the hood",
+      "words": [
+        {
+          "text": "Tokyo",
+          "start": 72.4,
+          "end": 73.24
+        },
+        {
+          "text": "lights",
+          "start": 73.24,
+          "end": 74.04
+        },
+        {
+          "text": "painted",
+          "start": 74.32,
+          "end": 74.72
+        },
+        {
+          "text": "on",
+          "start": 74.72,
+          "end": 75.1
+        },
+        {
+          "text": "the",
+          "start": 75.1,
+          "end": 75.32
+        },
+        {
+          "text": "hood",
+          "start": 75.32,
+          "end": 75.72
+        }
+      ]
+    },
+    {
+      "start": 75.72,
+      "end": 79.04,
+      "text": "Pushing past the limits like nobody could",
+      "words": [
+        {
+          "text": "Pushing",
+          "start": 75.72,
+          "end": 76.42
+        },
+        {
+          "text": "past",
+          "start": 76.42,
+          "end": 76.74
+        },
+        {
+          "text": "the",
+          "start": 76.74,
+          "end": 77.0
+        },
+        {
+          "text": "limits",
+          "start": 77.0,
+          "end": 77.26
+        },
+        {
+          "text": "like",
+          "start": 77.26,
+          "end": 77.68
+        },
+        {
+          "text": "nobody",
+          "start": 77.68,
+          "end": 78.38
+        },
+        {
+          "text": "could",
+          "start": 78.38,
+          "end": 79.04
+        }
+      ]
+    },
+    {
+      "start": 79.04,
+      "end": 81.98,
+      "text": "Roppongi to Shibuya, city wide awake",
+      "words": [
+        {
+          "text": "Roppongi",
+          "start": 79.04,
+          "end": 79.55
+        },
+        {
+          "text": "to",
+          "start": 79.55,
+          "end": 80.06
+        },
+        {
+          "text": "Shibuya,",
+          "start": 80.06,
+          "end": 80.64
+        },
+        {
+          "text": "city",
+          "start": 80.7,
+          "end": 81.16
+        },
+        {
+          "text": "wide",
+          "start": 81.16,
+          "end": 81.36
+        },
+        {
+          "text": "awake",
+          "start": 81.36,
+          "end": 81.98
+        }
+      ]
+    },
+    {
+      "start": 81.98,
+      "end": 86.32,
+      "text": "Midnight phantom that you just can't shake",
+      "words": [
+        {
+          "text": "Midnight",
+          "start": 81.98,
+          "end": 83.03
+        },
+        {
+          "text": "phantom",
+          "start": 83.03,
+          "end": 84.08
+        },
+        {
+          "text": "that",
+          "start": 84.08,
+          "end": 84.22
+        },
+        {
+          "text": "you",
+          "start": 84.22,
+          "end": 84.42
+        },
+        {
+          "text": "just",
+          "start": 84.42,
+          "end": 84.74
+        },
+        {
+          "text": "can't",
+          "start": 84.74,
+          "end": 85.2
+        },
+        {
+          "text": "shake",
+          "start": 85.2,
+          "end": 86.32
+        }
+      ]
+    },
+    {
+      "start": 86.32,
+      "end": 88.94,
+      "text": "Drop a gear, let the engine ignite",
+      "words": [
+        {
+          "text": "Drop",
+          "start": 86.32,
+          "end": 86.8
+        },
+        {
+          "text": "a",
+          "start": 86.8,
+          "end": 87.0
+        },
+        {
+          "text": "gear,",
+          "start": 87.0,
+          "end": 87.26
+        },
+        {
+          "text": "let",
+          "start": 87.46,
+          "end": 87.56
+        },
+        {
+          "text": "the",
+          "start": 87.56,
+          "end": 87.84
+        },
+        {
+          "text": "engine",
+          "start": 87.84,
+          "end": 88.12
+        },
+        {
+          "text": "ignite",
+          "start": 88.12,
+          "end": 88.94
+        }
+      ]
+    },
+    {
+      "start": 88.94,
+      "end": 93.24,
+      "text": "Gold in the shadows of the Tokyo night.",
+      "words": [
+        {
+          "text": "Gold",
+          "start": 88.94,
+          "end": 89.82
+        },
+        {
+          "text": "in",
+          "start": 89.82,
+          "end": 90.1
+        },
+        {
+          "text": "the",
+          "start": 90.1,
+          "end": 90.24
+        },
+        {
+          "text": "shadows",
+          "start": 90.24,
+          "end": 90.64
+        },
+        {
+          "text": "of",
+          "start": 90.64,
+          "end": 90.98
+        },
+        {
+          "text": "the",
+          "start": 90.98,
+          "end": 91.14
+        },
+        {
+          "text": "Tokyo",
+          "start": 91.14,
+          "end": 92.62
+        },
+        {
+          "text": "night.",
+          "start": 92.62,
+          "end": 93.24
+        }
+      ]
+    },
+    {
+      "start": 106.5,
+      "end": 109.78,
+      "text": "Alleyways flickering, kanji on the signs",
+      "words": [
+        {
+          "text": "Alleyways",
+          "start": 106.5,
+          "end": 107.62
+        },
+        {
+          "text": "flickering,",
+          "start": 107.62,
+          "end": 108.2
+        },
+        {
+          "text": "kanji",
+          "start": 108.66,
+          "end": 108.9
+        },
+        {
+          "text": "on",
+          "start": 108.9,
+          "end": 109.18
+        },
+        {
+          "text": "the",
+          "start": 109.18,
+          "end": 109.38
+        },
+        {
+          "text": "signs",
+          "start": 109.38,
+          "end": 109.78
+        }
+      ]
+    },
+    {
+      "start": 109.78,
+      "end": 113.12,
+      "text": "Carbon fiber cutting all the dotted white lines",
+      "words": [
+        {
+          "text": "Carbon",
+          "start": 109.78,
+          "end": 110.46
+        },
+        {
+          "text": "fiber",
+          "start": 110.46,
+          "end": 110.84
+        },
+        {
+          "text": "cutting",
+          "start": 110.84,
+          "end": 111.38
+        },
+        {
+          "text": "all",
+          "start": 111.38,
+          "end": 111.64
+        },
+        {
+          "text": "the",
+          "start": 111.64,
+          "end": 111.86
+        },
+        {
+          "text": "dotted",
+          "start": 111.86,
+          "end": 112.18
+        },
+        {
+          "text": "white",
+          "start": 112.18,
+          "end": 112.5
+        },
+        {
+          "text": "lines",
+          "start": 112.5,
+          "end": 113.12
+        }
+      ]
+    },
+    {
+      "start": 113.12,
+      "end": 116.46,
+      "text": "Pedal to the floor, feel the chassis bite",
+      "words": [
+        {
+          "text": "Pedal",
+          "start": 113.12,
+          "end": 113.88
+        },
+        {
+          "text": "to",
+          "start": 113.88,
+          "end": 114.08
+        },
+        {
+          "text": "the",
+          "start": 114.08,
+          "end": 114.3
+        },
+        {
+          "text": "floor,",
+          "start": 114.3,
+          "end": 114.56
+        },
+        {
+          "text": "feel",
+          "start": 114.74,
+          "end": 114.9
+        },
+        {
+          "text": "the",
+          "start": 114.9,
+          "end": 115.16
+        },
+        {
+          "text": "chassis",
+          "start": 115.16,
+          "end": 115.6
+        },
+        {
+          "text": "bite",
+          "start": 115.6,
+          "end": 116.46
+        }
+      ]
+    },
+    {
+      "start": 116.46,
+      "end": 119.72,
+      "text": "Drifting past the echoes of the salarymen's night",
+      "words": [
+        {
+          "text": "Drifting",
+          "start": 116.46,
+          "end": 117.16
+        },
+        {
+          "text": "past",
+          "start": 117.16,
+          "end": 117.42
+        },
+        {
+          "text": "the",
+          "start": 117.42,
+          "end": 117.7
+        },
+        {
+          "text": "echoes",
+          "start": 117.7,
+          "end": 117.96
+        },
+        {
+          "text": "of",
+          "start": 117.96,
+          "end": 118.3
+        },
+        {
+          "text": "the",
+          "start": 118.3,
+          "end": 118.5
+        },
+        {
+          "text": "salarymen's",
+          "start": 118.5,
+          "end": 119.34
+        },
+        {
+          "text": "night",
+          "start": 119.34,
+          "end": 119.72
+        }
+      ]
+    },
+    {
+      "start": 119.72,
+      "end": 123.02,
+      "text": "Reflections of the billboards melting on the glass",
+      "words": [
+        {
+          "text": "Reflections",
+          "start": 119.72,
+          "end": 120.46
+        },
+        {
+          "text": "of",
+          "start": 120.46,
+          "end": 120.78
+        },
+        {
+          "text": "the",
+          "start": 120.78,
+          "end": 121.06
+        },
+        {
+          "text": "billboards",
+          "start": 121.06,
+          "end": 121.56
+        },
+        {
+          "text": "melting",
+          "start": 121.56,
+          "end": 121.96
+        },
+        {
+          "text": "on",
+          "start": 121.96,
+          "end": 122.4
+        },
+        {
+          "text": "the",
+          "start": 122.4,
+          "end": 122.64
+        },
+        {
+          "text": "glass",
+          "start": 122.64,
+          "end": 123.02
+        }
+      ]
+    },
+    {
+      "start": 123.02,
+      "end": 126.62,
+      "text": "Everything moves slow when you're moving this fast",
+      "words": [
+        {
+          "text": "Everything",
+          "start": 123.02,
+          "end": 123.8
+        },
+        {
+          "text": "moves",
+          "start": 123.8,
+          "end": 124.22
+        },
+        {
+          "text": "slow",
+          "start": 124.22,
+          "end": 124.58
+        },
+        {
+          "text": "when",
+          "start": 124.58,
+          "end": 124.88
+        },
+        {
+          "text": "you're",
+          "start": 124.88,
+          "end": 125.12
+        },
+        {
+          "text": "moving",
+          "start": 125.12,
+          "end": 125.44
+        },
+        {
+          "text": "this",
+          "start": 125.44,
+          "end": 125.88
+        },
+        {
+          "text": "fast",
+          "start": 125.88,
+          "end": 126.62
+        }
+      ]
+    },
+    {
+      "start": 126.62,
+      "end": 129.74,
+      "text": "Headlights slice through the metropolitan haze",
+      "words": [
+        {
+          "text": "Headlights",
+          "start": 126.62,
+          "end": 127.12
+        },
+        {
+          "text": "slice",
+          "start": 127.12,
+          "end": 127.42
+        },
+        {
+          "text": "through",
+          "start": 127.42,
+          "end": 127.78
+        },
+        {
+          "text": "the",
+          "start": 127.78,
+          "end": 128.02
+        },
+        {
+          "text": "metropolitan",
+          "start": 128.02,
+          "end": 128.68
+        },
+        {
+          "text": "haze",
+          "start": 128.68,
+          "end": 129.74
+        }
+      ]
+    },
+    {
+      "start": 129.74,
+      "end": 132.4,
+      "text": "Living out a movie in a cybernetic maze.",
+      "words": [
+        {
+          "text": "Living",
+          "start": 129.74,
+          "end": 130.34
+        },
+        {
+          "text": "out",
+          "start": 130.34,
+          "end": 130.7
+        },
+        {
+          "text": "a",
+          "start": 130.7,
+          "end": 130.88
+        },
+        {
+          "text": "movie",
+          "start": 130.88,
+          "end": 131.18
+        },
+        {
+          "text": "in",
+          "start": 131.18,
+          "end": 131.52
+        },
+        {
+          "text": "a",
+          "start": 131.52,
+          "end": 131.64
+        },
+        {
+          "text": "cybernetic",
+          "start": 131.64,
+          "end": 132.3
+        },
+        {
+          "text": "maze.",
+          "start": 132.3,
+          "end": 132.4
+        }
+      ]
+    },
+    {
+      "start": 132.4,
+      "end": 135.4,
+      "text": "Neon on yellow, roaring through the rain",
+      "words": [
+        {
+          "text": "Neon",
+          "start": 132.4,
+          "end": 132.88
+        },
+        {
+          "text": "on",
+          "start": 132.88,
+          "end": 133.22
+        },
+        {
+          "text": "yellow,",
+          "start": 133.22,
+          "end": 133.76
+        },
+        {
+          "text": "roaring",
+          "start": 133.76,
+          "end": 134.54
+        },
+        {
+          "text": "through",
+          "start": 134.54,
+          "end": 134.8
+        },
+        {
+          "text": "the",
+          "start": 134.8,
+          "end": 135.0
+        },
+        {
+          "text": "rain",
+          "start": 135.0,
+          "end": 135.4
+        }
+      ]
+    },
+    {
+      "start": 135.4,
+      "end": 138.74,
+      "text": "Omarchy moving fast, running through the veins",
+      "words": [
+        {
+          "text": "Omarchy",
+          "start": 135.4,
+          "end": 136.2
+        },
+        {
+          "text": "moving",
+          "start": 136.2,
+          "end": 136.48
+        },
+        {
+          "text": "fast,",
+          "start": 136.48,
+          "end": 137.18
+        },
+        {
+          "text": "running",
+          "start": 137.18,
+          "end": 137.72
+        },
+        {
+          "text": "through",
+          "start": 137.72,
+          "end": 138.1
+        },
+        {
+          "text": "the",
+          "start": 138.1,
+          "end": 138.32
+        },
+        {
+          "text": "veins",
+          "start": 138.32,
+          "end": 138.74
+        }
+      ]
+    },
+    {
+      "start": 138.74,
+      "end": 142.04,
+      "text": "Tokyo lights painted on the hood",
+      "words": [
+        {
+          "text": "Tokyo",
+          "start": 138.74,
+          "end": 139.62
+        },
+        {
+          "text": "lights",
+          "start": 139.62,
+          "end": 140.24
+        },
+        {
+          "text": "painted",
+          "start": 140.58,
+          "end": 141.24
+        },
+        {
+          "text": "on",
+          "start": 141.24,
+          "end": 141.4
+        },
+        {
+          "text": "the",
+          "start": 141.4,
+          "end": 141.66
+        },
+        {
+          "text": "hood",
+          "start": 141.66,
+          "end": 142.04
+        }
+      ]
+    },
+    {
+      "start": 142.04,
+      "end": 145.24,
+      "text": "Pushing past the limits like nobody could",
+      "words": [
+        {
+          "text": "Pushing",
+          "start": 142.04,
+          "end": 142.74
+        },
+        {
+          "text": "past",
+          "start": 142.74,
+          "end": 143.04
+        },
+        {
+          "text": "the",
+          "start": 143.04,
+          "end": 143.3
+        },
+        {
+          "text": "limits",
+          "start": 143.3,
+          "end": 143.58
+        },
+        {
+          "text": "like",
+          "start": 143.58,
+          "end": 143.94
+        },
+        {
+          "text": "nobody",
+          "start": 143.94,
+          "end": 144.5
+        },
+        {
+          "text": "could",
+          "start": 144.5,
+          "end": 145.24
+        }
+      ]
+    },
+    {
+      "start": 145.24,
+      "end": 148.24,
+      "text": "Roppongi to Shibuya, city wide awake",
+      "words": [
+        {
+          "text": "Roppongi",
+          "start": 145.24,
+          "end": 146.04
+        },
+        {
+          "text": "to",
+          "start": 146.04,
+          "end": 146.36
+        },
+        {
+          "text": "Shibuya,",
+          "start": 146.36,
+          "end": 146.9
+        },
+        {
+          "text": "city",
+          "start": 146.9,
+          "end": 147.24
+        },
+        {
+          "text": "wide",
+          "start": 147.24,
+          "end": 147.62
+        },
+        {
+          "text": "awake",
+          "start": 147.62,
+          "end": 148.24
+        }
+      ]
+    },
+    {
+      "start": 148.24,
+      "end": 152.68,
+      "text": "Midnight phantom that you just can't shake",
+      "words": [
+        {
+          "text": "Midnight",
+          "start": 148.24,
+          "end": 149.27
+        },
+        {
+          "text": "phantom",
+          "start": 149.27,
+          "end": 150.3
+        },
+        {
+          "text": "that",
+          "start": 150.3,
+          "end": 150.46
+        },
+        {
+          "text": "you",
+          "start": 150.46,
+          "end": 150.66
+        },
+        {
+          "text": "just",
+          "start": 150.66,
+          "end": 151.0
+        },
+        {
+          "text": "can't",
+          "start": 151.0,
+          "end": 152.58
+        },
+        {
+          "text": "shake",
+          "start": 152.58,
+          "end": 152.68
+        }
+      ]
+    },
+    {
+      "start": 152.68,
+      "end": 155.04,
+      "text": "Drop a gear, let the engine ignite",
+      "words": [
+        {
+          "text": "Drop",
+          "start": 152.68,
+          "end": 152.92
+        },
+        {
+          "text": "a",
+          "start": 152.92,
+          "end": 153.16
+        },
+        {
+          "text": "gear,",
+          "start": 153.16,
+          "end": 153.48
+        },
+        {
+          "text": "let",
+          "start": 153.64,
+          "end": 153.74
+        },
+        {
+          "text": "the",
+          "start": 153.74,
+          "end": 154.0
+        },
+        {
+          "text": "engine",
+          "start": 154.0,
+          "end": 154.32
+        },
+        {
+          "text": "ignite",
+          "start": 154.32,
+          "end": 155.04
+        }
+      ]
+    },
+    {
+      "start": 155.04,
+      "end": 158.89,
+      "text": "Gold in the shadows of the Tokyo night.",
+      "words": [
+        {
+          "text": "Gold",
+          "start": 155.04,
+          "end": 155.98
+        },
+        {
+          "text": "in",
+          "start": 155.98,
+          "end": 156.24
+        },
+        {
+          "text": "the",
+          "start": 156.24,
+          "end": 156.42
+        },
+        {
+          "text": "shadows",
+          "start": 156.42,
+          "end": 156.82
+        },
+        {
+          "text": "of",
+          "start": 157.74,
+          "end": 157.9
+        },
+        {
+          "text": "the",
+          "start": 157.9,
+          "end": 158.1
+        },
+        {
+          "text": "Tokyo",
+          "start": 158.1,
+          "end": 158.56
+        },
+        {
+          "text": "night.",
+          "start": 158.56,
+          "end": 158.89
+        }
+      ]
+    },
+    {
+      "start": 159.5,
+      "end": 162.76,
+      "text": "Tunnels echo thunder, 4 AM breeze",
+      "words": [
+        {
+          "text": "Tunnels",
+          "start": 159.5,
+          "end": 160.16
+        },
+        {
+          "text": "echo",
+          "start": 160.16,
+          "end": 160.5
+        },
+        {
+          "text": "thunder,",
+          "start": 160.5,
+          "end": 160.9
+        },
+        {
+          "text": "4",
+          "start": 160.9,
+          "end": 161.52
+        },
+        {
+          "text": "AM",
+          "start": 161.52,
+          "end": 162.14
+        },
+        {
+          "text": "breeze",
+          "start": 162.14,
+          "end": 162.76
+        }
+      ]
+    },
+    {
+      "start": 162.76,
+      "end": 165.88,
+      "text": "Passing under skyscrapers down on their knees",
+      "words": [
+        {
+          "text": "Passing",
+          "start": 162.76,
+          "end": 163.4
+        },
+        {
+          "text": "under",
+          "start": 163.4,
+          "end": 163.74
+        },
+        {
+          "text": "skyscrapers",
+          "start": 163.74,
+          "end": 164.68
+        },
+        {
+          "text": "down",
+          "start": 164.68,
+          "end": 164.96
+        },
+        {
+          "text": "on",
+          "start": 164.96,
+          "end": 165.26
+        },
+        {
+          "text": "their",
+          "start": 165.26,
+          "end": 165.5
+        },
+        {
+          "text": "knees",
+          "start": 165.5,
+          "end": 165.88
+        }
+      ]
+    },
+    {
+      "start": 165.88,
+      "end": 168.84,
+      "text": "No destination, no sirens in pursuit",
+      "words": [
+        {
+          "text": "No",
+          "start": 165.88,
+          "end": 166.54
+        },
+        {
+          "text": "destination,",
+          "start": 166.54,
+          "end": 167.3
+        },
+        {
+          "text": "no",
+          "start": 167.62,
+          "end": 167.76
+        },
+        {
+          "text": "sirens",
+          "start": 167.76,
+          "end": 168.34
+        },
+        {
+          "text": "in",
+          "start": 168.34,
+          "end": 168.62
+        },
+        {
+          "text": "pursuit",
+          "start": 168.62,
+          "end": 168.84
+        }
+      ]
+    },
+    {
+      "start": 168.84,
+      "end": 172.4,
+      "text": "Just high-octane freedom on the expressway route.",
+      "words": [
+        {
+          "text": "Just",
+          "start": 168.84,
+          "end": 169.44
+        },
+        {
+          "text": "high-octane",
+          "start": 169.44,
+          "end": 170.36
+        },
+        {
+          "text": "freedom",
+          "start": 170.36,
+          "end": 170.78
+        },
+        {
+          "text": "on",
+          "start": 170.78,
+          "end": 170.96
+        },
+        {
+          "text": "the",
+          "start": 170.96,
+          "end": 171.12
+        },
+        {
+          "text": "expressway",
+          "start": 171.12,
+          "end": 171.98
+        },
+        {
+          "text": "route.",
+          "start": 171.98,
+          "end": 172.4
+        }
+      ]
+    },
+    {
+      "start": 172.4,
+      "end": 176.92,
+      "text": "Sunrise creeping over Tokyo Bay",
+      "words": [
+        {
+          "text": "Sunrise",
+          "start": 172.4,
+          "end": 173.9
+        },
+        {
+          "text": "creeping",
+          "start": 173.9,
+          "end": 174.72
+        },
+        {
+          "text": "over",
+          "start": 174.72,
+          "end": 175.28
+        },
+        {
+          "text": "Tokyo",
+          "start": 175.28,
+          "end": 175.84
+        },
+        {
+          "text": "Bay",
+          "start": 175.84,
+          "end": 176.92
+        }
+      ]
+    },
+    {
+      "start": 178.66,
+      "end": 184.2,
+      "text": "Yellow Lambo parked as the night turns gray",
+      "words": [
+        {
+          "text": "Yellow",
+          "start": 178.66,
+          "end": 179.78
+        },
+        {
+          "text": "Lambo",
+          "start": 179.78,
+          "end": 180.9
+        },
+        {
+          "text": "parked",
+          "start": 180.9,
+          "end": 181.38
+        },
+        {
+          "text": "as",
+          "start": 181.38,
+          "end": 181.7
+        },
+        {
+          "text": "the",
+          "start": 181.7,
+          "end": 181.86
+        },
+        {
+          "text": "night",
+          "start": 181.86,
+          "end": 182.18
+        },
+        {
+          "text": "turns",
+          "start": 182.18,
+          "end": 182.68
+        },
+        {
+          "text": "gray",
+          "start": 182.68,
+          "end": 184.2
+        }
+      ]
+    },
+    {
+      "start": 184.88,
+      "end": 190.56,
+      "text": "Omarchy watching the horizon burn bright",
+      "words": [
+        {
+          "text": "Omarchy",
+          "start": 185.36,
+          "end": 185.76
+        },
+        {
+          "text": "watching",
+          "start": 185.76,
+          "end": 186.92
+        },
+        {
+          "text": "the",
+          "start": 186.92,
+          "end": 187.42
+        },
+        {
+          "text": "horizon",
+          "start": 187.42,
+          "end": 188.32
+        },
+        {
+          "text": "burn",
+          "start": 188.32,
+          "end": 189.14
+        },
+        {
+          "text": "bright",
+          "start": 189.14,
+          "end": 190.56
+        }
+      ]
+    },
+    {
+      "start": 191.74,
+      "end": 196.22,
+      "text": "Legends never sleep after a Tokyo night.",
+      "words": [
+        {
+          "text": "Legends",
+          "start": 191.74,
+          "end": 192.9
+        },
+        {
+          "text": "never",
+          "start": 192.9,
+          "end": 193.66
+        },
+        {
+          "text": "sleep",
+          "start": 193.66,
+          "end": 194.24
+        },
+        {
+          "text": "after",
+          "start": 194.24,
+          "end": 194.72
+        },
+        {
+          "text": "a",
+          "start": 194.72,
+          "end": 194.98
+        },
+        {
+          "text": "Tokyo",
+          "start": 194.98,
+          "end": 195.42
+        },
+        {
+          "text": "night.",
+          "start": 195.42,
+          "end": 196.22
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#16161e" />
+    <meta name="description" content="Take the driver's seat in Tokyo Nights. Race through a 3D Tokyo expressway with WebXR head tracking and controller input." />
+    <title>Tokyo Nights · VR Cockpit</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="assets/arcade.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="vr.css" />
+    <script type="module" src="src/vr-main.js"></script>
+  </head>
+  <body class="vr-page" data-state="title" data-xr="checking">
+    <header class="vr-header">
+      <a href="./" class="vr-home"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m9 4-6 6 6 6M3 10h14"/></svg>TOKYO NIGHTS<span> / VR</span></a>
+      <nav aria-label="Cockpit controls">
+        <button class="tool-button" id="vr-sound" aria-label="Turn sound on" aria-pressed="false">SOUND OFF</button>
+        <button class="tool-button" id="vr-recenter">CENTER VIEW</button>
+        <button class="tool-button" id="vr-pause" disabled>PAUSE</button>
+        <button class="tool-button" id="vr-exit" hidden>EXIT VR</button>
+      </nav>
+    </header>
+    <main class="vr-main">
+      <div class="vr-viewport" id="vr-viewport">
+        <canvas id="vr-canvas" tabindex="0" aria-label="A 3D cockpit on the Tokyo expressway. Drag to look around. Use arrow keys to drive." aria-describedby="vr-keyboard-help"></canvas>
+        <p class="vr-scene-label" id="vr-scene-label">SHINJUKU <span>首都高 / C1</span></p>
+        <div class="vr-readouts" id="vr-readouts" hidden aria-label="Race instruments">
+          <span><b id="vr-speed">000</b> KM/H</span>
+          <span><b id="vr-time">60</b> SEC</span>
+          <span><b id="vr-distance">3.0</b> KM TO CHECKPOINT</span>
+          <span>NITRO <b id="vr-nitro">100</b>%</span>
+        </div>
+      </div>
+      <section class="vr-panel" id="vr-panel" aria-labelledby="vr-heading">
+        <h1 id="vr-heading">TOKYO<br /><span>NIGHTS VR<span class="title-period">.</span></span></h1>
+        <p class="vr-intro" id="vr-intro">Take the driver's seat.<br />The midnight expressway surrounds you.</p>
+        <p class="vr-result" id="vr-result" hidden></p>
+        <fieldset class="vr-setup" id="vr-setup">
+          <legend class="sr-only">Race setup</legend>
+          <label>DRIVER<select id="vr-driver"></select></label>
+          <label>CAR<select id="vr-car"></select></label>
+          <label>PAINT<select id="vr-paint"></select></label>
+        </fieldset>
+        <div class="vr-preferences">
+          <label for="vr-steering">STEER WITH</label>
+          <select id="vr-steering"><option value="stick">Thumbstick</option><option value="wheel">Grip steering wheel</option></select>
+          <label class="vr-comfort"><input type="checkbox" id="vr-comfort" checked />Comfort view<span>Reduce peripheral motion at speed.</span></label>
+        </div>
+        <div class="vr-actions">
+          <button class="primary-button" id="vr-enter" disabled>CHECK HEADSET</button>
+          <button class="vr-secondary" id="vr-drive" disabled>DRIVE ON SCREEN</button>
+          <button class="text-button" id="vr-new-run" hidden>START A NEW RUN</button>
+        </div>
+        <p class="vr-support" id="vr-support" role="status">Load the cockpit and check WebXR support.</p>
+        <details class="vr-help">
+          <summary>HEADSET CONTROLS</summary>
+          <dl>
+            <div><dt>Left stick</dt><dd>Steer</dd></div>
+            <div><dt>Right trigger</dt><dd>Accelerate</dd></div>
+            <div><dt>Left trigger</dt><dd>Brake</dd></div>
+            <div><dt>A / lower right</dt><dd>Hold for nitro</dd></div>
+            <div><dt>B / upper right</dt><dd>Pause or resume</dd></div>
+            <div><dt>X / lower left</dt><dd>Center the seat</dd></div>
+            <div><dt>Y / upper left</dt><dd>Toggle comfort view</dd></div>
+          </dl>
+          <p>Point at a cockpit control and press a trigger to select it. Grip both controllers to turn the wheel in wheel mode.</p>
+          <p>Open this page over HTTPS in a WebXR browser. Sit down before you center the seat.</p>
+        </details>
+        <noscript><p>To use the cockpit, enable JavaScript in your browser.</p></noscript>
+      </section>
+      <div class="vr-touch" id="vr-touch" aria-label="Touch driving controls" hidden>
+        <button data-control="left" aria-label="Steer left">LEFT</button>
+        <button data-control="right" aria-label="Steer right">RIGHT</button>
+        <button data-control="brake">BRAKE</button>
+        <button data-control="nitro">NITRO</button>
+      </div>
+    </main>
+    <footer class="vr-footer" id="vr-keyboard-help"><span>SEATED COCKPIT · WEBXR</span><span>ARROWS: DRIVE · SPACE: NITRO · P: PAUSE · R: CENTER · DRAG: LOOK</span></footer>
+    <p class="sr-only" id="vr-announcer" aria-live="polite" aria-atomic="true"></p>
+  </body>
+</html>

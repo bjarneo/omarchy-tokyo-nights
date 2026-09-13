@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#16161e" />
+    <meta name="description" content="Omarchy Tokyo Nights. A song-led pixel-art drive through Tokyo, from the neon expressway to sunrise over the bay." />
+    <title>Omarchy Tokyo Nights · Music video</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="assets/arcade.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="music-video.css" />
+    <script type="module" src="src/music-video.js"></script>
+  </head>
+  <body>
+    <main class="video-page">
+      <header class="video-header">
+        <div>
+          <h1>Omarchy Tokyo Nights</h1>
+          <p>Bjarne Oeverli <span class="separator">·</span> Music video</p>
+        </div>
+        <a class="game-link" href="./">Play the game <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12L12 4M4 4h8v8" /></svg></a>
+      </header>
+
+      <section class="player" id="player" aria-label="Music video player">
+        <div class="picture">
+          <canvas id="video-canvas" width="1920" height="1080" aria-label="A yellow Lamborghini crosses a pixel-art Tokyo at night. The scenes follow the song from Shinjuku to Tokyo Bay.">
+            Your browser needs Canvas support to show this video. Download the MP4 to watch it in a video player.
+          </canvas>
+        </div>
+        <div class="transport">
+          <label class="sr-only" for="seek">Video position</label>
+          <input id="seek" class="seek" type="range" min="0" max="226.4" value="0" step="0.01" disabled />
+          <div class="transport-row">
+            <button id="play" class="play-button" disabled>
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path id="play-icon" d="M6 3l11 7-11 7z" /></svg>
+              <span id="play-label">Play video</span>
+            </button>
+            <output id="time" class="time" for="seek" role="timer" aria-live="off">0:00 <span>/ 3:46</span></output>
+            <div class="secondary-controls">
+              <label class="volume-control" for="volume">Volume
+                <input id="volume" type="range" min="0" max="1" step="0.01" value="0.8" />
+              </label>
+              <button id="captions" class="tool-button" aria-pressed="true" title="Toggle lyric captions">Lyrics</button>
+              <button id="fullscreen" class="tool-button" aria-label="Enter fullscreen" title="Fullscreen">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 3H3v4m10-4h4v4M3 13v4h4m10-4h4v-4" /></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+        <p id="current-lyric" class="sr-only"></p>
+      </section>
+
+      <nav class="chapters" id="chapters" aria-label="Song sections"></nav>
+
+      <footer class="video-footer">
+        <div>
+          <p id="status" role="status">The video is ready after the audio and artwork load.</p>
+          <p class="video-spec">1920 × 1080 <span>·</span> 30 FPS <span>·</span> Pixel-art film</p>
+        </div>
+        <a class="download" id="download" href="exports/omarchy-tokyo-nights.mp4" download hidden>Download MP4</a>
+        <button id="reload" class="tool-button" hidden>Reload video</button>
+      </footer>
+
+      <details class="transcript">
+        <summary>Song lyrics</summary>
+        <div id="transcript"></div>
+        <a href="assets/omarchy-tokyo-nights.srt" download>Download timed subtitles</a>
+      </details>
+    </main>
+    <audio id="song" src="assets/omarchy-tokyo-nights.mp3" preload="auto"></audio>
+  </body>
+</html>

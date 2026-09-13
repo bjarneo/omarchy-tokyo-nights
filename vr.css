@@ -1,0 +1,68 @@
+.vr-page { background: var(--night); }
+.vr-header { position: relative; z-index: 3; min-height: 72px; padding: 12px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px; background: var(--bg); border-bottom: 1px solid var(--line); }
+.vr-home { display: flex; align-items: center; gap: 14px; font: 12px/1.8 "Arcade", monospace; text-decoration: none; }
+.vr-home svg { width: 20px; height: 20px; fill: none; stroke: var(--cyan); stroke-width: 1.5; }
+.vr-home span { color: var(--pink); }
+.vr-header nav { display: flex; align-items: stretch; gap: 20px; }
+.vr-header button { min-height: 44px; }
+.vr-main { position: relative; min-height: calc(100dvh - 120px); }
+.vr-viewport { position: absolute; inset: 0; overflow: hidden; }
+#vr-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+#vr-canvas:focus-visible { outline-offset: -4px; }
+.vr-scene-label { position: absolute; top: 24px; right: 32px; margin: 0; padding: 10px 12px; background: var(--night); color: var(--cyan); font-size: 12px; letter-spacing: 1px; pointer-events: none; }
+.vr-scene-label span { color: var(--muted); margin-left: 20px; }
+.vr-panel { position: relative; z-index: 2; width: 416px; margin-left: 32px; padding: 30px 28px 24px; background: var(--bg); border-inline: 1px solid var(--line); }
+.vr-panel h1 { font-size: clamp(22px, 2.6vw, 34px); line-height: 1.4; letter-spacing: -.035em; color: var(--pink); }
+.vr-panel h1 > span:last-child { margin-left: 0; color: var(--text); }
+.vr-intro { font-size: 14px; line-height: 1.7; margin: 20px 0 26px; color: var(--text); }
+.vr-setup { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; border: 0; margin: 0 0 22px; padding: 0; min-width: 0; }
+.vr-setup label { display: grid; gap: 7px; color: var(--muted); font-size: 12px; }
+.vr-setup label:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+.vr-page select { color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 0; min-width: 0; min-height: 44px; width: 100%; padding: 10px 8px; font: 14px "Courier New", monospace; }
+.vr-page select:focus-visible, .vr-page summary:focus-visible, .vr-page input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+.vr-preferences { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px 12px; margin-bottom: 26px; font-size: 12px; color: var(--muted); }
+.vr-comfort { display: grid; grid-column: 1 / -1; grid-template-columns: 20px 1fr; align-items: center; gap: 4px 8px; font-size: 14px; color: var(--text); cursor: pointer; min-height: 44px; }
+.vr-comfort input { width: 18px; height: 18px; margin: 0; accent-color: var(--cyan); }
+.vr-comfort span { grid-column: 2; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.vr-actions { display: grid; gap: 10px; }
+.vr-actions button { width: 100%; }
+.vr-secondary { min-height: 46px; padding: 10px 16px; color: var(--cyan); background: transparent; border: 1px solid var(--line); font: 12px/1.7 "Arcade", monospace; }
+.vr-secondary:hover { border-color: var(--cyan); background: var(--panel); }
+.vr-support { font-size: 12px; line-height: 1.7; color: var(--muted); margin: 14px 0 22px; }
+.vr-page[data-xr="ready"] .vr-support { color: var(--green); }
+.vr-page[data-xr="error"] .vr-support { color: var(--pink); }
+.vr-help { border-top: 1px solid var(--line); color: var(--muted); font-size: 12px; line-height: 1.7; }
+.vr-help summary { min-height: 44px; padding-top: 14px; cursor: pointer; color: var(--text); }
+.vr-help dl { margin-block: 14px; }
+.vr-help dl > div { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 7px; }
+.vr-help dd { margin: 0; color: var(--text); text-align: right; }
+.vr-footer { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 12px 32px; position: relative; font-size: 12px; line-height: 1.7; color: var(--muted); background: var(--bg); border-top: 1px solid var(--line); }
+.vr-readouts { position: absolute; inset: 24px auto auto 32px; display: flex; flex-wrap: wrap; gap: 16px 28px; padding: 14px 18px; color: var(--muted); background: var(--night); font-size: 12px; pointer-events: none; }
+.vr-readouts b { font-size: 18px; font-weight: 400; color: var(--text); font-variant-numeric: tabular-nums; }
+.vr-result { color: var(--yellow); font-size: 16px; line-height: 1.8; }
+.vr-page[data-state="playing"] .vr-main, .vr-page[data-state="countdown"] .vr-main { height: calc(100dvh - 120px); }
+.vr-touch { position: absolute; z-index: 2; inset: auto 16px 16px; display: none; gap: 8px; }
+.vr-touch button { min-height: 54px; min-width: 0; flex: 1; background: var(--panel); border: 1px solid var(--line); color: var(--text); font-size: 12px; touch-action: none; user-select: none; }
+.vr-touch button:last-child { color: var(--yellow); }
+.vr-touch button.is-pressed { border-color: var(--cyan); background: var(--line); }
+.vr-page[data-xr="active"] .vr-panel { visibility: hidden; }
+@media (pointer: coarse) { .vr-touch:not([hidden]) { display: flex; } }
+@media (max-width: 760px) {
+  .vr-header { padding: 8px 16px; gap: 8px; flex-wrap: wrap; min-height: 104px; }
+  .vr-home { font-size: 12px; gap: 10px; }
+  .vr-header nav { width: 100%; justify-content: space-between; gap: 8px; }
+  .vr-header .tool-button { font-size: 12px; padding-inline: 4px; }
+  .vr-viewport { position: relative; height: 36dvh; min-height: 230px; }
+  .vr-scene-label { top: 12px; right: 12px; font-size: 12px; }
+  .vr-scene-label span { margin-left: 10px; }
+  .vr-panel { width: 100%; margin: 0; padding: 24px; border: 0; border-top: 1px solid var(--line); }
+  .vr-panel h1 { font-size: 27px; }
+  .vr-intro { margin-block: 16px 24px; }
+  .vr-footer { padding: 14px 16px; font-size: 12px; }
+  .vr-footer > span:last-child { display: none; }
+  .vr-readouts { inset: 12px 12px auto; padding: 10px 12px; gap: 10px 20px; }
+  .vr-readouts b { font-size: 16px; }
+  .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-main { height: calc(100dvh - 152px); min-height: 260px; }
+  .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-viewport { height: 100%; }
+  .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-scene-label { display: none; }
+}

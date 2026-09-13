@@ -1,0 +1,26 @@
+{
+  "name": "tokyo-nights",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A pixel-art Tokyo Night arcade racer.",
+  "type": "module",
+  "scripts": {
+    "start": "node tools/server.mjs",
+    "dev": "node tools/server.mjs",
+    "assets": "node tools/vendor-font.mjs",
+    "assets:vr": "node tools/vendor-three.mjs",
+    "cover": "node tools/create-cover.mjs",
+    "video": "node tools/create-video.mjs",
+    "shorts": "node tools/create-shorts.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "test:browser": "playwright test"
+  },
+  "devDependencies": {
+    "@fontsource/press-start-2p": "^5.2.7",
+    "@playwright/test": "^1.58.2",
+    "iwer": "2.4.0"
+  },
+  "dependencies": {
+    "three": "0.180.0"
+  }
+}
