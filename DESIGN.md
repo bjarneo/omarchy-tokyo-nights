@@ -911,7 +911,7 @@ The room pairs contextual spatial panels with native HTML actions from the same 
 - **State model:** Entry, exploration, talk, device, arcade, sketch, map, and pause states select the relevant controls.
 - **Controller actions:** Ordinary state transitions preserve controller edge latches. Focus or session recovery suppresses held face-button menu actions until release.
 - **Mini-game pause:** `PAUSE` in native and spatial panels preserves the active round. Toolbar `PAUSE` and keyboard `P` use the same pause state.
-- **Focus:** A new native panel focuses its first action. Return to exploration focuses the canvas. Topic changes retain action focus.
+- **Focus:** Room-state changes target the first native action for focus. Return to exploration focuses the canvas. Topic changes retain action focus.
 - **Speech:** `READ ALOUD` requests the system voice for the current dialogue. Text and live announcements provide the conversation content. Canceled or interrupted speech does not report a voice failure.
 - **Sketch:** The Macintosh screen receives cell selections. A separate spatial toolbar provides clear and back actions.
 - **Motion:** Reduced motion stops autonomous crew walks, gestures, head tilt, body bounce, and button transitions. Player-controlled movement and machine demos continue.

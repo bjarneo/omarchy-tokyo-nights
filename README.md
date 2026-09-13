@@ -139,6 +139,7 @@ Each character has a distinct gesture, including a wave, glasses adjustment, str
 The coffee animation uses arm inverse kinematics to raise, hold, tilt, and lower the mug.
 Short walks respect obstacles, other characters, map destinations, machine approach points, and conversation-panel space.
 Characters stop their walks within 3.2 meters of the player or during their own conversation.
+
 The standing height is 1.95 meters, and the player eye height is 1.65 meters.
 Reduced motion stops autonomous walks and gestures. Player-controlled movement and machine demos continue.
 
@@ -146,6 +147,7 @@ Five wall panels display 65 original open-source project marks from local files 
 The gallery distinguishes desktop foundations, base packages, and optional software. It explicitly excludes GNOME, GTK, and Qt.
 `tools/open-source-catalog.mjs` defines the projects and their Omarchy evidence.
 `tools/vendor-open-source-logos.mjs` imports the marks from pinned `simple-icons` version `16.31.0`, upstream artwork, and the original block logos.
+
 `assets/open-source/manifest.json` records source URLs, licenses, installation scopes, file hashes, and Omarchy reference hashes.
 The current Omarchy source commit is `760a546a1c883d9bf3f33e3675920318fbf3fe76`.
 The four PNG marks carry embedded provenance.
@@ -222,6 +224,7 @@ When the queue is empty, playback advances through the library in source order a
 
 `PAUSE MUSIC` retains the position. `RESUME MUSIC` continues from that position.
 `CANCEL LOAD` cancels a pending request. A failed request offers retry through `PLAY NOW` or a different track through `NEXT TRACK`.
+
 The jukebox and original `PLAY SONG` control pause each other.
 Music starts after a playback action. Focus or XR visibility or tracking loss pauses both music sources.
 
@@ -275,11 +278,14 @@ The CRT uses a local title-card texture. The video plays in the browser dialog, 
 The supplied results report all 24 focused Node tests and all ten clubhouse browser tests as passed.
 The three media browser cases pass again after the final queue-grid and caption fixes.
 The MP3 browser tests play real local tracks and seek near their ends to exercise automatic queue advance.
+
 Cinema captures use an explicit test iframe and do not prove live YouTube playback.
 IWER provides stereo emulation without a physical headset. Speech checks spy on requests rather than verify audible output.
+
 The fresh finish reviewer returns `ship` for the supplied desktop, mobile, and stereo clubhouse scope with no material fixes.
 The club surface brief records the 14 reviewed captures and remaining verification limits.
-The full suite against an isolated staged candidate remains in progress at this handoff. These results do not establish its final counts.
+A clubhouse-only candidate passes all 74 Node tests and all 47 browser tests.
+This candidate includes the ten clubhouse browser tests and the existing game regressions.
 
 ## VR cockpit
 
