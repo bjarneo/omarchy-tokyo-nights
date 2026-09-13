@@ -5,7 +5,7 @@
 .vr-home span { color: var(--pink); }
 .vr-header nav { display: flex; align-items: stretch; gap: 20px; }
 .vr-header button { min-height: 44px; }
-.vr-main { position: relative; min-height: calc(100dvh - 120px); }
+.vr-main { position: relative; min-height: calc(100dvh - var(--vr-chrome, 120px)); }
 .vr-viewport { position: absolute; inset: 0; overflow: hidden; }
 #vr-canvas { width: 100%; height: 100%; display: block; touch-action: none; }
 #vr-canvas:focus-visible { outline-offset: -4px; }
@@ -15,9 +15,15 @@
 .vr-panel h1 { font-size: clamp(22px, 2.6vw, 34px); line-height: 1.4; letter-spacing: -.035em; color: var(--pink); }
 .vr-panel h1 > span:last-child { margin-left: 0; color: var(--text); }
 .vr-intro { font-size: 14px; line-height: 1.7; margin: 20px 0 26px; color: var(--text); }
+.vr-loadout { display: grid; grid-template-columns: 100px 1fr; align-items: end; gap: 20px; margin: 0 0 24px; padding: 12px 0; border-block: 1px solid var(--line); }
+.vr-loadout figure { margin: 0; display: grid; justify-items: center; gap: 10px; min-width: 0; }
+.vr-loadout canvas { image-rendering: pixelated; max-width: 100%; }
+#vr-character-art { width: 48px; height: 104px; }
+#vr-car-art { width: 168px; height: 108px; }
+.vr-loadout figcaption { color: var(--yellow); text-align: center; font-size: 12px; line-height: 1.5; }
 .vr-setup { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 12px; border: 0; margin: 0 0 22px; padding: 0; min-width: 0; }
 .vr-setup label { display: grid; gap: 7px; color: var(--muted); font-size: 12px; }
-.vr-setup label:nth-child(2) { grid-column: 1 / -1; grid-row: 2; }
+.vr-setup label:nth-of-type(2) { grid-column: 1 / -1; grid-row: 2; }
 .vr-page select { color: var(--text); background: var(--panel); border: 1px solid var(--line); border-radius: 0; min-width: 0; min-height: 44px; width: 100%; padding: 10px 8px; font: 14px "Courier New", monospace; }
 .vr-page select:focus-visible, .vr-page summary:focus-visible, .vr-page input:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
 .vr-preferences { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px 12px; margin-bottom: 26px; font-size: 12px; color: var(--muted); }
@@ -40,17 +46,18 @@
 .vr-readouts { position: absolute; inset: 24px auto auto 32px; display: flex; flex-wrap: wrap; gap: 16px 28px; padding: 14px 18px; color: var(--muted); background: var(--night); font-size: 12px; pointer-events: none; }
 .vr-readouts b { font-size: 18px; font-weight: 400; color: var(--text); font-variant-numeric: tabular-nums; }
 .vr-result { color: var(--yellow); font-size: 16px; line-height: 1.8; }
-.vr-page[data-state="playing"] .vr-main, .vr-page[data-state="countdown"] .vr-main { height: calc(100dvh - 120px); }
+.vr-objective { color: var(--cyan); font-size: 14px; line-height: 1.8; margin: 0 0 28px; }
+.vr-page[data-state="playing"] .vr-main, .vr-page[data-state="countdown"] .vr-main { height: calc(100dvh - var(--vr-chrome, 120px)); }
 .vr-touch { position: absolute; z-index: 2; inset: auto 16px 16px; display: none; gap: 8px; }
 .vr-touch button { min-height: 54px; min-width: 0; flex: 1; background: var(--panel); border: 1px solid var(--line); color: var(--text); font-size: 12px; touch-action: none; user-select: none; }
 .vr-touch button:last-child { color: var(--yellow); }
 .vr-touch button.is-pressed { border-color: var(--cyan); background: var(--line); }
 .vr-page[data-xr="active"] .vr-panel { visibility: hidden; }
-@media (pointer: coarse) { .vr-touch:not([hidden]) { display: flex; } }
+@media (pointer: coarse), (max-width: 760px) { .vr-touch:not([hidden]) { display: flex; } }
 @media (max-width: 760px) {
   .vr-header { padding: 8px 16px; gap: 8px; flex-wrap: wrap; min-height: 104px; }
   .vr-home { font-size: 12px; gap: 10px; }
-  .vr-header nav { width: 100%; justify-content: space-between; gap: 8px; }
+  .vr-header nav { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 0 8px; }
   .vr-header .tool-button { font-size: 12px; padding-inline: 4px; }
   .vr-viewport { position: relative; height: 36dvh; min-height: 230px; }
   .vr-scene-label { top: 12px; right: 12px; font-size: 12px; }
@@ -62,7 +69,7 @@
   .vr-footer > span:last-child { display: none; }
   .vr-readouts { inset: 12px 12px auto; padding: 10px 12px; gap: 10px 20px; }
   .vr-readouts b { font-size: 16px; }
-  .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-main { height: calc(100dvh - 152px); min-height: 260px; }
+  .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-main { height: calc(100dvh - var(--vr-chrome, 152px)); min-height: 260px; }
   .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-viewport { height: 100%; }
   .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-scene-label { display: none; }
 }

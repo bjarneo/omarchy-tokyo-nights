@@ -6,7 +6,7 @@ export const CHARACTERS = Object.freeze([
   Object.freeze({ id: 'hancore', name: 'Hancore', longHair: false, detail: 'Bone skull emblem.' }),
   Object.freeze({ id: 'spencer', name: 'Spencer', longHair: false, detail: 'Side-parted hair and blue shirt.' }),
   Object.freeze({ id: 'krzysztof', name: 'Krzysztof', longHair: false, detail: 'Glasses and a light overshirt.' }),
-  Object.freeze({ id: 'outfoxxed', name: 'Outfoxxed', longHair: false, detail: 'Orange fox with a white muzzle.' }),
+  Object.freeze({ id: 'outfoxxed', name: 'Outfoxxed', longHair: false, detail: 'Brown hair, glasses, and teal shirt.' }),
   Object.freeze({ id: 'emir', name: 'Emir', longHair: false, detail: 'Short dark hair and hooded jacket.' }),
 ]);
 

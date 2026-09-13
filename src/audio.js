@@ -5,6 +5,7 @@ export class ArcadeAudio {
     this.context = null;
     this.step = 0;
     this.nextBeat = 0;
+    this.musicEnabled = true;
   }
 
   async setEnabled(enabled) {
@@ -54,6 +55,8 @@ export class ArcadeAudio {
   }
 
   event(event) {
+    if (event.type === 'nitro-pickup') [880, 1174.66, 1567.98].forEach((frequency, i) => this.note(frequency, .16, 'triangle', .15, i * .07));
+    if (event.type === 'pit-enter' || event.type === 'pit-resume') this.note(523.25, .25, 'triangle', .12);
     if (event.type === 'pickup') [659.25, 783.99, 1046.5].forEach((frequency, i) => this.note(frequency, .2, 'triangle', .15, i * .08));
     if (event.type === 'ending') [523.25, 659.25, 783.99, 1046.5, 783.99, 1046.5].forEach((frequency, i) => this.note(frequency, .5, 'triangle', .18, i * .22));
     if (event.type === 'countdown') this.note(440, 0.12);
@@ -73,7 +76,7 @@ export class ArcadeAudio {
     this.engineGain.gain.setTargetAtTime(driving ? game.boosting ? 0.14 : 0.1 : 0, now, 0.08);
     this.engine.frequency.setTargetAtTime(38 + game.speed * 0.55 + (game.boosting ? 38 : 0), now, 0.04);
     this.engineFilter.frequency.setTargetAtTime(game.boosting ? 1250 : 420 + game.speed, now, 0.07);
-    if (!driving) { this.nextBeat = now; return; }
+    if (!driving || !this.musicEnabled) { this.nextBeat = now; return; }
     if (now >= this.nextBeat) {
       const bass = [65.41, 65.41, 77.78, 65.41, 58.27, 58.27, 51.91, 58.27];
       const melody = [261.63, 311.13, 392, 466.16, 392, 311.13, 233.08, 311.13];

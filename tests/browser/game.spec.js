@@ -14,6 +14,11 @@ test('desktop: start, drive, boost, pause, sound, and restart', async ({ page })
   await expect(page.getByRole('button', { name: 'START ENGINE' })).toBeVisible();
   await expect(page.locator('#game')).toBeVisible();
   await expect(page.getByRole('img', { name: 'Omarchy logo' })).toBeVisible();
+  await expect(page.getByRole('img', { name: /^All nine drivers:/ })).toBeVisible();
+  expect(await page.locator('#title-lineup').evaluate((canvas) => {
+    const ctx = canvas.getContext('2d');
+    return Array.from({ length: 9 }, (_, index) => ctx.getImageData(index * 36, 0, 32, 38).data.some((value, offset) => offset % 4 === 3 && value > 0)).every(Boolean);
+  })).toBe(true);
   await expect.poll(() => page.locator('#start-logo').evaluate((canvas) => {
     const pixels = canvas.getContext('2d').getImageData(0, 0, canvas.width, canvas.height).data;
     return pixels.some((value, index) => index % 4 === 3 && value > 0);
@@ -66,7 +71,7 @@ test('desktop: start, drive, boost, pause, sound, and restart', async ({ page })
   await expect(page.locator('#score')).toHaveText('000000');
   await expect(page.locator('#time')).toHaveText('60');
   expect(errors).toEqual([]);
-  expect(requests.every((url) => url.startsWith('http://127.0.0.1:3000'))).toBe(true);
+  expect(requests.every((url) => url.startsWith(new URL(page.url()).origin))).toBe(true);
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 });
 
@@ -78,6 +83,7 @@ test('mobile: touch controls, release, and responsive game art', async ({ browse
   await page.goto('/');
   await page.evaluate(() => document.fonts.ready);
   await expect(page.locator('#touch-controls')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'MEET THE CREW', exact: true })).toBeVisible();
   await expect(page.getByRole('img', { name: 'Omarchy logo' })).toBeVisible();
   await page.screenshot({ path: '.impeccable/review/mobile.png', fullPage: true });
   await page.getByRole('button', { name: 'START ENGINE' }).tap();

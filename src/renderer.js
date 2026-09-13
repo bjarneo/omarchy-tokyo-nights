@@ -1,9 +1,11 @@
 import { BOOST_SPEED, cameoPose, clamp, roadCurve } from './engine.mjs';
 import { CHARACTERS, getCharacter } from './characters.mjs';
-import { loadOmarchyLogo } from './omarchy-logo.js';
+import { loadOmarchyLogo, loadCliampLogo } from './omarchy-logo.js';
 import { makeGuestDriver } from './guest-drivers.js';
 import { getCar, getPaint } from './cars.mjs';
 import { makeCarSprite } from './car-sprites.js';
+import { makeFullCharacter } from './full-characters.js';
+import { drawGarageBackdrop } from './garage-scene.js';
 
 const WORLD_SPEED = 1.85;
 
@@ -314,6 +316,7 @@ export class Renderer {
     this.reducedMotion = reducedMotion;
     this.player = makePlayer();
     this.carSprites = new Map();
+    this.fullCharacters = new Map();
     this.drivers = Object.fromEntries(CHARACTERS.map(({ id }) => [id, {
       back: makeDriver('back', id), profile: makeDriver('profile', id), smile: makeDriver('smile', id),
     }]));
@@ -321,10 +324,12 @@ export class Renderer {
     this.frame = 0;
     this.focalLength = 55;
     this.logo = null;
-    this.logoReady = loadOmarchyLogo().then((logo) => {
+    this.cliampLogo = null;
+    this.logoReady = Promise.all([loadOmarchyLogo().catch(() => null), loadCliampLogo().catch(() => null)]).then(([logo, cliampLogo]) => {
       this.logo = logo;
+      this.cliampLogo = cliampLogo;
       return logo;
-    }).catch(() => null);
+    });
     this.resize(640, 360);
   }
 
@@ -351,6 +356,26 @@ export class Renderer {
     rect(ctx, 3, 3, 1, 7, C.muted);
     rect(ctx, 38, 52, 7, 1, C.muted);
     rect(ctx, 44, 46, 1, 7, C.muted);
+  }
+
+  drawLineup(canvas) {
+    canvas.width = CHARACTERS.length * 36 - 4;
+    canvas.height = 38;
+    const ctx = canvas.getContext('2d');
+    ctx.imageSmoothingEnabled = false;
+    CHARACTERS.forEach(({ id }, index) => ctx.drawImage(this.drivers[id].smile, index * 36, 0));
+    canvas.setAttribute('aria-label', `All nine drivers: ${CHARACTERS.map(({ name }) => name).join(', ')}.`);
+  }
+
+  getFullCharacter(characterId, facing = 'smile') {
+    const character = getCharacter(characterId);
+    const key = `${character.id}:${facing}`;
+    if (!this.fullCharacters.has(key)) this.fullCharacters.set(key, makeFullCharacter(this.drivers[character.id][facing], character.id));
+    return this.fullCharacters.get(key);
+  }
+
+  drawGarage(ctx, width, height) {
+    drawGarageBackdrop(ctx, width, height, { logo: this.logo });
   }
 
   getCarSprite(carId, paintId) {
@@ -521,6 +546,7 @@ export class Renderer {
       const z = i * 24 - this.distance % 24;
       if (z < 0) continue;
       for (const side of [-1, 1]) {
+        if (this.pitBay && side === Math.sign(this.pitBay.lane) && Math.abs((z + this.distance) / WORLD_SPEED - this.pitBay.at) < 45) continue;
         const a = this.project(z, side * 1.10);
         const b = this.project(z + 24, side * 1.10);
         const heightA = 15 * a.scale;
@@ -575,6 +601,28 @@ export class Renderer {
       ctx.restore();
       return;
     }
+    if (index % 3 === 1) {
+      rect(ctx, -63, -136, 126, 70, '#111828');
+      rect(ctx, -63, -136, 126, 2, C.cyan);
+      rect(ctx, -63, -68, 126, 2, C.cyan);
+      rect(ctx, -63, -136, 2, 70, C.cyan);
+      rect(ctx, 61, -136, 2, 70, C.cyan);
+      if (this.cliampLogo) {
+        ctx.drawImage(this.cliampLogo, -49, -130, 98, Math.round(98 * this.cliampLogo.height / this.cliampLogo.width));
+      } else {
+        text(ctx, 'CLIAMP', -26, -128, C.yellow, 2);
+      }
+      text(ctx, 'TUI MUSIC PLAYER', -30, -102, C.text);
+      const levels = [4, 8, 11, 6, 14, 7, 10, 5];
+      const colors = [C.green, C.yellow, '#ff9e64', C.green, C.pink, C.green, '#ff9e64', C.green];
+      levels.forEach((level, i) => {
+        const height = level + (this.reducedMotion ? 0 : Math.round(Math.sin(this.frame * .12 + i) * 2));
+        for (let y = 0; y < height; y += 2) rect(ctx, -27 + i * 8, -81 - y, 5, 1, colors[i]);
+      });
+      text(ctx, 'CLIAMP.STREAM', -24, -74, C.cyan);
+      ctx.restore();
+      return;
+    }
     rect(ctx, -34, -104, 68, 37, '#111828');
     const color = [C.pink, C.cyan, C.purple, C.yellow][index % 4];
     rect(ctx, -34, -104, 68, 2, color);
@@ -617,7 +665,7 @@ export class Renderer {
     ctx.save();
     ctx.translate(Math.round(p.x), Math.round(p.y - 48 * p.scale));
     ctx.scale(scale, scale);
-    rect(ctx, -17, 16, 34, 2, pickup.kind === 'tape' ? '#e0af6840' : '#9ece6a40');
+    rect(ctx, -17, 16, 34, 2, pickup.kind === 'tape' ? '#e0af6840' : pickup.kind === 'nitro' ? '#7dcfff40' : '#9ece6a40');
     if (pickup.kind === 'tape') {
       rect(ctx, -17, -15, 34, 22, C.yellow);
       rect(ctx, -15, -13, 30, 18, C.deep);
@@ -626,6 +674,12 @@ export class Renderer {
       rect(ctx, 4, -8, 5, 4, C.line);
       rect(ctx, -8, 2, 16, 3, C.yellow);
       text(ctx, 'TAPE', -8, -25, C.yellow);
+    } else if (pickup.kind === 'nitro') {
+      rect(ctx, -5, -20, 10, 4, C.text);
+      rect(ctx, -10, -16, 20, 28, C.cyan);
+      rect(ctx, -7, -13, 14, 22, '#284b68');
+      polygon(ctx, [[1, -11], [-5, 0], [0, 0], [-2, 8], [6, -3], [1, -3]], C.white);
+      text(ctx, 'NITRO', -10, -30, C.cyan);
     } else {
       rect(ctx, -4, -20, 8, 4, C.text);
       rect(ctx, -10, -17, 20, 28, C.green);
@@ -636,6 +690,34 @@ export class Renderer {
       text(ctx, 'POWER', -10, -30, C.green);
     }
     ctx.restore();
+  }
+
+  drawPitBay() {
+    if (!this.pitBay) return;
+    const relative = this.pitBay.at * WORLD_SPEED - this.distance;
+    if (relative < -55 || relative > 750) return;
+    const side = Math.sign(this.pitBay.lane);
+    const near = Math.max(0, relative - 18 * WORLD_SPEED);
+    const far = Math.max(1, relative + 18 * WORLD_SPEED);
+    const corners = [this.project(near, side * 1.03), this.project(near, side * 1.43), this.project(far, side * 1.43), this.project(far, side * 1.03)];
+    polygon(this.ctx, corners.map(({ x, y }) => [x, y]), '#344c40');
+    this.ctx.strokeStyle = C.green;
+    this.ctx.lineWidth = Math.max(1, corners[0].scale * 3);
+    this.ctx.beginPath();
+    corners.forEach(({ x, y }, i) => i ? this.ctx.lineTo(Math.round(x), Math.round(y)) : this.ctx.moveTo(Math.round(x), Math.round(y)));
+    this.ctx.closePath();
+    this.ctx.stroke();
+    const mark = this.project(Math.max(0, relative), side * 1.23);
+    const scale = mark.scale * 1.5;
+    this.ctx.save();
+    this.ctx.translate(Math.round(mark.x), Math.round(mark.y));
+    this.ctx.scale(scale, scale);
+    rect(this.ctx, -1, -88, 2, 88, C.muted);
+    rect(this.ctx, -20, -98, 40, 34, C.green);
+    rect(this.ctx, -18, -96, 36, 30, C.deep);
+    text(this.ctx, 'P', -5, -92, C.green, 4);
+    text(this.ctx, 'PIT', -6, -73, C.text);
+    this.ctx.restore();
   }
 
   renderEnding(game) {
@@ -690,7 +772,7 @@ export class Renderer {
     rect(ctx, x - 6, y + bh, bw + 12, 5, '#565f89');
     for (const lane of [.15, .38, .68, .88]) polygon(ctx, [[w * lane, h * .78], [w * lane - 10, h * .97], [w * lane - 8, h * .97], [w * lane + 1, h * .78]], '#646780');
     const carX = w * (.79 - ease * .28);
-    const carY = h * (.94 - ease * .11);
+    const carY = h * (.94 - ease * (w < 600 ? .2 : .11));
     const carScale = w < 600 ? .88 : 1;
     const width = 96 * carScale;
     const height = 55 * carScale;
@@ -702,6 +784,32 @@ export class Renderer {
     ctx.restore();
     text(ctx, 'TOKYO BAY', 16, 16, C.text, 2);
     text(ctx, '05.12', w - 58, 16, C.text, 2);
+  }
+
+  renderPitStop(game) {
+    const ctx = this.ctx;
+    const w = this.width;
+    const h = this.height;
+    this.drawGarage(ctx, w, h * .8);
+    rect(ctx, 0, h * .8, w, h * .2, C.road);
+    const scale = h * .34 / 104;
+    const line = game.pitStop.lines[game.pitDialogueIndex];
+    const car = this.getCarSprite(game.carId, game.paintId);
+    ctx.drawImage(car, Math.round(w * .5 - 48), Math.round(h * .48 - 55), 96, 55);
+    for (const [id, center, isDriver] of [[game.characterId, w * .26, true], [game.pitStop.companionId, w * .73, false]]) {
+      const active = line.speaker === (isDriver ? 'driver' : 'crew');
+      const figure = this.getFullCharacter(id, active ? 'smile' : 'profile');
+      const width = figure.width * scale;
+      const height = figure.height * scale;
+      const baseline = h * .51;
+      rect(ctx, center - width * .6, baseline + 1, width * 1.2, 4, C.deep);
+      ctx.save();
+      ctx.translate(Math.round(center), Math.round(baseline));
+      if (!isDriver && !active) ctx.scale(-1, 1);
+      ctx.drawImage(figure, -width / 2, -height, width, height);
+      ctx.restore();
+      if (active) rect(ctx, center - width * .55, baseline + 7, width * 1.1, 2, isDriver ? C.cyan : C.yellow);
+    }
   }
 
   drawCar(car) {
@@ -824,6 +932,10 @@ export class Renderer {
 
   render(game) {
     this.frame++;
+    if (game.state === 'pit' && game.pitStop) {
+      this.renderPitStop(game);
+      return;
+    }
     if (game.state === 'ending' || game.state === 'complete') {
       this.renderEnding(game);
       return;
@@ -831,6 +943,7 @@ export class Renderer {
     const demo = game.state === 'title' || game.state === 'select' || game.state === 'story';
     this.distance = (demo ? this.reducedMotion ? 300 : game.demoDistance : game.distance) * WORLD_SPEED;
     this.playerX = demo ? 0 : game.playerX;
+    this.pitBay = !demo && game.pitStopAt != null ? { at: game.pitStopAt, lane: game.pitStopLane } : null;
     const targetFocalLength = game.boosting && !this.reducedMotion ? 42 : 55;
     this.focalLength += (targetFocalLength - this.focalLength) * .08;
     const ctx = this.ctx;
@@ -840,6 +953,7 @@ export class Renderer {
     const shift = Math.round(80 + roadCurve(this.distance / WORLD_SPEED) * 15 + this.playerX * 6);
     ctx.drawImage(this.background, shift, 0, this.width, this.horizon + 10, 0, 0, this.width, this.horizon + 10);
     this.drawRoad();
+    this.drawPitBay();
 
     const objects = [];
     for (let i = 0; i < 9; i++) {
@@ -864,6 +978,7 @@ export class Renderer {
     if (!demo && !game.missionStatus?.().complete) {
       (game.pickups || []).forEach((pickup) => objects.push({ z: pickup.z * WORLD_SPEED - this.distance, draw: () => this.drawPickup(pickup) }));
     }
+    if (!demo) (game.nitroPickups || []).forEach((pickup) => objects.push({ z: pickup.z * WORLD_SPEED - this.distance, draw: () => this.drawPickup(pickup) }));
     objects.sort((a, b) => b.z - a.z).forEach((object) => object.draw());
     this.drawSpeedLines(game);
     this.drawPlayer(game, demo);

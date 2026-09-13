@@ -11,10 +11,14 @@ const routes = new Map([
   ['/src/guest-drivers.js', ['src/guest-drivers.js', 'text/javascript']],
   ['/src/cars.mjs', ['src/cars.mjs', 'text/javascript']],
   ['/src/story.mjs', ['src/story.mjs', 'text/javascript']],
+  ['/src/pit-stops.mjs', ['src/pit-stops.mjs', 'text/javascript']],
   ['/src/car-sprites.js', ['src/car-sprites.js', 'text/javascript']],
+  ['/src/full-characters.js', ['src/full-characters.js', 'text/javascript']],
+  ['/src/garage-scene.js', ['src/garage-scene.js', 'text/javascript']],
   ['/src/omarchy-logo.js', ['src/omarchy-logo.js', 'text/javascript']],
   ['/assets/arcade.woff2', ['assets/arcade.woff2', 'font/woff2']],
   ['/assets/omarchy-logo.txt', ['assets/omarchy-logo.txt', 'text/plain; charset=utf-8']],
+  ['/assets/cliamp-logo.txt', ['assets/cliamp-logo.txt', 'text/plain; charset=utf-8']],
 ]);
 const server = createServer(async (request, response) => {
   if (request.url === '/') {

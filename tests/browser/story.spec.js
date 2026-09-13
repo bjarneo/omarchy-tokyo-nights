@@ -48,7 +48,7 @@ GameEngine = class PreparedFinalDelivery extends CampaignEngine {
     const suffix = viewport.width < 700 ? 'mobile' : 'desktop';
     await page.screenshot({ path: `.impeccable/review/story-${suffix}.png`, fullPage: true });
     await page.getByRole('button', { name: 'BEGIN CHAPTER' }).click();
-    await page.clock.runFor(5600);
+    await page.clock.runFor(6600);
     await expect(page.locator('#screen')).toHaveAttribute('data-state', 'ending');
     await page.screenshot({ path: `.impeccable/review/ending-${suffix}.png`, fullPage: true });
     await page.clock.runFor(4000);

@@ -20,6 +20,7 @@
         </a>
         <div class="header-right">
           <a class="edition" href="music-video.html">MUSIC VIDEO</a>
+          <a class="edition" href="garage.html">THE CREW</a>
           <span class="high-score">PERSONAL BEST <strong id="header-best">000000</strong></span>
           <span class="edition">ARCADE / VOL. 01</span>
         </div>
@@ -38,6 +39,10 @@
                 <svg id="sound-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-4v12l-4-4H3zM14 7l4 6m0-6-4 6"/></svg>
                 <span id="sound-label">SOUND OFF</span>
               </button>
+              <button class="tool-button song-button" id="song-button" aria-label="Play MP3 song" aria-pressed="false" aria-describedby="song-status" title="Play or pause the MP3 song">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 14V5l9-2v9M7 8l9-2"/><ellipse cx="4.5" cy="15" rx="2.5" ry="2"/><ellipse cx="13.5" cy="13" rx="2.5" ry="2"/></svg>
+                <span data-song-label>PLAY SONG</span>
+              </button>
               <button class="tool-button" id="pause-button" aria-label="Pause game" title="Pause · P" disabled>
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M6 4v12M14 4v12" stroke-width="3"/></svg>
                 <span>PAUSE</span>
@@ -48,6 +53,7 @@
             </div>
           </div>
 
+          <p class="song-notice" id="song-status" role="status" hidden></p>
           <div class="screen" id="screen" data-state="title">
             <canvas id="game" width="640" height="360" tabindex="0" aria-label="A yellow Lamborghini on the Tokyo expressway. Use arrow keys or WASD to drive. Hold Space for nitro. Press P to pause." aria-describedby="controls-description">
               Your browser needs Canvas support to run Tokyo Nights.
@@ -61,7 +67,7 @@
 
             <div class="overlay title-overlay" id="title-overlay">
               <h1><span>TOKYO</span><span>NIGHTS<span class="title-period">.</span></span></h1>
-              <p class="title-subtitle">ONE FINAL DELIVERY. FOUR TOKYO DISTRICTS.</p>
+              <p class="title-subtitle">ONE NIGHT. ONE FINAL DELIVERY.</p>
               <button class="primary-button" id="start-button">
                 <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 2h3v3h3v3h3v3H9v3H6v2H3z" fill="currentColor"/></svg>
                 START ENGINE
@@ -110,12 +116,13 @@
             </div>
 
             <div class="attract-footer" id="attract-footer">
-              <div><span class="car-swatch" id="car-swatch"></span> <span id="car-name">LAMBORGHINI COUNTACH</span><span class="car-spec" id="car-spec">AMBER · WIDE REAR WING</span></div>
+              <div class="attract-car"><span class="car-swatch" id="car-swatch"></span> <span id="car-name">LAMBORGHINI COUNTACH</span><span class="car-spec" id="car-spec">AMBER · WIDE REAR WING</span></div>
               <canvas id="start-logo" class="omarchy-logo" width="320" height="80" role="img" aria-label="Omarchy logo"></canvas>
-              <div class="palette-chips"><i></i><i></i><i></i><i></i><span>TOKYO NIGHT PALETTE</span></div>
+              <a class="title-lineup" href="garage.html" aria-label="Meet the full crew"><canvas id="title-lineup" width="320" height="38" role="img" aria-label="All nine drivers"></canvas><span>MEET THE CREW</span></a>
             </div>
 
             <div class="hud" id="hud" hidden aria-label="Race dashboard">
+              <div class="pit-bay-indicator" id="pit-bay-indicator" hidden>PIT BAY: RIGHT</div>
               <div class="mission-instrument"><strong id="mission-status">TAPE 0/1</strong><span id="mission-route">NEXT DROP: CENTER</span></div>
               <div class="hud-top">
                 <div class="hud-score"><span class="hud-label">SCORE</span><strong id="score">000000</strong><span class="hud-small" id="stage-name">01 / SHINJUKU</span></div>
@@ -143,9 +150,19 @@
             </div>
 
             <div class="ending-caption" id="ending-caption" hidden>
-              <p>The lights return. The last track plays.</p>
+              <p>The arcade plays your tape.</p>
               <button class="text-button" id="ending-skip-button">SEE RESULTS</button>
             </div>
+
+            <div class="pit-transition" id="pit-transition" hidden><strong>PIT STOP</strong><span>The crew waits at the garage.</span></div>
+            <section class="pit-dialogue" id="pit-dialogue" aria-labelledby="pit-speaker" hidden>
+              <div class="pit-content">
+                <h2 id="pit-speaker">THE CREW</h2>
+                <p class="pit-topic" id="pit-topic"></p>
+                <p class="pit-line" id="pit-line"></p>
+                <div class="pit-actions"><span id="pit-progress">1 / 4</span><button class="primary-button" id="pit-next-button">CONTINUE</button></div>
+              </div>
+            </section>
 
             <div class="overlay pause-overlay" id="pause-overlay" hidden>
               <h2>DRIVE PAUSED.</h2>
@@ -184,7 +201,7 @@
           <div class="drive-tip"><span class="tip-dot"></span><span>Auto-cruise is on.<br><b>Dodge traffic. Chase checkpoints.</b></span></div>
         </section>
 
-        <footer class="page-footer"><span>A LATE-NIGHT ARCADE DRIVE.</span><span>PIXEL GRAPHICS <span class="footer-cross">+</span> TOKYO NIGHT COLORS</span></footer>
+        <footer class="page-footer"><span class="footer-tagline">A LATE-NIGHT ARCADE DRIVE.</span><a class="crew-mobile-link" href="garage.html">MEET THE CREW</a><span>PIXEL GRAPHICS <span class="footer-cross">+</span> TOKYO NIGHT COLORS</span></footer>
         <p class="sr-only" id="announcer" aria-live="polite" aria-atomic="true"></p>
         <noscript><p class="no-script">To play Tokyo Nights, enable JavaScript in your browser.</p></noscript>
       </main>

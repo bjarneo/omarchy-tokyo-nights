@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#16161e" />
+    <meta name="description" content="Meet all nine Tokyo Nights drivers in a full-body pixel-art lineup outside the Omarchy garage." />
+    <title>The Night Crew · Tokyo Nights</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="garage.css" />
+    <script type="module" src="src/garage.js"></script>
+  </head>
+  <body>
+    <div class="crew-page">
+      <header class="masthead">
+        <a class="wordmark" href="./">TOKYO NIGHTS</a>
+        <a class="crew-back-link" href="./">PLAY THE GAME</a>
+      </header>
+      <main>
+        <div class="crew-intro"><h1>THE NIGHT CREW.</h1><p>All nine drivers outside the Omarchy garage.</p></div>
+        <p class="crew-help">Select a name to find a driver. Scroll sideways to see the whole garage on a small screen.</p>
+        <nav class="crew-navigation" id="crew-navigation" aria-label="Find a driver"></nav>
+        <div class="garage-stage" id="garage-stage" tabindex="0" aria-label="Scrollable garage lineup">
+          <div class="garage-art">
+            <canvas id="garage-scene" width="1728" height="900" role="img" aria-label="Nine full-body pixel characters in front of the Omarchy garage"></canvas>
+            <div class="garage-labels" id="garage-labels" aria-hidden="true"></div>
+          </div>
+        </div>
+        <p class="crew-detail" id="crew-detail" aria-live="polite">Choose your driver in the game to take this crew onto the expressway.</p>
+        <div class="crew-downloads"><a class="crew-back-link" href="assets/cameo-cards.zip" download>DOWNLOAD ALL CARDS</a><a class="crew-back-link" id="crew-card-download" href="assets/cameo-cards/dhh.png" download>DOWNLOAD DHH CARD</a></div>
+      </main>
+      <footer class="page-footer"><span>TOKYO NIGHT COLORS</span><a href="./">BACK TO THE MIDNIGHT RUN</a></footer>
+    </div>
+  </body>
+</html>

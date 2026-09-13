@@ -1,6 +1,7 @@
 import { GameEngine, DISTRICTS, CHECKPOINT_LENGTH } from './engine.mjs';
 import { Renderer } from './renderer.js';
 import { ArcadeAudio } from './audio.js';
+import { SongPlayer, updateSongButton, updateSongStatus } from './song-player.js';
 import { CHARACTERS, getCharacter } from './characters.mjs';
 import { CARS, PAINTS, getCar, getPaint } from './cars.mjs';
 import { CHAPTERS, getChapter } from './story.mjs';
@@ -10,8 +11,19 @@ const canvas = $('game');
 const screen = $('screen');
 const app = document.querySelector('.app');
 const audio = new ArcadeAudio();
+const song = new SongPlayer({
+  onChange(state) {
+    updateSongButton($('song-button'), state);
+    updateSongStatus($('song-status'), state);
+    audio.musicEnabled = !state.playing;
+  },
+  onError: (message) => announce(message),
+});
+$('song-button').addEventListener('click', () => song.toggle());
+window.addEventListener('pagehide', () => song.pause());
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const renderer = new Renderer(canvas, { reducedMotion: motionPreference.matches });
+renderer.drawLineup($('title-lineup'));
 void renderer.logoReady.then((logo) => {
   const target = $('start-logo');
   if (logo) {
@@ -39,6 +51,7 @@ let lastToast = '';
 let lastUiTime = 0;
 let lastTimestamp = 0;
 let warnedAboutTime = false;
+let lastPitBayAnnounced = null;
 const heldKeys = new Set();
 let selectedCharacter = getCharacter(storage.get('tokyo-nights.character', 'dhh')).id;
 let selectedCar = getCar(storage.get('tokyo-nights.car', 'countach')).id;
@@ -58,6 +71,7 @@ const game = new GameEngine({
     audio.event(event);
     if (event.type === 'start') {
       warnedAboutTime = false;
+      lastPitBayAnnounced = null;
       announce(`${getCharacter(event.characterId).name} is ready. Use the arrow keys or WASD to drive. Hold Space for nitro.`);
     }
     if (event.type === 'pause') announce('The game is paused.');
@@ -74,6 +88,10 @@ const game = new GameEngine({
     }
     if (event.type === 'pickup') announce(event.kind === 'tape' ? 'Music tape collected. Reach the exit.' : `Power cell collected. You have ${game.powerCells} of two.`);
     if (event.type === 'ending') announce('You reach the Omarchy arcade. The lights return and the last track plays.');
+    if (event.type === 'nitro-pickup') announce('Nitro pickup collected. The tank gains 45 charge.');
+    if (event.type === 'pit-enter') announce('Pit stop. The race clock pauses while you talk with the crew.');
+    if (event.type === 'pit-line') updatePitDialogue();
+    if (event.type === 'pit-resume') announce('The conversation ends. You return to the same road with a full nitro tank.');
     if (event.type === 'checkpoint') {
       warnedAboutTime = false;
       announce(`Checkpoint. You gain 35 seconds. Enter ${DISTRICTS[event.stage % DISTRICTS.length]}.`);
@@ -167,6 +185,19 @@ function updateCarLabels() {
   canvas.setAttribute('aria-label', `${getCharacter(game.characterId).name} drives ${article} ${paint.name.toLowerCase()} ${car.name} on the Tokyo expressway. Use arrow keys or WASD to drive. Hold Space for nitro. Press P to pause.`);
 }
 
+function updatePitDialogue() {
+  if (!game.pitStop) return;
+  const line = game.pitStop.lines[game.pitDialogueIndex];
+  const speaker = getCharacter(line.speaker === 'driver' ? game.characterId : game.pitStop.companionId);
+  $('pit-speaker').textContent = speaker.name.toUpperCase();
+  $('pit-topic').textContent = game.pitStop.title;
+  $('pit-line').textContent = line.text;
+  $('pit-progress').textContent = `${game.pitDialogueIndex + 1} / ${game.pitStop.lines.length}`;
+  $('pit-dialogue').dataset.speaker = line.speaker;
+  $('pit-next-button').textContent = game.pitDialogueIndex === game.pitStop.lines.length - 1 ? 'BACK TO THE RUN' : 'CONTINUE';
+  announce(`${speaker.name}: ${line.text}`);
+}
+
 function updateCarSelection(carId, paintId = selectedPaint) {
   const car = getCar(carId);
   const paint = getPaint(paintId);
@@ -225,6 +256,8 @@ function syncState() {
   const selecting = game.state === 'select';
   const story = game.state === 'story';
   const ending = game.state === 'ending';
+  const pit = game.state === 'pit';
+  const pitEntering = game.state === 'pit-enter';
   const paused = game.state === 'paused';
   const ended = game.state === 'gameover' || game.state === 'complete';
   const driving = game.state === 'playing' || game.state === 'countdown';
@@ -234,9 +267,11 @@ function syncState() {
   $('character-overlay').hidden = !selecting;
   $('story-overlay').hidden = !story;
   $('ending-caption').hidden = !ending;
+  $('pit-dialogue').hidden = !pit;
+  $('pit-transition').hidden = !pitEntering;
   $('attract-details').hidden = !title;
   $('attract-footer').hidden = !title;
-  $('hud').hidden = title || ended || selecting || story || ending;
+  $('hud').hidden = title || ended || selecting || story || ending || pit || pitEntering;
   $('pause-overlay').hidden = !paused;
   $('results-overlay').hidden = !ended;
   $('pause-button').disabled = !driving && !paused;
@@ -250,6 +285,7 @@ function syncState() {
     story: `CHAPTER ${game.stage + 1} OF ${CHAPTERS.length} · ${getChapter(game.stage).district}`,
     playing: `CHAPTER ${game.stage + 1} OF ${CHAPTERS.length} · COMPLETE THE OBJECTIVE AND REACH THE EXIT`,
     paused: 'DRIVE PAUSED', gameover: 'RUN ENDED', ending: 'TOKYO BAY · THE FINAL DELIVERY', complete: 'STORY COMPLETE',
+    'pit-enter': 'STOPPING AT THE GARAGE', pit: 'PIT STOP · RACE CLOCK PAUSED',
   }[game.state];
   document.querySelectorAll('[data-control]').forEach((button) => { button.disabled = !driving; });
   clearControls();
@@ -257,6 +293,7 @@ function syncState() {
   if (selecting) focusDriver();
   else if (story) $('chapter-start-button').focus({ preventScroll: true });
   else if (ending) $('ending-skip-button').focus({ preventScroll: true });
+  else if (pit) $('pit-next-button').focus({ preventScroll: true });
   else if (paused) $('resume-button').focus({ preventScroll: true });
   else if (ended) $('retry-button').focus({ preventScroll: true });
   else if (title) $('start-button').focus({ preventScroll: true });
@@ -264,6 +301,22 @@ function syncState() {
 }
 
 function updateUI() {
+  const pitDistance = game.pitStopAt === null ? Infinity : game.pitStopAt - game.distance;
+  const pitAvailable = game.state === 'playing' && pitDistance <= 450 && pitDistance >= -18;
+  $('pit-bay-indicator').hidden = !pitAvailable;
+  if (game.state === 'playing') {
+    const side = game.pitStopLane < 0 ? 'LEFT' : 'RIGHT';
+    $('pit-bay-indicator').textContent = `PIT BAY: ${side}`;
+    $('pit-bay-indicator').dataset.side = side.toLowerCase();
+    $('status-text').textContent = pitAvailable
+      ? `PIT BAY ${side} · DRIVE INTO THE GREEN MARK`
+      : `CHAPTER ${game.stage + 1} OF ${CHAPTERS.length} · COMPLETE THE OBJECTIVE AND REACH THE EXIT`;
+    if (pitAvailable && lastPitBayAnnounced !== game.pitStopAt) {
+      lastPitBayAnnounced = game.pitStopAt;
+      announce(`A pit bay is ahead on the ${side.toLowerCase()}. Steer into the green bay to stop, or drive past.`);
+    }
+  }
+  if (game.state === 'pit-enter') $('pit-transition').style.backgroundColor = `rgba(22, 22, 30, ${motionPreference.matches ? .95 : Math.min(.95, game.pitElapsed / 1.25)})`;
   const mission = game.missionStatus();
   $('mission-status').textContent = mission.label;
   $('mission-status').parentElement.classList.toggle('is-complete', mission.complete);
@@ -306,6 +359,7 @@ $('confirm-driver-button').addEventListener('click', start);
 $('cancel-driver-button').addEventListener('click', cancelSelection);
 $('chapter-start-button').addEventListener('click', () => { game.beginChapter(); syncState(); canvas.focus({ preventScroll: true }); });
 $('ending-skip-button').addEventListener('click', () => { game.finishEnding(); syncState(); });
+$('pit-next-button').addEventListener('click', () => { game.advancePitDialogue(); syncState(); });
 CHARACTERS.forEach((character) => {
   const option = document.createElement('label');
   option.className = 'driver-option';
@@ -521,6 +575,7 @@ function loseFocus() {
   game.pause();
   syncState();
   audio.silence();
+  song.pause();
 }
 window.addEventListener('blur', loseFocus);
 window.addEventListener('focus', () => audio.restore());

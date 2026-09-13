@@ -1,7 +1,7 @@
 # Tokyo Nights
 
-A pixel-art arcade racer with a yellow Lamborghini Countach and the Tokyo Night palette.
-Drive through four Tokyo districts on an endless expressway.
+A pixel-art driving adventure with nine drivers, nine cars, and the Tokyo Night palette.
+Complete a four-chapter delivery to the Omarchy arcade on Tokyo Bay.
 
 ## Play
 
@@ -12,7 +12,8 @@ npm start
 ```
 
 Open `http://localhost:3000` in your browser.
-The game needs no build step or runtime packages.
+The game needs no build step.
+The VR route uses local Three.js modules included in `assets/`.
 The local font, sprites, and audio work without external requests.
 
 To use a different port:
@@ -45,11 +46,15 @@ The car accelerates automatically to its cruise speed.
 The cruise speed is 285 km/h.
 The accelerator raises the maximum speed to 340 km/h.
 Nitro raises the maximum speed to 460 km/h.
+A full nitro tank lasts eight seconds.
+Blue nitro canisters appear at randomized locations and restore 45 charge when collected.
 Road motion, roadside lights, speed streaks, and the nitro camera response emphasize acceleration.
-Choose DHH or Ryan before each new run.
+Choose a driver before each new run.
 Use the arrow keys or tap a portrait to select a driver.
-Press Enter or select the drive button to start.
-The browser remembers your last confirmed driver.
+Use the Car & Color tab to select a model and paint.
+The browser remembers your last confirmed driver, car, and color.
+Press Enter or select the drive button to open the chapter briefing.
+Select `BEGIN CHAPTER` to start the timer.
 
 The first boost introduces your selected driver.
 Later boosts have a 35% chance of a cameo after a 20-second cooldown.
@@ -57,16 +62,228 @@ The driver leans out, turns toward you, smiles, and returns inside the car.
 DHH has wavy brown hair, blue-gray eyes, and a short beard based on the supplied reference photo.
 Ryan has glasses, swept-back hair, and a goatee based on the supplied reference photo.
 
+## Play the song
+
+Select `PLAY SONG` in the arcade toolbar or VR toolbar.
+The button plays `assets/omarchy-tokyo-nights.mp3` and changes to `PAUSE SONG`.
+Select it again to pause the song.
+The next play resumes from the same position.
+After the song ends, the next play starts from the beginning.
+
+The song starts only after you select its control.
+The song control works independently of the sound-effects control.
+The synthesized arcade tune stops while the MP3 plays.
+Engine sounds and race effects remain available through `SOUND ON`.
+
+While the song loads, select the song control to cancel the load.
+A failed request shows a message with a retry action.
+The song pauses when the game loses focus or the headset opens its system menu.
+The VR cockpit menu also contains `PLAY SONG`, `PAUSE SONG`, and load-cancel controls.
+
+## VR cockpit
+
+Select `VR COCKPIT` in the arcade toolbar to open `vr.html`.
+The route opens a 3D garage with all nine drivers and all nine car models.
+The garage characters reuse the browser game's full-body artwork as colored voxel figures.
+Point at a character or car and press a trigger to select it.
+Screen mode also supports a click on these objects.
+
+The cars retain the original rear-view artwork and model-specific body proportions, roofs, wheels, and wings.
+Your selected paint colors the garage model and cockpit.
+Select `START ENGINE`, then `BEGIN CHAPTER` to enter the expressway.
+It includes stereo head tracking, tracked controllers, a rear-view mirror, and spatial engine and traffic audio.
+The cockpit uses your selected driver, car label, and paint.
+Its stylized interior shares one cockpit layout across the car models.
+
+Look right in the cockpit to see your companion.
+The mirror shows the crew inside the car.
+The selected driver's nitro cameo reuses the browser game's back, profile, and smile poses.
+The figure leans out, turns, and smiles during the cameo.
+Nitro also produces physical exhaust flames behind the car.
+
+The road includes the original Omarchy and Cliamp logos and pixel signs from the browser renderer.
+The final delivery shows the full crew outside the Omarchy arcade.
+Select `GARAGE` from a paused cockpit menu to inspect the crew and cars again.
+Start a new run to change the driver or car after the race begins.
+
+The VR campaign includes all four chapter objectives, marked pickups, chapter briefings, failure reasons, and the final arcade delivery.
+The cockpit dashboard shows the objective, next pickup lane, speed, time, nitro, and checkpoint distance.
+VR also shows nitro pickups and pit-stop conversations from the shared engine.
+Marked pit areas have openings in the roadside barrier.
+Steer onto the indicated shoulder to enter a pit area.
+The scene shows both characters, and the dialogue panel shows the current speaker's original full-body artwork.
+Select `CONTINUE` through the conversation, then select `BACK TO RACE` to leave with a full nitro charge.
+
+### Enter VR
+
+VR requires WebGL2, a WebXR browser, and a trusted HTTPS address.
+`localhost` also qualifies on the device that runs the browser.
+An HTTP address on another computer does not provide the required secure context.
+Quest browsers and compatible PC VR browsers use the `immersive-vr` session mode.
+
+1. Open `vr.html` from the HTTPS site in your headset browser.
+2. Select your driver, car, and paint.
+3. Sit in your play position.
+4. Select `ENTER VR`.
+5. Select `CENTER SEAT` in the cockpit menu.
+6. Select `START ENGINE`.
+7. Select `BEGIN CHAPTER` after you read the objective.
+
+To select a cockpit control, point at it and press a trigger.
+
+For a USB-connected Quest with developer access, start the local server:
+
+```sh
+npm start
+```
+
+In another terminal, forward the server port to the headset:
+
+```sh
+adb reverse tcp:3000 tcp:3000
+```
+
+Then open `http://localhost:3000/vr.html` in the headset browser.
+
+### Headset controls
+
+| Action | XR controller |
+| --- | --- |
+| Steer | Left thumbstick |
+| Accelerate | Right trigger |
+| Brake | Left trigger |
+| Nitro | Hold A, the lower right face button |
+| Pause or resume | B, the upper right face button |
+| Center the seat | X, the lower left face button |
+| Toggle comfort view | Y, the upper left face button |
+| Select a menu control | Point and press a trigger |
+| Exit VR | `EXIT VR` in the cockpit menu or headset system menu |
+
+Controllers use the standard `xr-standard` input layout.
+In `Grip steering wheel` mode, hold both grips and turn your hands like a wheel.
+Release the grips to reset the neutral angle.
+Thumbstick input takes precedence over grip steering.
+Supported controllers pulse during collisions, close passes, pickups, and checkpoints.
+
+A standard gamepad also works in the cockpit.
+Use its left stick to steer, triggers for gas and brake, A for nitro, and B or Start to pause.
+Gamepad X centers the view. Gamepad Y toggles comfort view.
+In a cockpit menu, A selects the control at the center of your view.
+
+Comfort view reduces peripheral motion at speed.
+The cockpit stays level. Head tracking controls the view without artificial camera shake or boost zoom.
+The race pauses when tracking stops, the headset opens a system panel, or the VR session ends.
+Resume the race explicitly after these interruptions.
+
+### Drive on screen
+
+Select `DRIVE ON SCREEN` to play the 3D campaign without a headset.
+Keyboard controls match the arcade race.
+Drag the canvas to look around. Press R to center the view.
+Touch devices show controls along the bottom of the cockpit.
+To switch into VR during a race, pause and select `ENTER VR`.
+
+### VR development
+
+To restore the included Three.js modules after dependency changes:
+
+```sh
+npm run assets:vr
+```
+
+The server serves the VR route and local modules without a CDN.
+The source files are:
+
+- `src/vr-main.js` connects the shared campaign, interface, and frame loop.
+- `src/vr-scene.js` builds the 3D city, cockpit, traffic, pickups, and mirror.
+- `src/vr-art.js` reuses the browser artwork for voxel characters, car models, the garage, and roadside signs.
+- `src/vr-panels.js` draws the headset instruments and menus.
+- `src/vr-session.mjs` manages WebXR capability checks and session recovery.
+- `src/vr-controls.mjs` maps XR controllers, grip steering, gamepads, and haptics.
+- `src/vr-audio.js` adds spatial engine and traffic sources.
+- `src/song-player.js` controls MP3 playback on both routes.
+
+Browser checks use IWER for stereo WebXR and controller emulation.
+Physical headset comfort, performance, audio, and controller feel still require a hardware test.
+
+## Drivers and garage
+
+The roster contains DHH, Ryan, Bjarne, Tobi, Hancore, Spencer, Krzysztof, Outfoxxed, and Emir.
+Each driver has back, profile, and front cameo poses.
+Bjarne has a coffee mug and navy jacket. Spencer has a blue shirt.
+Hancore uses the supplied skull emblem.
+Outfoxxed follows the replacement portrait with swept brown hair, silver-framed glasses, a teal shirt, and a dark jacket.
+The start screen shows all nine drivers in the lower-right corner.
+Select that lineup or open `http://localhost:3000/garage.html` to see their larger full-body figures outside the garage.
+The garage page supports horizontal scroll on smaller screens and buttons that locate each driver.
+
+The garage contains these models:
+
+- Lamborghini Countach
+- Nissan Skyline GT-R
+- Toyota Supra
+- Mazda RX-7
+- Honda NSX
+- Porsche 911 Turbo
+- Ferrari F40
+- Toyota AE86
+- Datsun 240Z
+
+Paint choices are Amber, Rose, Orange, Green, Blue, Cyan, Purple, Silver, and Slate.
+All nine colors come from Tokyo Night.
+The preview updates as you select a color.
+
+## Story campaign
+
+The crew needs a music tape and power cells for the arcade's final night.
+Each chapter covers three kilometers and has a different objective.
+
+1. **The Last Tape, Shinjuku:** Collect a cassette from a marked drop.
+2. **Lights Out, Shibuya:** Collect two power cells.
+3. **Through the Traffic, Akihabara:** Pass six cars.
+4. **Before Sunrise, Rainbow Bridge:** Reach the arcade with no more than two collisions.
+
+Collect pickups by driving through their marked lanes.
+The HUD shows the objective and the next drop's lane.
+Chapter briefings pause the timer until you select `BEGIN CHAPTER`.
+Missing an objective at an exit ends the run.
+The final chapter ends after a third collision.
+
+Complete all four chapters to reach the sunrise arrival scene and completion screen.
+Select `SEE RESULTS` to skip the arrival animation.
+Select `PLAY AGAIN` to start another campaign with your saved customization.
+
+## Pit stops
+
+Green pit bays appear at randomized points along the campaign.
+Steer onto the indicated shoulder and into the green mark to enter a pit stop.
+Drive past the bay to continue without a stop.
+After you enter the bay, the car slows and the view changes to the garage.
+Another crew member starts a conversation about Omarchy.
+The topics cover themes, workspaces, layouts, clipboard history, terminals, screenshots, hotkeys, and window groups.
+The dialogue references the local Omarchy manual.
+
+Select `CONTINUE` to advance each exchange.
+Select `BACK TO THE RUN` after the final reply.
+The race clock pauses during the stop.
+The car returns to the same lane and distance with a full nitro tank.
+
 ## Rules
 
-- Reach each checkpoint within three kilometers before the timer expires.
-- Each checkpoint adds 35 seconds, 2,500 points, and nitro charge.
+- Complete each chapter objective before its three-kilometer exit.
+- Each of the first three exits adds 35 seconds, 2,500 points, and nitro charge.
+- Each mission pickup adds 500 points and nitro charge.
+- Each blue nitro canister adds 200 points and 45 nitro charge.
+- The final delivery adds 5,000 points and 100 points for each remaining second.
 - Each car you pass adds 150 points.
 - A close pass adds 450 points and nitro charge.
 - A collision reduces your speed and removes three seconds.
 - The shoulder reduces your speed.
 - Nitro recharges when you release the boost control.
 - The browser stores your personal best and sound preference locally.
+
+Roadside advertisements feature Omarchy and [Cliamp](https://cliamp.stream), the TUI music player.
+The Cliamp advertisements use the local project's block wordmark and spectrum visualizer design.
 
 The game pauses when its window loses focus.
 The reduced-motion preference removes camera shake, speed lines, and car flashes.
@@ -115,6 +332,23 @@ npm run cover
 
 The exporter uses the existing game artwork and the local arcade font.
 Edit `tools/cover-art.js` to change the composition.
+
+## Shareable cameo cards
+
+The nine individual PNG cards are in `exports/cameo-cards/`.
+Each card is a 1080 × 1080 square with a full-body character, name, and Omarchy logo.
+The complete set is `exports/cameo-cards.zip`.
+The published copies are in `assets/cameo-cards/` and `assets/cameo-cards.zip`.
+The garage page links to the complete set and the selected driver's card.
+
+To export the cards again:
+
+```sh
+npm run cards
+```
+
+The exporter uses Chromium and `zip`.
+Each PNG includes its source information in its metadata.
 
 ## Music video
 
@@ -249,6 +483,14 @@ gh workflow run deploy.yml
 
 - `src/engine.mjs` contains the race simulation and rules.
 - `src/characters.mjs` defines the available drivers.
+- `src/guest-drivers.js` draws the seven additional driver cameos.
+- `src/full-characters.js` draws full-body characters for the garage, pit stops, and shareable cards.
+- `src/garage.js` renders the crew lineup page.
+- `src/garage-scene.js` draws the shared garage backdrop.
+- `src/pit-stops.mjs` defines Omarchy conversation topics and crew selection.
+- `src/cars.mjs` defines the car models and Tokyo Night paint colors.
+- `src/car-sprites.js` draws and colors each car model.
+- `src/story.mjs` defines the four chapters, objectives, and item drops.
 - `src/omarchy-logo.js` renders the original Omarchy block logo for the start screen and roadside signs.
 - `src/renderer.js` draws the original pixel-art skyline, sprites, road, and effects.
 - `src/audio.js` synthesizes the engine, effects, and arcade soundtrack with Web Audio.

@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "generatedAt": "2026-09-13T07:20:21Z",
+  "generatedAt": "2026-09-13T11:22:14Z",
   "title": "Design System: Tokyo Nights",
   "extensions": {
     "colorMeta": {
@@ -11,11 +11,19 @@
       "blue": { "role": "tertiary", "displayName": "Electric blue" },
       "purple": { "role": "tertiary", "displayName": "Night purple" },
       "green": { "role": "tertiary", "displayName": "Checkpoint green" },
+      "orange": { "role": "tertiary", "displayName": "Paint orange" },
       "driver-selected": { "role": "neutral", "displayName": "Selected indigo" }
     },
     "typographyMeta": {
-      "driver-heading": { "displayName": "Driver selector heading", "purpose": "Introduce the native driver choices. Mobile uses 13px, and short touch landscape uses 14px." },
-      "driver-name": { "displayName": "Driver name", "purpose": "Identify DHH and Ryan beside their pixel portraits. Mobile and short touch landscape use 12px." }
+      "driver-heading": { "displayName": "Driver and car selector heading", "purpose": "Introduce the native driver and car choices. Mobile uses 13px, and short touch landscape uses 14px." },
+      "driver-name": { "displayName": "Roster name", "purpose": "Identify all nine drivers and nine car models in bold Courier New. Roster labels retain 12px text across layouts." },
+      "driver-preview-name": { "displayName": "Selected preview name", "purpose": "Identify the larger driver and car previews. Mobile uses 14px for drivers and 12px for cars. Short touch landscape uses bold 12px Courier New." },
+      "crew-heading": { "displayName": "Garage title", "purpose": "Introduce the full-body crew scene in pink Arcade text. Mobile uses 24px." },
+      "crew-body": { "displayName": "Garage support text", "purpose": "Carry the introduction, horizontal-pan help, and selected driver's description." },
+      "vr-heading": { "displayName": "VR panel heading", "purpose": "Introduce setup, chapter, pause, failure, and delivery panels. Widths up to 760px use 27px." },
+      "vr-body": { "displayName": "VR introduction", "purpose": "Carry setup and state copy beside the 3D preview." },
+      "vr-field": { "displayName": "VR select text", "purpose": "Identify driver, car, paint, and steering choices in native selects." },
+      "vr-loadout-caption": { "displayName": "VR preview caption", "purpose": "Identify the selected full-body character and car beneath the original artwork." }
     },
     "shadows": [
       { "name": "cabinet", "value": "0 20px 48px #0d0e1738", "purpose": "Separate the cabinet from the page." },
@@ -25,7 +33,7 @@
     ],
     "motion": [
       { "name": "button-feedback", "value": "background-color 120ms ease-out, color 120ms ease-out", "purpose": "Provide short color feedback on buttons. Reduced motion removes the transition." },
-      { "name": "driver-choice-feedback", "value": "border-color 120ms ease-out, background-color 120ms ease-out", "purpose": "Provide border and fill feedback on driver choices. Reduced motion removes the transition." },
+      { "name": "driver-choice-feedback", "value": "border-color 120ms ease-out, background-color 120ms ease-out", "purpose": "Provide border and fill feedback on driver and car choices. Reduced motion removes the transition." },
       { "name": "world-travel", "value": "1.85", "purpose": "Multiply rendered world distance to strengthen the sense of speed." },
       { "name": "boost-projection", "value": "focalLength += (targetFocalLength - focalLength) * .08", "purpose": "Ease toward focal length 42 during boost. Normal and reduced-motion views target 55." },
       { "name": "speed-lines", "value": "Math.floor(12 + intensity * 22)", "purpose": "Draw peripheral streaks from 160 km/h. Intensity reaches one at 460 km/h. Reduced motion hides them." },
@@ -34,7 +42,15 @@
       { "name": "cameo-sequence", "value": "2.6s", "purpose": "The selected driver emerges over 0.4s, turns at 0.6s, and smiles at 0.88s. The name tag appears from 0.95s to 1.8s. Return starts at 1.85s and ends at 2.6s." },
       { "name": "cameo-rise", "value": "1 - Math.pow(1 - rise, 3)", "purpose": "Ease the head out of the window. The rise value spans zero to one over 0.4s." },
       { "name": "cameo-return", "value": "1 - returnProgress * returnProgress", "purpose": "Lower the head over 0.75s. Early boost release advances to this phase." },
-      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce", "purpose": "Remove decorative travel, streaks, shake, bounce, tilt, flicker, scanlines, and button and driver-choice transitions. Show the selected driver's stationary smile after 0.15s and before 2.25s. Keep gameplay and exhaust active." }
+      { "name": "reduced-motion", "value": "prefers-reduced-motion: reduce", "purpose": "Remove decorative travel, streaks, shake, bounce, tilt, flicker, scanlines, and button and driver-choice transitions. Show the selected driver's stationary smile after 0.15s and before 2.25s. Keep gameplay and exhaust active." },
+      { "name": "pit-entry", "value": "1.25s", "purpose": "Stop the car after deliberate entry into a green shoulder bay, then show the garage conversation. The timer, lane, and distance remain fixed." },
+      { "name": "sunrise-arrival", "value": "6s", "purpose": "Show the selected car at the Omarchy arcade before the completion screen. SEE RESULTS skips the arrival." },
+      { "name": "crew-pan", "value": "smooth", "purpose": "Center a full-body figure after a garage name-button action. Reduced motion selects instant scroll." },
+      { "name": "vr-world-scale", "value": "0.5", "purpose": "Scale road travel, traffic, and pickup distance in the level VR cockpit." },
+      { "name": "vr-comfort-mask", "value": "clamp((game.speed - 130) / 270, 0, .9)", "purpose": "Set peripheral mask strength during play when comfort view is enabled. Other states use zero strength." },
+      { "name": "vr-cameo-pose", "value": "cameoPose(game.cameoTime, options.reducedMotion)", "purpose": "Reuse the original back, profile, and smile sequence for the voxel driver. Reduced motion selects the smile pose." },
+      { "name": "vr-simulation-substep", "value": "1/60s", "purpose": "Limit each engine update within an elapsed VR frame. The adapter includes the final smaller step." },
+      { "name": "vr-frame-limit", "value": "0.25s", "purpose": "Cap elapsed time per rendered frame before the simulation adapter processes its substeps." }
     ],
     "breakpoints": [
       { "name": "compact-page", "value": "(max-width: 1100px)" },
@@ -42,7 +58,9 @@
       { "name": "compact-arcade-toolbar", "value": "@container (max-width: 600px)" },
       { "name": "touch", "value": "(pointer: coarse)" },
       { "name": "short-touch-landscape", "value": "(max-height: 520px) and (orientation: landscape) and (pointer: coarse)" },
-      { "name": "large-display", "value": "(min-width: 1500px) and (min-height: 950px)" }
+      { "name": "large-display", "value": "(min-width: 1500px) and (min-height: 950px)" },
+      { "name": "vr-mobile", "value": "(max-width: 760px)" },
+      { "name": "vr-touch", "value": "(pointer: coarse), (max-width: 760px)" }
     ]
   },
   "components": [
@@ -90,15 +108,47 @@
       "name": "Driver choice",
       "kind": "input",
       "refersTo": "driver-choice",
-      "description": "Native radios choose DHH or Ryan before each new run. The full selector pairs each choice with a pixel portrait canvas. DHH's updated smile sprite follows the supplied `~/dhh.jpg` photo. It shows wavy chestnut-brown hair, blue-gray eyes, rosy cheeks, a short gray-flecked beard, and a broad smile. The selector uses `Wavy hair and beard.` as the detail label.",
-      "html": "<fieldset class=\"ds-driver-roster\" aria-label=\"Choose your driver\"><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"dhh\" aria-label=\"DHH\" checked><span class=\"ds-driver-card\"><strong>DHH</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"ryan\" aria-label=\"Ryan\"><span class=\"ds-driver-card\"><strong>RYAN</strong></span></label></fieldset>",
-      "css": ".ds-driver-roster { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; width: min(100%, 464px); padding: 0; margin: 0 0 22px; border: 0; min-width: 0; text-align: center; } .ds-driver-option { position: relative; cursor: pointer; touch-action: manipulation; user-select: none; } .ds-driver-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; } .ds-driver-card { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 16px 18px 14px; border: 2px solid var(--line, #343b58); border-radius: 0; background: var(--panel, #24283b); transition: border-color 120ms ease-out, background-color 120ms ease-out; } .ds-driver-card strong { font: 14px 'Arcade', monospace; color: var(--text, #c0caf5); } .ds-driver-option:hover .ds-driver-card { border-color: var(--muted, #9aa5ce); } .ds-driver-input:checked + .ds-driver-card { border-color: var(--yellow, #e0af68); background: #2d2c3d; } .ds-driver-input:checked + .ds-driver-card strong { color: var(--yellow, #e0af68); } .ds-driver-input:focus-visible + .ds-driver-card { outline: 2px solid var(--cyan, #7dcfff); outline-offset: 5px; } @media (max-width: 700px) { .ds-driver-roster { gap: 12px; margin-bottom: 20px; } .ds-driver-card { padding: 12px 8px; } .ds-driver-card strong { font-size: 12px; } } @media (prefers-reduced-motion: reduce) { .ds-driver-card { transition: none; } }"
+      "description": "Native radio labels form a 3 × 3 roster. The game adds pixel portrait canvases and a larger selected preview. Left and Right move one choice. Up and Down move three choices. Home and End select the first and last choices.\n\nAll nine drivers have back, profile, and smile cameo poses. Bjarne and Spencer use colorized artwork. Hancore uses the skull avatar. Outfoxxed follows the replacement portrait with swept brown hair, silver-framed glasses, a teal shirt, and a dark jacket. Car choices reuse these states with nine distinct silhouettes.",
+      "html": "<fieldset class=\"ds-driver-roster\" aria-label=\"Choose your driver\"><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"dhh\" aria-label=\"DHH\" checked><span class=\"ds-driver-card\"><strong>DHH</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"ryan\" aria-label=\"Ryan\"><span class=\"ds-driver-card\"><strong>RYAN</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"bjarne\" aria-label=\"Bjarne\"><span class=\"ds-driver-card\"><strong>BJARNE</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"tobi\" aria-label=\"Tobi\"><span class=\"ds-driver-card\"><strong>TOBI</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"hancore\" aria-label=\"Hancore\"><span class=\"ds-driver-card\"><strong>HANCORE</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"spencer\" aria-label=\"Spencer\"><span class=\"ds-driver-card\"><strong>SPENCER</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"krzysztof\" aria-label=\"Krzysztof\"><span class=\"ds-driver-card\"><strong>KRZYSZTOF</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"outfoxxed\" aria-label=\"Outfoxxed\"><span class=\"ds-driver-card\"><strong>OUTFOXXED</strong></span></label><label class=\"ds-driver-option\"><input class=\"ds-driver-input\" type=\"radio\" name=\"ds-driver\" value=\"emir\" aria-label=\"Emir\"><span class=\"ds-driver-card\"><strong>EMIR</strong></span></label></fieldset>",
+      "css": ".ds-driver-roster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: max-content; align-content: start; gap: 8px; width: 100%; padding: 6px; margin: 0; border: 0; min-width: 0; min-height: 0; overflow-y: auto; scrollbar-width: thin; text-align: center; } .ds-driver-option { position: relative; cursor: pointer; touch-action: manipulation; user-select: none; } .ds-driver-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; } .ds-driver-card { position: relative; display: flex; flex-direction: column; align-items: center; height: 100%; gap: 6px; padding: 8px 4px; border: 2px solid var(--line, #343b58); border-radius: 0; background: var(--panel, #24283b); transition: border-color 120ms ease-out, background-color 120ms ease-out; } .ds-driver-card strong { font: bold 12px/16px 'Courier New', monospace; color: var(--text, #c0caf5); white-space: nowrap; } .ds-driver-option:hover .ds-driver-card { border-color: var(--muted, #9aa5ce); } .ds-driver-input:checked + .ds-driver-card { border-color: var(--yellow, #e0af68); background: #2d2c3d; } .ds-driver-input:checked + .ds-driver-card strong { color: var(--yellow, #e0af68); } .ds-driver-input:focus-visible + .ds-driver-card { outline: 2px solid var(--cyan, #7dcfff); outline-offset: 5px; } @media (max-width: 700px) { .ds-driver-card { padding: 6px 4px; gap: 5px; } } @media (max-height: 520px) and (orientation: landscape) and (pointer: coarse) { .ds-driver-roster { gap: 6px; } .ds-driver-card { gap: 2px; padding: 4px; } } @media (prefers-reduced-motion: reduce) { .ds-driver-card { transition: none; } }"
+    },
+    {
+      "name": "Race setup tabs",
+      "kind": "nav",
+      "refersTo": "setup-tab",
+      "description": "DRIVER and CAR & COLOR separate the two setup panels. Left, Right, Home, and End move tab focus. Confirmation persists the driver, car, and paint. Back restores the prior screen and confirmed choices.",
+      "html": "<div class=\"ds-setup\"><div class=\"ds-setup-tabs\" role=\"tablist\" aria-label=\"Race setup\"><button id=\"ds-driver-tab\" type=\"button\" role=\"tab\" aria-selected=\"true\" aria-controls=\"ds-driver-panel\">DRIVER</button><button id=\"ds-car-tab\" type=\"button\" role=\"tab\" aria-selected=\"false\" aria-controls=\"ds-car-panel\" tabindex=\"-1\">CAR &amp; COLOR</button></div><div class=\"ds-setup-panel\" id=\"ds-driver-panel\" role=\"tabpanel\" aria-labelledby=\"ds-driver-tab\">Your driver makes occasional nitro cameos.</div><div class=\"ds-setup-panel\" id=\"ds-car-panel\" role=\"tabpanel\" aria-labelledby=\"ds-car-tab\" hidden>Nine car models. Nine Tokyo Night colors.</div></div>",
+      "css": ".ds-setup { color: var(--muted, #9aa5ce); font: 12px/1.8 'Courier New', monospace; } .ds-setup-tabs { display: flex; gap: 4px; margin-bottom: 18px; border-bottom: 1px solid var(--line, #343b58); } .ds-setup-tabs button { min-height: 40px; padding: 10px 18px; border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: transparent; color: var(--muted, #9aa5ce); font: 12px 'Courier New', monospace; letter-spacing: .5px; cursor: pointer; touch-action: manipulation; transition: background-color 120ms ease-out, color 120ms ease-out; } .ds-setup-tabs button[aria-selected='true'] { color: var(--yellow, #e0af68); border-bottom-color: var(--yellow, #e0af68); } .ds-setup-tabs button:hover { color: var(--text, #c0caf5); } .ds-setup-tabs button:focus-visible { outline: 2px solid var(--cyan, #7dcfff); outline-offset: 5px; } .ds-setup-panel[hidden] { display: none; } @media (max-width: 700px) { .ds-setup-tabs { margin-bottom: 12px; } .ds-setup-tabs button { min-height: 36px; padding: 8px 14px; } } @media (max-height: 520px) and (orientation: landscape) and (pointer: coarse) { .ds-setup-tabs { margin-bottom: 6px; } .ds-setup-tabs button { min-height: 28px; padding: 4px 12px; } } @media (prefers-reduced-motion: reduce) { .ds-setup-tabs button { transition: none; } }"
+    },
+    {
+      "name": "Tokyo Night paint choices",
+      "kind": "input",
+      "refersTo": "paint-chip",
+      "description": "Nine native radio swatches use the official Tokyo Night paints from `src/cars.mjs`. The legend shows the selected name and hex. Selection adds an outline and checkmark. Every car preview follows the selected paint.",
+      "html": "<fieldset class=\"ds-paints\" aria-label=\"Tokyo Night paint\"><legend>AMBER · #E0AF68</legend><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"amber\" aria-label=\"Amber\" checked><span class=\"ds-paint-chip\" style=\"background: var(--yellow, #e0af68)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"rose\" aria-label=\"Rose\"><span class=\"ds-paint-chip\" style=\"background: var(--pink, #f7768e)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"orange\" aria-label=\"Orange\"><span class=\"ds-paint-chip\" style=\"background: #ff9e64\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"green\" aria-label=\"Green\"><span class=\"ds-paint-chip\" style=\"background: var(--green, #9ece6a)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"blue\" aria-label=\"Blue\"><span class=\"ds-paint-chip\" style=\"background: var(--blue, #7aa2f7)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"cyan\" aria-label=\"Cyan\"><span class=\"ds-paint-chip\" style=\"background: var(--cyan, #7dcfff)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"purple\" aria-label=\"Purple\"><span class=\"ds-paint-chip\" style=\"background: var(--purple, #bb9af7)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"silver\" aria-label=\"Silver\"><span class=\"ds-paint-chip\" style=\"background: var(--text, #c0caf5)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label><label class=\"ds-paint-option\"><input class=\"ds-paint-input\" type=\"radio\" name=\"ds-paint\" value=\"slate\" aria-label=\"Slate\"><span class=\"ds-paint-chip\" style=\"background: #565f89; color: var(--text, #c0caf5)\"><svg viewBox=\"0 0 16 16\" aria-hidden=\"true\"><path d=\"m3 8 3 3 7-7\"/></svg></span></label></fieldset>",
+      "css": ".ds-paints { display: flex; justify-content: center; gap: 6px; border: 0; padding: 0; margin: 0 0 14px; min-width: 0; font: 12px/1.5 'Courier New', monospace; } .ds-paints legend { width: 100%; margin-bottom: 6px; padding: 0; color: var(--muted, #9aa5ce); text-align: center; } .ds-paint-option { position: relative; display: grid; place-items: center; padding: 4px; cursor: pointer; touch-action: manipulation; } .ds-paint-input { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; } .ds-paint-chip { display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #c0caf530; border-radius: 0; color: var(--bg, #16161e); } .ds-paint-chip svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; visibility: hidden; } .ds-paint-input:checked + .ds-paint-chip { outline: 2px solid var(--text, #c0caf5); outline-offset: 2px; } .ds-paint-input:focus-visible + .ds-paint-chip { outline-color: var(--cyan, #7dcfff); outline-offset: 3px; } .ds-paint-input:checked + .ds-paint-chip svg { visibility: visible; } @media (max-width: 700px) { .ds-paints { gap: 2px; margin-bottom: 10px; } .ds-paint-option { padding: 4px 2px; } .ds-paint-chip { width: 22px; height: 28px; } } @media (max-height: 520px) and (orientation: landscape) and (pointer: coarse) { .ds-paints { gap: 4px; margin-bottom: 4px; } .ds-paints legend { margin-bottom: 2px; } .ds-paint-chip { width: 22px; height: 20px; } }"
+    },
+    {
+      "name": "Garage crew navigation",
+      "kind": "nav",
+      "refersTo": "crew-name-button",
+      "description": "Name buttons center each full-body figure, update its description, and select its card download. The 1728 × 900 garage canvas draws 48 × 104 sprites at 144 × 312 canvas pixels. Its 1280px minimum artwork width preserves figure size through mobile horizontal pan. Garage scenes use only Omarchy branding.\n\nNine 1080 × 1080 PNG cards include source provenance. Local copies occupy `exports/cameo-cards/` and `exports/cameo-cards.zip`. Published copies occupy `assets/cameo-cards/` and `assets/cameo-cards.zip`.\n\nThe arcade lineup links to `garage.html`. At widths up to 700px, the arcade footer shows a yellow 12px `MEET THE CREW` link. Short touch landscape hides the footer and restores the lineup caption.",
+      "html": "<div class=\"ds-crew\"><nav class=\"ds-crew-navigation\" aria-label=\"Find a driver\"><button type=\"button\" aria-pressed=\"true\">DHH</button><button type=\"button\" aria-pressed=\"false\">Ryan</button><button type=\"button\" aria-pressed=\"false\">Bjarne</button><button type=\"button\" aria-pressed=\"false\">Tobi</button><button type=\"button\" aria-pressed=\"false\">Hancore</button><button type=\"button\" aria-pressed=\"false\">Spencer</button><button type=\"button\" aria-pressed=\"false\">Krzysztof</button><button type=\"button\" aria-pressed=\"false\">Outfoxxed</button><button type=\"button\" aria-pressed=\"false\">Emir</button></nav><p class=\"ds-crew-detail\" aria-live=\"polite\">DHH: Wavy hair and beard.</p><div class=\"ds-crew-downloads\"><a href=\"assets/cameo-cards.zip\" download>DOWNLOAD ALL CARDS</a><a href=\"assets/cameo-cards/dhh.png\" download>DOWNLOAD DHH CARD</a></div></div>",
+      "css": ".ds-crew { font-family: 'Courier New', monospace; } .ds-crew-navigation { display: flex; flex-wrap: wrap; gap: 8px; margin: 16px 0; } .ds-crew-navigation button { min-height: 40px; padding: 8px 14px; border: 1px solid var(--line, #343b58); border-radius: 0; background: var(--night, #1a1b26); color: var(--text, #c0caf5); font: 12px 'Courier New', monospace; cursor: pointer; touch-action: manipulation; transition: background-color 120ms ease-out, color 120ms ease-out; } .ds-crew-navigation button:hover, .ds-crew-navigation button[aria-pressed='true'] { border-color: var(--yellow, #e0af68); color: var(--yellow, #e0af68); } .ds-crew-navigation button:focus-visible, .ds-crew-downloads a:focus-visible { outline: 2px solid var(--cyan, #7dcfff); outline-offset: 5px; } .ds-crew-detail { min-height: 26px; margin: 14px 0 0; color: var(--muted, #9aa5ce); font-size: 14px; line-height: 1.8; } .ds-crew-downloads { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; } .ds-crew-downloads a { padding: 12px; border: 1px solid var(--line, #343b58); border-radius: 0; color: var(--yellow, #e0af68); font-size: 12px; text-decoration: none; touch-action: manipulation; } .ds-crew-downloads a:hover { background: var(--panel, #24283b); } @media (max-width: 700px) { .ds-crew-navigation { gap: 6px; } .ds-crew-navigation button { padding-inline: 10px; } .ds-crew-downloads a { padding: 10px; } } @media (prefers-reduced-motion: reduce) { .ds-crew-navigation button { transition: none; } }"
+    },
+    {
+      "name": "Optional pit conversation",
+      "kind": "custom",
+      "refersTo": "pit-dialogue",
+      "description": "Green shoulder bays and `P` signs identify optional stops at randomized route positions. Passing on the road continues the race. Deliberate entry stops the car before a four-line Omarchy conversation with a crew member other than the selected driver. The timer pauses. `CONTINUE` advances each line. `BACK TO THE RUN` returns to the same lane and distance with a full nitro tank.",
+      "html": "<section class=\"ds-pit\" aria-labelledby=\"ds-pit-speaker\"><div class=\"ds-pit-content\"><h2 id=\"ds-pit-speaker\">RYAN</h2><p class=\"ds-pit-topic\">TOKYO NIGHT EVERYWHERE</p><p class=\"ds-pit-line\">Omarchy themes style the desktop, terminal, Neovim, and shell together.</p><div class=\"ds-pit-actions\"><span>1 / 4</span><button type=\"button\">CONTINUE</button></div></div></section>",
+      "css": ".ds-pit { padding: 18px 24px; border-top: 1px solid var(--line, #343b58); background: #16161ef5; color: var(--text, #c0caf5); font-family: 'Courier New', monospace; } .ds-pit-content { max-width: 680px; margin: 0 auto; } .ds-pit h2 { margin: 0; color: var(--yellow, #e0af68); font: 16px/1.5 'Arcade', monospace; } .ds-pit[data-speaker='driver'] h2 { color: var(--cyan, #7dcfff); } .ds-pit-topic { margin: 8px 0 0; color: var(--muted, #9aa5ce); font-size: 12px; line-height: 1.5; } .ds-pit-line { min-height: 46px; margin: 14px 0; font-size: 14px; line-height: 1.8; } .ds-pit-actions { display: flex; justify-content: space-between; align-items: center; gap: 16px; } .ds-pit-actions > span { color: var(--muted, #9aa5ce); font-size: 12px; } .ds-pit-actions button { display: flex; align-items: center; justify-content: center; min-height: 49px; padding: 0 27px; border: 1px solid var(--yellow-bright, #ffd578); border-radius: 0; background: var(--yellow, #e0af68); color: var(--night, #1a1b26); font: 12px/1.7 'Arcade', monospace; cursor: pointer; touch-action: manipulation; transition: background-color 120ms ease-out, color 120ms ease-out; } .ds-pit-actions button:hover { background: var(--yellow-bright, #ffd578); } .ds-pit-actions button:active { background: #c99a57; } .ds-pit-actions button:focus-visible { outline: 2px solid var(--cyan, #7dcfff); outline-offset: 5px; } @media (max-width: 700px) { .ds-pit { padding: 14px 16px; } .ds-pit h2 { font-size: 14px; } .ds-pit-line { font-size: 12px; min-height: 60px; margin: 10px 0; } .ds-pit-actions button { min-height: 44px; padding-inline: 16px; } } @media (max-height: 520px) and (orientation: landscape) and (pointer: coarse) { .ds-pit { padding: 10px 16px; } .ds-pit-content { max-width: 760px; } .ds-pit h2 { font-size: 12px; } .ds-pit-topic { margin-top: 2px; } .ds-pit-line { min-height: 0; font-size: 12px; line-height: 1.5; margin: 6px 0; } .ds-pit-actions button { min-height: 36px; } } @media (prefers-reduced-motion: reduce) { .ds-pit-actions button { transition: none; } }"
     },
     {
       "name": "Nitro meter",
       "kind": "custom",
       "refersTo": "nitro-track",
-      "description": "The track uses a left-origin fill. The boost class selects yellow feedback.",
+      "description": "The track uses a left-origin fill. The boost class selects yellow feedback. A full tank lasts eight seconds at 12.5 charge per second. Randomized cyan-blue canisters restore 45 charge, capped at 100.",
       "html": "<div class=\"ds-nitro\"><span class=\"ds-nitro-label\">NITRO</span><div class=\"ds-nitro-track\" role=\"meter\" aria-label=\"Nitro charge\" aria-valuemin=\"0\" aria-valuemax=\"100\" aria-valuenow=\"65\"><div class=\"ds-nitro-fill\"></div></div><span class=\"ds-nitro-state\">HOLD TO BOOST</span></div>",
       "css": ".ds-nitro { font-family: 'Courier New', monospace; font-size: 12px; font-weight: 400; text-shadow: 0 2px 4px var(--bg, #16161e); } .ds-nitro-label { display: block; margin-bottom: 10px; color: var(--cyan, #7dcfff); letter-spacing: 1px; } .ds-nitro-track { box-sizing: border-box; height: 10px; padding: 2px; border: 1px solid #565f89; background: var(--night, #1a1b26); } .ds-nitro-fill { height: 100%; background: var(--cyan, #7dcfff); transform-origin: left; transform: scaleX(.65); } .ds-nitro.ds-boosting .ds-nitro-fill { background: var(--yellow, #e0af68); } .ds-nitro-state { display: block; margin-top: 10px; color: var(--muted, #9aa5ce); letter-spacing: .4px; } @media (max-width: 700px) { .ds-nitro-label { margin-bottom: 8px; letter-spacing: 0; } .ds-nitro-state { margin-top: 7px; letter-spacing: 0; } }"
     },
@@ -106,7 +156,7 @@
       "name": "Checkpoint readout",
       "kind": "custom",
       "refersTo": "checkpoint-readout",
-      "description": "A dark backing protects cyan distance and wrapped support text from skyline detail.",
+      "description": "A dark backing protects cyan distance and wrapped support text from skyline detail. Four finite 3km chapters require one cassette, two power cells, six passed cars, and a final drive with at most two collisions. An unmet objective at an exit ends the run. A third collision ends the final chapter immediately. Briefings pause the timer, and the mission instrument shows progress and the next drop's lane. A sunrise arrival precedes the completion screen and its `PLAY AGAIN` action.",
       "html": "<div class=\"ds-checkpoint-row\"><div class=\"ds-checkpoint\"><span class=\"ds-checkpoint-label\">CHECKPOINT</span><strong>2.9 <small>KM</small></strong><span class=\"ds-checkpoint-detail\">0 CARS PASSED</span></div></div>",
       "css": ".ds-checkpoint-row { display: flex; justify-content: space-between; container-type: inline-size; } .ds-checkpoint { padding: 10px; background: #1a1b26f5; color: var(--text, #c0caf5); font-family: 'Courier New', monospace; font-size: 12px; font-weight: 400; text-align: right; text-shadow: 0 2px 4px var(--bg, #16161e); } .ds-checkpoint-label { display: block; margin-bottom: 10px; letter-spacing: 1px; } .ds-checkpoint strong { display: block; color: var(--cyan, #7dcfff); font-family: 'Arcade', monospace; font-size: clamp(12px, 1.8cqw, 22px); font-weight: 400; font-variant-numeric: tabular-nums; } .ds-checkpoint small { font: 12px 'Courier New', monospace; } .ds-checkpoint-detail { display: block; margin-top: 10px; color: var(--muted, #9aa5ce); letter-spacing: .4px; } @media (max-width: 700px) { .ds-checkpoint { padding: 6px; } .ds-checkpoint-label { margin-bottom: 8px; letter-spacing: 0; } .ds-checkpoint strong { font-size: 14px; } .ds-checkpoint-detail { margin-top: 7px; max-width: 90px; line-height: 1.5; letter-spacing: 0; } }"
     },
@@ -117,36 +167,79 @@
       "description": "Outlined keycaps identify physical keys. The deeper bottom border distinguishes them from action buttons.",
       "html": "<div class=\"ds-key-legend\"><kbd class=\"ds-wide-key\">SPACE</kbd><span>NITRO</span></div>",
       "css": ".ds-key-legend { display: flex; align-items: center; gap: 11px; color: var(--muted, #9aa5ce); font-family: 'Courier New', monospace; font-size: 12px; letter-spacing: .3px; } .ds-key-legend kbd { box-sizing: border-box; min-width: 25px; height: 28px; padding: 5px; border: 1px solid #414868; border-bottom-width: 3px; border-radius: 3px; color: var(--text, #c0caf5); font-family: 'Courier New', monospace; font-size: 12px; text-align: center; } .ds-key-legend .ds-wide-key { padding-inline: 10px; line-height: 15px; } @media (max-width: 700px) { .ds-key-legend { gap: 8px; } .ds-key-legend kbd { min-width: 23px; } }"
+    },
+    {
+      "name": "VR screen action",
+      "kind": "button",
+      "refersTo": "button-vr-secondary",
+      "description": "The outlined cyan action starts screen mode and carries chapter, resume, and results actions in the VR setup panel.",
+      "html": "<button class=\"ds-vr-secondary\" type=\"button\">DRIVE ON SCREEN</button>",
+      "css": ".ds-vr-secondary { width: 100%; min-height: 46px; padding: 10px 16px; border: 1px solid var(--line, #343b58); border-radius: 0; background: transparent; color: var(--cyan, #7dcfff); font: 12px/1.7 'Arcade', monospace; cursor: pointer; touch-action: manipulation; transition: background-color 120ms ease-out, color 120ms ease-out; } .ds-vr-secondary:hover { border-color: var(--cyan, #7dcfff); background: var(--panel, #24283b); } .ds-vr-secondary:focus-visible { outline: 2px solid var(--cyan, #7dcfff); outline-offset: 5px; } .ds-vr-secondary:disabled { cursor: default; opacity: .36; } @media (prefers-reduced-motion: reduce) { .ds-vr-secondary { transition: none; } }"
+    },
+    {
+      "name": "VR setup select",
+      "kind": "input",
+      "refersTo": "vr-select",
+      "description": "Native selects use panel fill, rectangular borders, and cyan focus. The steering preference demonstrates the shared field style. Setup also shows original full-body and car preview canvases.",
+      "html": "<div class=\"ds-vr-preferences\"><label for=\"ds-vr-steering\">STEER WITH</label><select class=\"ds-vr-select\" id=\"ds-vr-steering\"><option value=\"stick\">Thumbstick</option><option value=\"wheel\">Grip steering wheel</option></select></div>",
+      "css": ".ds-vr-preferences { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 14px 12px; margin-bottom: 26px; color: var(--muted, #9aa5ce); font: 12px 'Courier New', monospace; } .ds-vr-select { min-width: 0; min-height: 44px; width: 100%; padding: 10px 8px; border: 1px solid var(--line, #343b58); border-radius: 0; background: var(--panel, #24283b); color: var(--text, #c0caf5); font: 14px 'Courier New', monospace; color-scheme: dark; } .ds-vr-select:focus-visible { outline: 2px solid var(--cyan, #7dcfff); outline-offset: 4px; }"
+    },
+    {
+      "name": "MP3 song action",
+      "kind": "button",
+      "refersTo": "button-song",
+      "description": "The arcade song action uses an inline SVG and yellow text. The VR header uses text. Play turns the control cyan, and pending requests remain cancellable.",
+      "html": "<div class=\"ds-song-example\"><div class=\"ds-song-toolbar\"><button class=\"ds-song\" type=\"button\" aria-label=\"Play MP3 song\" aria-pressed=\"false\" aria-describedby=\"ds-song-status\"><svg viewBox=\"0 0 20 20\" aria-hidden=\"true\"><path d=\"M7 14V5l9-2v9M7 8l9-2\"/><ellipse cx=\"4.5\" cy=\"15\" rx=\"2.5\" ry=\"2\"/><ellipse cx=\"13.5\" cy=\"13\" rx=\"2.5\" ry=\"2\"/></svg><span class=\"ds-song-label\">PLAY SONG</span></button></div><p class=\"ds-song-notice\" id=\"ds-song-status\" role=\"status\" hidden></p></div>",
+      "css": ".ds-song-example { container-type: inline-size; } .ds-song-toolbar { display: flex; min-height: 44px; } .ds-song { display: flex; align-items: center; gap: 7px; padding: 0 4px; border: 0; border-radius: 0; background: transparent; color: var(--yellow, #e0af68); font: 12px 'Courier New', monospace; letter-spacing: .2px; cursor: pointer; touch-action: manipulation; transition: background-color 120ms ease-out, color 120ms ease-out; } .ds-song svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.5; } .ds-song:hover:not(:disabled) { color: var(--yellow, #e0af68); } .ds-song[aria-pressed='true'] { color: var(--cyan, #7dcfff); } .ds-song:focus-visible { outline: 2px solid var(--cyan, #7dcfff); outline-offset: -2px; } .ds-song:disabled { cursor: default; opacity: .36; } .ds-song-notice { margin: 0; padding: 12px 18px; border-bottom: 1px solid var(--line, #343b58); background: var(--bg, #16161e); color: var(--muted, #9aa5ce); font: 12px/1.7 'Courier New', monospace; } .ds-song-notice[data-state='error'] { color: var(--pink, #f7768e); } @media (max-width: 700px) { .ds-song { min-width: 40px; padding-inline: 3px; justify-content: center; } .ds-song-label { display: none; } } @container (max-width: 600px) { .ds-song { min-width: 40px; padding-inline: 3px; justify-content: center; } .ds-song-label { display: none; } } @media (prefers-reduced-motion: reduce) { .ds-song { transition: none; } }"
+    },
+    {
+      "name": "VR garage toggle",
+      "kind": "button",
+      "refersTo": "button-tool",
+      "description": "The button names the destination view. A pressed state marks the active garage. A switch during a drive pauses the race.",
+      "html": "<nav class=\"ds-vr-controls\" aria-label=\"Cockpit controls\"><button class=\"ds-vr-garage\" type=\"button\" aria-label=\"Show cockpit\" aria-pressed=\"true\">COCKPIT</button></nav>",
+      "css": ".ds-vr-controls { display: flex; align-items: stretch; gap: 20px; } .ds-vr-garage { display: flex; align-items: center; min-height: 44px; gap: 7px; padding: 0 4px; border: 0; border-radius: 0; background: transparent; color: var(--muted, #9aa5ce); font: 12px 'Courier New', monospace; letter-spacing: .2px; cursor: pointer; touch-action: manipulation; transition: background-color 120ms ease-out, color 120ms ease-out; } .ds-vr-garage:hover:not(:disabled) { color: var(--yellow, #e0af68); } .ds-vr-garage[aria-pressed='true'] { color: var(--cyan, #7dcfff); } .ds-vr-garage:focus-visible { outline: 2px solid var(--cyan, #7dcfff); outline-offset: -2px; } .ds-vr-garage:disabled { cursor: default; opacity: .36; } @media (max-width: 760px) { .ds-vr-controls { width: 100%; justify-content: space-between; flex-wrap: wrap; gap: 0 8px; } } @media (max-width: 700px) { .ds-vr-garage { min-width: 40px; justify-content: center; } } @media (prefers-reduced-motion: reduce) { .ds-vr-garage { transition: none; } }"
     }
   ],
   "narrative": {
     "northStar": "After-hours arcade cabinet",
-    "overview": "An after-hours arcade cabinet frames a Tokyo expressway in hard-edged pixel art. Tokyo Night indigo, neon signs, and a yellow Lamborghini Countach establish the identity.\n\nA compact instrument interface keeps the road and car prominent. The skyline, road, vehicles, driver portraits, and boost cameos use original procedural artwork.",
+    "overview": "An after-hours arcade cabinet frames a Tokyo expressway in hard-edged pixel art. Tokyo Night indigo, neon signs, and a default yellow Lamborghini Countach establish the identity.\n\nA compact instrument interface keeps the road and car prominent. The skyline, road, vehicles, driver portraits, and boost cameos use original procedural artwork. The garage and nine shareable PNG cards reuse the full-body character artwork.\n\nThe seated VR cockpit extends this world through low-poly procedural geometry. Arcade text and rectangular instruments connect its 3D road to the pixel arcade.\nVR also reuses the original character, car, garage, logo, and sign artwork.",
     "keyCharacteristics": [
-      "A yellow Countach anchors the behind-the-car view.",
+      "A yellow Countach is the default in the behind-the-car view.",
       "Tokyo Night colors connect the interface and scene.",
       "Pixel titles pair with compact monospace labels.",
       "Rectangular controls frame a responsive canvas.",
-      "Driver selection uses native radios and pixel portrait canvases.",
+      "Nine drivers, nine car silhouettes, and nine official Tokyo Night paints use native radio choices.",
       "Occasional boost cameos feature the selected driver.",
-      "The original Omarchy text-block logo marks the start screen and roadside signs."
+      "Four finite chapters end with a sunrise arrival and completion screen.",
+      "Optional green shoulder bays pause the timer for four-line Omarchy conversations.",
+      "The original Omarchy text-block logo marks the start screen and roadside signs.",
+      "Cliamp roadside advertisements pair the verified wordmark with spectrum bars.",
+      "The linked crew lineup opens an Omarchy garage with full-body figures and horizontal pan.",
+      "Nine square PNG cameo cards share the original full-body artwork.",
+      "A level, head-tracked cockpit carries the same palette into stereo WebXR.",
+      "Original browser artwork connects the VR garage, cockpit occupants, roadside scenes, and final arcade."
     ],
     "rules": [
       { "name": "The Shared Palette Rule", "body": "Use the same Tokyo Night accents in the interface and the procedural scene.", "section": "colors" },
       { "name": "The Instrument Type Rule", "body": "Use Arcade for titles, primary actions, and main instrument values. Use Courier New for supporting labels and instructions.", "section": "typography" }
     ],
     "dos": [
-      "Do preserve the yellow Countach and behind-the-car pixel view.",
+      "Do preserve the default yellow Countach and behind-the-car pixel view.",
       "Do share the Tokyo Night palette between interface controls and procedural artwork.",
       "Do keep the full road width and visible touch controls through responsive and fullscreen states.",
       "Do preserve focus outlines, text-backed status, and reduced-motion behavior.",
-      "Do preserve the supplied Omarchy text-block logo on the start screen and roadside signs."
+      "Do preserve the supplied Omarchy text-block logo on the start screen and roadside signs.",
+      "Do keep pit stops optional through deliberate entry into a marked shoulder bay.",
+      "Do preserve the wide garage scene and figure size through horizontal pan on mobile.",
+      "Do keep source provenance in exported PNG artwork."
     ],
     "donts": [
       "Don't smooth the pixel artwork or replace its hard-edged geometry with photographic imagery.",
       "Don't replace rectangular arcade controls with pill-shaped controls.",
       "Don't let skyline detail obscure checkpoint information.",
-      "Don't repeat the cameo continuously during one held boost."
+      "Don't repeat the cameo continuously during one held boost.",
+      "Don't add Cliamp advertisements to garage scenes."
     ]
   }
 }

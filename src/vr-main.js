@@ -4,7 +4,9 @@ import { CARS, PAINTS, getCar, getPaint } from './cars.mjs';
 import { VRInput, pulseControllers } from './vr-controls.mjs';
 import { VRSession } from './vr-session.mjs';
 import { SpatialRaceAudio } from './vr-audio.js';
-import { seatOffset } from './vr-world.mjs';
+import { SongPlayer, updateSongButton, updateSongStatus } from './song-player.js';
+import { seatOffset, advanceVRSimulation } from './vr-world.mjs';
+import { CHAPTERS, getChapter } from './story.mjs';
 
 const $ = (id) => document.getElementById(id);
 const storage = {
@@ -19,6 +21,8 @@ const touch = new Set();
 const keyMap = { ArrowLeft: 'left', KeyA: 'left', ArrowRight: 'right', KeyD: 'right', ArrowUp: 'gas', KeyW: 'gas', ArrowDown: 'brake', KeyS: 'brake', Space: 'nitro', ShiftLeft: 'nitro', ShiftRight: 'nitro' };
 const options = {
   immersive: false,
+  garage: true,
+  reducedMotion: matchMedia('(prefers-reduced-motion: reduce)').matches,
   comfort: storage.get('vr.comfort', 'true') !== 'false',
   steering: storage.get('vr.steering', 'stick') === 'wheel' ? 'wheel' : 'stick',
   sound: storage.get('sound', 'false') === 'true',
@@ -32,6 +36,18 @@ let lastUiTime = -Infinity;
 let lastState = '';
 let contextLost = false;
 let disposed = false;
+const song = new SongPlayer({
+  onChange(state) {
+    updateSongButton($('vr-song'), state);
+    updateSongStatus($('vr-song-status'), state);
+    audio.musicEnabled = !state.playing;
+    options.song = state.playing;
+    options.songPending = state.pending;
+    options.songError = state.error;
+    if (scene) scene.panels.lastUpdate = -Infinity;
+  },
+  onError: announce,
+});
 const game = new GameEngine({
   characterId: storage.get('character', 'dhh'), carId: storage.get('car', 'countach'), paintId: storage.get('paint', 'amber'),
   onEvent(event) {
@@ -46,9 +62,18 @@ const game = new GameEngine({
       announce(`Checkpoint. You gain 35 seconds. Enter ${DISTRICTS[event.stage % 4]}.`);
     }
     if (event.type === 'start') announce('The countdown starts. Steer through traffic and reach the checkpoint.');
+    if (event.type === 'cameo') announce(`${getCharacter(event.characterId).name} leans out of the window and smiles.`);
     if (event.type === 'pause') announce('The drive is paused.');
     if (event.type === 'resume') announce('The drive resumes.');
-    if (event.type === 'gameover') {
+    if (event.type === 'briefing') announce(`${getChapter(event.chapter).title}. ${getChapter(event.chapter).objective}`);
+    if (event.type === 'pickup') {
+      pulseControllers(vr?.session?.inputSources, .4, 80);
+      announce(game.missionStatus().label);
+    }
+    if (event.type === 'ending') announce('The final delivery reaches the Omarchy arcade.');
+    if (event.type === 'nitro-pickup') pulseControllers(vr?.session?.inputSources, .35, 80);
+    if (event.type === 'pit-line') updatePitDialogue();
+    if (event.type === 'gameover' || event.type === 'complete') {
       const saved = Number(storage.get('best', '0'));
       if (!Number.isFinite(saved) || event.score > saved) storage.set('best', event.score);
       announce(`The run ends. Your score is ${event.score}.`);
@@ -78,10 +103,27 @@ function saveSetup() {
 }
 
 function updateSetup() {
-  if (!['title', 'gameover'].includes(game.state)) return;
+  if (!['title', 'gameover', 'complete'].includes(game.state)) return;
   game.characterId = getCharacter($('vr-driver').value).id;
   game.carId = getCar($('vr-car').value).id;
   game.paintId = getPaint($('vr-paint').value).id;
+  updateArtwork();
+  if (scene) scene.panels.lastUpdate = -Infinity;
+}
+
+function updateArtwork() {
+  if (!scene) return;
+  scene.art.previews($('vr-character-art'), $('vr-car-art'), game);
+  $('vr-character-name').textContent = getCharacter(game.characterId).name.toUpperCase();
+  $('vr-car-name').textContent = getCar(game.carId).label.toUpperCase();
+  $('vr-character-art').setAttribute('aria-label', getCharacter(game.characterId).name);
+  $('vr-car-art').setAttribute('aria-label', `${getPaint(game.paintId).name} ${getCar(game.carId).name}`);
+}
+
+function syncGarage() {
+  $('vr-garage').textContent = options.garage ? 'COCKPIT' : 'GARAGE';
+  $('vr-garage').setAttribute('aria-label', options.garage ? 'Show cockpit' : 'Show garage');
+  $('vr-garage').setAttribute('aria-pressed', String(options.garage));
   if (scene) scene.panels.lastUpdate = -Infinity;
 }
 ['vr-driver', 'vr-car', 'vr-paint'].forEach((id) => $(id).addEventListener('change', updateSetup));
@@ -96,14 +138,28 @@ function clearControls() {
 function startDrive() {
   if (!scene || contextLost) return;
   updateSetup();
-  if (game.state === 'paused') game.resume();
-  else if (['title', 'gameover'].includes(game.state)) { saveSetup(); game.start(); }
+  if (game.state === 'paused') { options.garage = false; game.resume(); }
+  else if (game.state === 'story') { options.garage = false; game.beginChapter(); }
+  else if (game.state === 'ending') game.finishEnding();
+  else if (game.state === 'pit') game.advancePitDialogue();
+  else if (['title', 'gameover', 'complete'].includes(game.state)) { saveSetup(); game.start(); game.showBriefing(); }
   else return;
   lastTimestamp = null;
   if (options.sound) void setSound(true);
   audio.restore();
+  syncGarage();
   syncState();
   if (!options.immersive) $('vr-canvas').focus({ preventScroll: true });
+}
+
+function updatePitDialogue() {
+  if (!game.pitStop || game.state !== 'pit') return;
+  const line = game.pitStop.lines[game.pitDialogueIndex];
+  const speaker = getCharacter(line.speaker === 'crew' ? game.pitStop.companionId : game.characterId).name;
+  $('vr-intro').textContent = `${speaker}: ${line.text}`;
+  $('vr-objective').textContent = `${game.pitStop.title} · ${game.pitDialogueIndex + 1} OF ${game.pitStop.lines.length}`;
+  $('vr-drive').textContent = game.pitDialogueIndex === game.pitStop.lines.length - 1 ? 'BACK TO RACE' : 'CONTINUE';
+  announce(`${speaker}. ${line.text}`);
 }
 
 function pauseDrive() {
@@ -161,13 +217,27 @@ function action(id) {
   if (id === 'comfort') setComfort(!options.comfort);
   if (id === 'steering') setSteering(options.steering === 'stick' ? 'wheel' : 'stick');
   if (id === 'sound') void setSound(!options.sound);
+  if (id === 'song') song.toggle();
+  if (id === 'garage') {
+    if (['playing', 'countdown'].includes(game.state)) pauseDrive();
+    options.garage = !options.garage;
+    syncGarage();
+  }
   if (id === 'exit') void vr?.exit();
   if (id === 'new') {
     game.home();
+    options.garage = true;
+    syncGarage();
     clearControls();
     syncState();
   }
-  if (['driver', 'car', 'paint'].includes(id) && ['title', 'gameover'].includes(game.state)) {
+  if (id?.startsWith('driver:') || id?.startsWith('car:')) {
+    if (!['title', 'gameover', 'complete'].includes(game.state)) return;
+    const [kind, value] = id.split(':');
+    $(`vr-${kind}`).value = value;
+    updateSetup();
+  }
+  if (['driver', 'car', 'paint'].includes(id) && ['title', 'gameover', 'complete'].includes(game.state)) {
     const items = { driver: CHARACTERS, car: CARS, paint: PAINTS }[id];
     const select = $(`vr-${id}`);
     select.value = items[(items.findIndex((item) => item.id === select.value) + 1) % items.length].id;
@@ -182,20 +252,38 @@ function syncState() {
   document.body.dataset.state = game.state;
   const driving = ['playing', 'countdown'].includes(game.state);
   const paused = game.state === 'paused';
-  const ended = game.state === 'gameover';
+  const ended = game.state === 'gameover' || game.state === 'complete';
+  const story = game.state === 'story';
+  const ending = game.state === 'ending';
+  const pit = game.state === 'pit' || game.state === 'pit-enter';
+  const chapter = getChapter(game.stage);
   $('vr-panel').hidden = driving;
   $('vr-readouts').hidden = !driving;
   $('vr-touch').hidden = !driving || options.immersive;
-  $('vr-setup').hidden = paused;
+  $('vr-setup').hidden = paused || story || ending || pit;
+  $('vr-loadout').hidden = paused || story || ending || pit;
+  $('vr-preferences').hidden = story || ending || pit;
+  $('vr-objective').hidden = !story && !pit;
+  $('vr-objective').textContent = chapter.objective;
   $('vr-result').hidden = !ended;
   $('vr-new-run').hidden = !paused;
   $('vr-pause').disabled = !driving && !paused;
   $('vr-pause').textContent = paused ? 'RESUME' : 'PAUSE';
-  $('vr-drive').textContent = paused ? 'RESUME ON SCREEN' : ended ? 'ONE MORE RUN' : 'DRIVE ON SCREEN';
+  $('vr-drive').textContent = story ? 'BEGIN CHAPTER' : ending ? 'VIEW RESULTS' : paused ? 'RESUME ON SCREEN' : ended ? 'ONE MORE RUN' : 'DRIVE ON SCREEN';
+  $('vr-drive').disabled = !scene || contextLost || game.state === 'pit-enter';
   $('vr-heading').innerHTML = paused ? 'DRIVE<br /><span>PAUSED.</span>' : ended ? 'RUN<br /><span>COMPLETE.</span>' : 'TOKYO<br /><span>NIGHTS VR<span class="title-period">.</span></span>';
-  $('vr-intro').textContent = paused ? 'Your next checkpoint can wait. Resume here, or enter VR.' : ended ? 'Time is up. Take the driver seat again.' : "Take the driver's seat. The midnight expressway surrounds you.";
+  $('vr-intro').textContent = paused ? 'Your next checkpoint can wait. Resume here, or enter VR.' : ended ? 'Time is up. Take the driver seat again.' : "Your crew is ready. Choose your car, then take the driver's seat.";
+  if (story) { $('vr-heading').textContent = chapter.title; $('vr-intro').textContent = chapter.text; }
+  if (ending || game.state === 'complete') { $('vr-heading').textContent = 'DELIVERY COMPLETE.'; $('vr-intro').textContent = 'The crew plays the tape. The arcade lights stay on.'; }
+  if (game.state === 'gameover') $('vr-intro').textContent = game.failureReason;
+  if (pit) {
+    $('vr-heading').textContent = 'PIT STOP.';
+    $('vr-intro').textContent = 'The car slows for the pit stop.';
+    $('vr-drive').textContent = 'PLEASE WAIT';
+    updatePitDialogue();
+  }
   if (ended) $('vr-result').textContent = `${Math.floor(game.score).toString().padStart(6, '0')} POINTS · ${(game.distance / 1000).toFixed(2)} KM · ${game.passed} CARS PASSED`;
-  if ((paused || ended) && !options.immersive) $('vr-drive').focus({ preventScroll: true });
+  if ((paused || ended || story || ending || game.state === 'pit') && !options.immersive) $('vr-drive').focus({ preventScroll: true });
   if (scene) scene.panels.lastUpdate = -Infinity;
 }
 
@@ -203,6 +291,11 @@ function resize() {
   if (!scene) return;
   const bounds = $('vr-viewport').getBoundingClientRect();
   scene.resize(bounds.width, bounds.height);
+}
+
+function updateChrome() {
+  const height = document.querySelector('.vr-header').offsetHeight + document.querySelector('.vr-footer').offsetHeight + $('vr-song-status').offsetHeight;
+  document.body.style.setProperty('--vr-chrome', `${height}px`);
 }
 
 async function enterVR() {
@@ -220,6 +313,8 @@ $('vr-new-run').addEventListener('click', () => action('new'));
 $('vr-pause').addEventListener('click', togglePause);
 $('vr-recenter').addEventListener('click', recenter);
 $('vr-sound').addEventListener('click', () => { void setSound(!audio.enabled); });
+$('vr-song').addEventListener('click', () => song.toggle());
+$('vr-garage').addEventListener('click', () => action('garage'));
 $('vr-exit').addEventListener('click', () => { void vr?.exit(); });
 $('vr-comfort').addEventListener('change', (event) => setComfort(event.target.checked));
 $('vr-steering').addEventListener('change', (event) => setSteering(event.target.value));
@@ -253,21 +348,31 @@ let drag;
 $('vr-canvas').addEventListener('pointerdown', (event) => {
   if (!scene || options.immersive) return;
   $('vr-canvas').setPointerCapture(event.pointerId);
-  drag = { x: event.clientX, y: event.clientY };
+  drag = { x: event.clientX, y: event.clientY, startX: event.clientX, startY: event.clientY };
 });
 $('vr-canvas').addEventListener('pointermove', (event) => {
   if (!drag || !scene || options.immersive) return;
   scene.previewYaw = Math.max(-1.3, Math.min(1.3, scene.previewYaw - (event.clientX - drag.x) * .004));
   scene.previewPitch = Math.max(-.6, Math.min(.6, scene.previewPitch - (event.clientY - drag.y) * .004));
-  drag = { x: event.clientX, y: event.clientY };
+  drag.x = event.clientX;
+  drag.y = event.clientY;
 });
-['pointerup', 'pointercancel', 'lostpointercapture'].forEach((type) => $('vr-canvas').addEventListener(type, () => { drag = null; }));
+$('vr-canvas').addEventListener('pointerup', (event) => {
+  if (drag && Math.hypot(event.clientX - drag.startX, event.clientY - drag.startY) < 5) {
+    const bounds = $('vr-canvas').getBoundingClientRect();
+    scene.selectAt({ x: (event.clientX - bounds.left) / bounds.width * 2 - 1, y: -(event.clientY - bounds.top) / bounds.height * 2 + 1 });
+  }
+  drag = null;
+});
+['pointercancel', 'lostpointercapture'].forEach((type) => $('vr-canvas').addEventListener(type, () => { drag = null; }));
+matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (event) => { options.reducedMotion = event.matches; });
 
 function loseFocus() {
   lastTimestamp = null;
   input.reset();
   pauseDrive();
   audio.silence();
+  song.pause();
 }
 window.addEventListener('blur', () => { if (!vr?.session && !vr?.pending) loseFocus(); });
 document.addEventListener('visibilitychange', () => {
@@ -302,7 +407,7 @@ function xrInput(frame) {
 
 function frame(timestamp, xrFrame) {
   if (disposed || contextLost) return;
-  const dt = lastTimestamp === null ? 0 : Math.max(0, Math.min((timestamp - lastTimestamp) / 1000, .05));
+  const dt = lastTimestamp === null ? 0 : Math.max(0, Math.min((timestamp - lastTimestamp) / 1000, .25));
   lastTimestamp = timestamp;
   const immersiveVisible = vr?.session && vr.session.visibilityState === 'visible';
   if (document.hidden && !immersiveVisible) { lastTimestamp = null; return; }
@@ -315,14 +420,14 @@ function frame(timestamp, xrFrame) {
     if (controls.actions.pause) togglePause();
     if (controls.actions.recenter) recenter();
     if (controls.actions.comfort) setComfort(!options.comfort);
-    if (controls.actions.confirm && ['title', 'paused', 'gameover'].includes(game.state)) scene.selectGaze();
+    if (controls.actions.confirm && ['title', 'paused', 'gameover', 'story', 'ending', 'complete', 'pit'].includes(game.state)) scene.selectGaze();
     if (['playing', 'countdown'].includes(game.state)) {
       for (const control of ['left', 'right', 'gas', 'brake', 'nitro']) {
         const keyboard = [...keys].some((key) => keyMap[key] === control) || touch.has(control);
         game.input[control] = ['left', 'right'].includes(control) ? Math.max(Number(keyboard), Number(controls[control])) : keyboard || controls[control];
       }
     }
-    game.update(dt);
+    advanceVRSimulation(game, dt);
   }
   syncState();
   scene.update(game, options, timestamp / 1000);
@@ -333,7 +438,11 @@ function frame(timestamp, xrFrame) {
     $('vr-time').textContent = String(Math.ceil(game.time));
     $('vr-distance').textContent = Math.max(0, (game.nextCheckpoint - game.distance) / 1000).toFixed(1);
     $('vr-nitro').textContent = String(Math.round(game.nitro));
-    $('vr-scene-label').firstChild.textContent = `${DISTRICTS[game.stage % 4]} `;
+    const mission = game.missionStatus();
+    const drop = game.pickups.find((pickup) => !pickup.resolved && pickup.z >= game.distance);
+    $('vr-mission').textContent = `${mission.label}${!mission.complete && drop ? ` · DROP: ${drop.x < 0 ? 'LEFT' : drop.x > 0 ? 'RIGHT' : 'CENTER'}` : ''}`;
+    if (game.pitStopAt !== null && game.pitStopAt - game.distance < 350) $('vr-mission').textContent += ` · PIT: ${game.pitStopLane < 0 ? 'LEFT' : 'RIGHT'}`;
+    $('vr-scene-label').firstChild.textContent = options.garage ? 'OMARCHY GARAGE ' : `${DISTRICTS[game.stage % 4]} `;
     lastUiTime = timestamp;
   }
 }
@@ -374,7 +483,7 @@ async function initialize() {
         scene.resetView();
         lastTimestamp = null;
         audio.silence();
-        resize();
+        queueMicrotask(() => { if (!disposed) { scene.resetView(); resize(); } });
         $('vr-enter').focus({ preventScroll: true });
       },
       onVisibility(visibility) {
@@ -384,6 +493,10 @@ async function initialize() {
     });
     const observer = new ResizeObserver(resize);
     observer.observe($('vr-viewport'));
+    const chromeObserver = new ResizeObserver(updateChrome);
+    [document.querySelector('.vr-header'), document.querySelector('.vr-footer'), $('vr-song-status')].forEach((element) => chromeObserver.observe(element));
+    updateChrome();
+    updateArtwork();
     resize();
     syncState();
     $('vr-drive').disabled = false;
@@ -402,8 +515,10 @@ async function initialize() {
     window.addEventListener('pagehide', () => {
       disposed = true;
       observer.disconnect();
+      chromeObserver.disconnect();
       vr.dispose();
       audio.dispose();
+      song.dispose();
       scene.dispose();
     }, { once: true });
   } catch {

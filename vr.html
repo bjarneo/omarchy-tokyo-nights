@@ -17,11 +17,14 @@
       <a href="./" class="vr-home"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m9 4-6 6 6 6M3 10h14"/></svg>TOKYO NIGHTS<span> / VR</span></a>
       <nav aria-label="Cockpit controls">
         <button class="tool-button" id="vr-sound" aria-label="Turn sound on" aria-pressed="false">SOUND OFF</button>
-        <button class="tool-button" id="vr-recenter">CENTER VIEW</button>
+        <button class="tool-button song-button" id="vr-song" aria-label="Play MP3 song" aria-pressed="false" aria-describedby="vr-song-status">PLAY SONG</button>
+        <button class="tool-button" id="vr-garage" aria-label="Show cockpit" aria-pressed="true">COCKPIT</button>
+        <button class="tool-button" id="vr-recenter" aria-label="Center view">CENTER</button>
         <button class="tool-button" id="vr-pause" disabled>PAUSE</button>
         <button class="tool-button" id="vr-exit" hidden>EXIT VR</button>
       </nav>
     </header>
+    <p class="song-notice" id="vr-song-status" role="status" hidden></p>
     <main class="vr-main">
       <div class="vr-viewport" id="vr-viewport">
         <canvas id="vr-canvas" tabindex="0" aria-label="A 3D cockpit on the Tokyo expressway. Drag to look around. Use arrow keys to drive." aria-describedby="vr-keyboard-help"></canvas>
@@ -31,19 +34,25 @@
           <span><b id="vr-time">60</b> SEC</span>
           <span><b id="vr-distance">3.0</b> KM TO CHECKPOINT</span>
           <span>NITRO <b id="vr-nitro">100</b>%</span>
+          <span id="vr-mission">TAPE 0/1 · DROP: CENTER</span>
         </div>
       </div>
       <section class="vr-panel" id="vr-panel" aria-labelledby="vr-heading">
         <h1 id="vr-heading">TOKYO<br /><span>NIGHTS VR<span class="title-period">.</span></span></h1>
         <p class="vr-intro" id="vr-intro">Take the driver's seat.<br />The midnight expressway surrounds you.</p>
+        <p class="vr-objective" id="vr-objective" hidden></p>
         <p class="vr-result" id="vr-result" hidden></p>
+        <div class="vr-loadout" id="vr-loadout" aria-label="Selected driver and car">
+          <figure><canvas id="vr-character-art" width="48" height="104" role="img" aria-label="Selected driver"></canvas><figcaption id="vr-character-name"></figcaption></figure>
+          <figure><canvas id="vr-car-art" width="112" height="72" role="img" aria-label="Selected car"></canvas><figcaption id="vr-car-name"></figcaption></figure>
+        </div>
         <fieldset class="vr-setup" id="vr-setup">
           <legend class="sr-only">Race setup</legend>
           <label>DRIVER<select id="vr-driver"></select></label>
           <label>CAR<select id="vr-car"></select></label>
           <label>PAINT<select id="vr-paint"></select></label>
         </fieldset>
-        <div class="vr-preferences">
+        <div class="vr-preferences" id="vr-preferences">
           <label for="vr-steering">STEER WITH</label>
           <select id="vr-steering"><option value="stick">Thumbstick</option><option value="wheel">Grip steering wheel</option></select>
           <label class="vr-comfort"><input type="checkbox" id="vr-comfort" checked />Comfort view<span>Reduce peripheral motion at speed.</span></label>
@@ -66,6 +75,8 @@
             <div><dt>Y / upper left</dt><dd>Toggle comfort view</dd></div>
           </dl>
           <p>Point at a cockpit control and press a trigger to select it. Grip both controllers to turn the wheel in wheel mode.</p>
+          <p>Point at a garage character or car to select it. Look right in the cockpit to see your companion.</p>
+          <p>The first nitro boost triggers your selected driver's cameo. The mirror shows the crew inside the car.</p>
           <p>Open this page over HTTPS in a WebXR browser. Sit down before you center the seat.</p>
         </details>
         <noscript><p>To use the cockpit, enable JavaScript in your browser.</p></noscript>

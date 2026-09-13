@@ -1,10 +1,10 @@
-let pendingLogo;
+const pendingLogos = new Map();
 
-export function loadOmarchyLogo() {
-  if (!pendingLogo) {
-    pendingLogo = fetch(new URL('../assets/omarchy-logo.txt', import.meta.url))
+function loadBlockLogo(file, color) {
+  if (!pendingLogos.has(file)) {
+    const pending = fetch(new URL(`../assets/${file}`, import.meta.url))
       .then((response) => {
-        if (!response.ok) throw new Error('The Omarchy logo cannot load.');
+        if (!response.ok) throw new Error('The block logo cannot load.');
         return response.text();
       })
       .then((source) => {
@@ -13,16 +13,20 @@ export function loadOmarchyLogo() {
         canvas.width = Math.max(...lines.map((line) => line.length)) * 4;
         canvas.height = lines.length * 8;
         const ctx = canvas.getContext('2d');
-        ctx.fillStyle = '#c0caf5';
+        ctx.fillStyle = color;
         lines.forEach((line, row) => {
           [...line].forEach((character, column) => {
             if (character === ' ') return;
-            if (!['█', '▀', '▄'].includes(character)) throw new Error('The Omarchy logo contains an unsupported block.');
+            if (!['█', '▀', '▄'].includes(character)) throw new Error('The logo contains an unsupported block.');
             ctx.fillRect(column * 4, row * 8 + (character === '▄' ? 4 : 0), 4, character === '█' ? 8 : 4);
           });
         });
         return canvas;
       });
+    pendingLogos.set(file, pending);
   }
-  return pendingLogo;
+  return pendingLogos.get(file);
 }
+
+export const loadOmarchyLogo = () => loadBlockLogo('omarchy-logo.txt', '#c0caf5');
+export const loadCliampLogo = () => loadBlockLogo('cliamp-logo.txt', '#e0af68');

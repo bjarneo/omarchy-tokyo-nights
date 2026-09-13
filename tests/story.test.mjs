@@ -10,6 +10,7 @@ function playing() {
   game.state = 'playing';
   game.speed = CRUISE_SPEED;
   game.spawnTimer = 1000;
+  game.pitStopAt = null;
   return { game, events };
 }
 
@@ -66,6 +67,7 @@ test('a complete four-chapter drive reaches the arcade and finishes exactly once
   let boosting = false;
   for (let frame = 0; frame < 60 * 240 && game.state !== 'complete' && game.state !== 'gameover'; frame++) {
     if (game.state === 'story') { game.beginChapter(); boosting = false; }
+    if (game.state === 'pit') game.advancePitDialogue();
     if (game.state === 'playing') {
       game.input.left = game.playerX > -.63;
       game.input.right = game.playerX < -.67;

@@ -19,6 +19,7 @@ const types = {
   '.mp3': 'audio/mpeg',
   '.mp4': 'video/mp4',
   '.srt': 'application/x-subrip; charset=utf-8',
+  '.zip': 'application/zip',
 };
 
 export function createStaticServer() {
@@ -26,7 +27,7 @@ export function createStaticServer() {
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
     const relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!/^(index\.html|style\.css|(?:music-video|vr)\.(html|css)|src\/[\w.-]+|assets\/[\w.-]+|exports\/[\w-]+\.mp4)$/.test(relative)) {
+    if (!/^(index\.html|style\.css|(?:music-video|vr|garage)\.(html|css)|src\/[\w.-]+|assets\/(?:[\w.-]+|cameo-cards\/[\w-]+\.png)|exports\/(?:[\w-]+\.mp4|cameo-cards\.zip|cameo-cards\/[\w-]+\.png))$/.test(relative)) {
       response.writeHead(404).end('Not found.');
       return;
     }

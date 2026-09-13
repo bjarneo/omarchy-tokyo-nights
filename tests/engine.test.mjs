@@ -15,6 +15,10 @@ function playing() {
   advance(game, 3.5);
   game.traffic = [];
   game.spawnTimer = 10000;
+  game.pickups = [];
+  game.nitroPickups = [];
+  game.nextNitroSpawn = Infinity;
+  game.pitStopAt = null;
   return { game, events };
 }
 
@@ -47,8 +51,8 @@ test('nitro increases speed, depletes, and recharges without an empty-tank loop'
   game.input.nitro = true;
   advance(game, 2);
   assert.equal(game.speed, BOOST_SPEED);
-  assert.ok(game.nitro < 51);
-  advance(game, 2.1);
+  assert.ok(game.nitro > 74 && game.nitro < 76);
+  advance(game, 6.1);
   assert.equal(game.boostLocked, true);
   assert.equal(game.boosting, false);
   const emptyCharge = game.nitro;

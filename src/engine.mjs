@@ -1,6 +1,7 @@
 import { getCharacter } from './characters.mjs';
 import { getCar, getPaint } from './cars.mjs';
 import { CHAPTERS, getChapter } from './story.mjs';
+import { createPitConversation } from './pit-stops.mjs';
 
 export const DISTRICTS = ['SHINJUKU', 'SHIBUYA', 'AKIHABARA', 'RAINBOW BRIDGE'];
 export const CRUISE_SPEED = 285;
@@ -9,6 +10,8 @@ export const BOOST_SPEED = 460;
 export const CHECKPOINT_LENGTH = 3000;
 export const CAMEO_COOLDOWN = 20;
 export const CAMEO_CHANCE = .35;
+export const NITRO_DRAIN = 12.5;
+export const NITRO_PICKUP_CHARGE = 45;
 export const clamp = (value, min, max) => Math.max(min, Math.min(max, value));
 
 export function roadCurve(distance) {
@@ -77,7 +80,17 @@ export class GameEngine {
     this.chaptersComplete = 0;
     this.endingTime = 0;
     this.failureReason = '';
+    this.nitroPickups = [];
+    this.nextNitroSpawn = 120;
+    this.nitroPickupId = 0;
+    this.pitStop = null;
+    this.pitDialogueIndex = 0;
+    this.pitElapsed = 0;
+    this.pitStopsVisited = 0;
+    this.lastPitTopic = null;
+    this.pitSavedSpeed = 0;
     this.preparePickups();
+    this.preparePitStop();
     this.clearInput();
   }
 
@@ -169,6 +182,69 @@ export class GameEngine {
         this.message('DROP MISSED\nWATCH FOR THE NEXT ONE', 'pink', 1.4);
       }
     }
+  }
+
+  updateNitroPickups(previousDistance) {
+    if (this.distance >= this.nextNitroSpawn) {
+      this.nextNitroSpawn = this.distance + 520 + this.random() * 340;
+      let z = this.distance + 300 + this.random() * 160;
+      if (this.pickups.some((pickup) => Math.abs(pickup.z - z) < 90)) z += 180;
+      if (z < this.nextCheckpoint - 80) {
+        this.nitroPickups.push({ id: this.nitroPickupId++, kind: 'nitro', z, x: [-.65, 0, .65][Math.floor(this.random() * 3)], resolved: false });
+      }
+    }
+    for (const pickup of this.nitroPickups) {
+      if (pickup.resolved) continue;
+      const z = pickup.z - this.distance;
+      if (pickup.z - previousDistance >= -12 && z <= 14 && z >= -12 && Math.abs(this.playerX - pickup.x) < .4) {
+        pickup.resolved = true;
+        this.nitro = Math.min(100, this.nitro + NITRO_PICKUP_CHARGE);
+        this.score += 200;
+        this.message('NITRO +45', 'cyan', 1.4);
+        this.onEvent({ type: 'nitro-pickup' });
+      } else if (z < -12) pickup.resolved = true;
+    }
+    this.nitroPickups = this.nitroPickups.filter((pickup) => !pickup.resolved && pickup.z >= this.distance - 12);
+  }
+
+  preparePitStop() {
+    this.pitStopAt = this.stage === 0 || this.random() < .65
+      ? this.stage * CHECKPOINT_LENGTH + 1400 + this.random() * 800
+      : null;
+    this.pitStopLane = this.pitStopAt === null ? null : this.random() < .5 ? -1.22 : 1.22;
+  }
+
+  enterPitStop() {
+    if (this.state !== 'playing') return;
+    this.pitStopAt = null;
+    this.pitSavedSpeed = this.speed;
+    this.pitElapsed = 0;
+    this.pitDialogueIndex = 0;
+    this.pitStop = createPitConversation(this.random, this.characterId, this.lastPitTopic);
+    this.lastPitTopic = this.pitStop.topicId;
+    this.pitStopsVisited++;
+    this.state = 'pit-enter';
+    this.boosting = false;
+    this.boostWasActive = false;
+    this.cameoTime = -1;
+    this.clearInput();
+    this.onEvent({ type: 'pit-enter' });
+  }
+
+  advancePitDialogue() {
+    if (this.state !== 'pit' || !this.pitStop) return;
+    if (this.pitDialogueIndex < this.pitStop.lines.length - 1) {
+      this.pitDialogueIndex++;
+      this.onEvent({ type: 'pit-line' });
+      return;
+    }
+    this.state = 'playing';
+    this.speed = Math.min(this.pitSavedSpeed, CRUISE_SPEED);
+    this.nitro = 100;
+    this.pitStop = null;
+    this.clearInput();
+    this.message('BACK ON THE ROAD\nNITRO REFILLED', 'cyan', 1.8);
+    this.onEvent({ type: 'pit-resume' });
   }
 
   beginEnding() {
@@ -266,7 +342,17 @@ export class GameEngine {
       this.demoDistance += dt * 13;
       return;
     }
-    if (this.state === 'paused' || this.state === 'gameover' || this.state === 'complete') return;
+    if (this.state === 'paused' || this.state === 'gameover' || this.state === 'complete' || this.state === 'pit') return;
+    if (this.state === 'pit-enter') {
+      this.pitElapsed += dt;
+      this.speed = Math.max(0, this.pitSavedSpeed * (1 - this.pitElapsed / 1.25));
+      if (this.pitElapsed >= 1.25) {
+        this.speed = 0;
+        this.state = 'pit';
+        this.onEvent({ type: 'pit-line' });
+      }
+      return;
+    }
     if (this.state === 'ending') {
       this.endingTime += dt;
       this.speed = Math.max(0, this.speed - dt * 100);
@@ -301,7 +387,7 @@ export class GameEngine {
     if (!input.nitro || this.nitro >= 25) this.boostLocked = false;
     this.boosting = input.nitro && !this.boostLocked && this.nitro > 0 && this.speed > 65 && !input.brake;
     if (this.boosting) {
-      this.nitro = Math.max(0, this.nitro - dt * 25);
+      this.nitro = Math.max(0, this.nitro - dt * NITRO_DRAIN);
       if (this.nitro === 0) this.boostLocked = true;
     } else {
       this.nitro = Math.min(100, this.nitro + dt * 7.5);
@@ -356,6 +442,7 @@ export class GameEngine {
     }
     this.traffic = this.traffic.filter((car) => car.z > this.distance - 60 && car.z < this.distance + 700);
     this.collectPickups(previousDistance);
+    this.updateNitroPickups(previousDistance);
     this.updateCameo(dt);
 
     if (this.time <= 0) {
@@ -365,6 +452,14 @@ export class GameEngine {
     if (this.missionStatus().failed) {
       this.finish(getChapter(this.stage).failure);
       return;
+    }
+    if (this.pitStopAt !== null) {
+      const pitDistance = this.pitStopAt - this.distance;
+      if (Math.abs(pitDistance) <= 18 && Math.abs(this.playerX) > 1.02 && Math.abs(this.playerX - this.pitStopLane) <= .22) {
+        this.enterPitStop();
+        return;
+      }
+      if (pitDistance < -30) this.pitStopAt = null;
     }
     if (this.distance >= this.nextCheckpoint) {
       if (!this.missionStatus().complete) {
@@ -386,6 +481,9 @@ export class GameEngine {
       this.traffic = [];
       this.spawnTimer = 1.2;
       this.preparePickups();
+      this.nitroPickups = [];
+      this.nextNitroSpawn = this.distance + 120;
+      this.preparePitStop();
       this.message(`CHECKPOINT +35 SEC\n${DISTRICTS[this.stage % DISTRICTS.length]}`, 'green', 3);
       this.onEvent({ type: 'checkpoint', stage: this.stage });
       this.showBriefing();

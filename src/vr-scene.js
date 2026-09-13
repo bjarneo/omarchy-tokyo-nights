@@ -1,6 +1,8 @@
 import * as THREE from '../assets/three.module.js';
-import { DISTRICTS, clamp } from './engine.mjs';
-import { getPaint } from './cars.mjs';
+import { DISTRICTS, clamp, cameoPose } from './engine.mjs';
+import { CARS, PAINTS, getPaint } from './cars.mjs';
+import { CHARACTERS } from './characters.mjs';
+import { VRArt } from './vr-art.js';
 import { loadOmarchyLogo } from './omarchy-logo.js';
 import { CockpitPanels, canvasPanel } from './vr-panels.js';
 import { SEAT_HEIGHT, ROAD_HALF_WIDTH, WORLD_SCALE, roadOffset, trafficPosition } from './vr-world.mjs';
@@ -33,21 +35,27 @@ export class VRScene {
     this.matrix = new THREE.Object3D();
     this.color = new THREE.Color();
     this.materials = new Map();
+    this.art = new VRArt();
     this.structures = this.batch(2200);
     this.lights = this.batch(3600, true);
     this.trafficBodies = this.batch(300);
     this.trafficLights = this.batch(100, true);
+    this.pickupBodies = this.batch(64);
+    this.pickupLights = this.batch(64, true);
     this.ribbons = [this.ribbon(-6.2, 6.2, -.025, C.line), this.ribbon(-5.3, 5.3, 0, C.panel)];
     this.makeSky();
     this.makeSigns();
+    this.makeArcade();
     this.makeCockpit();
-    this.panels = new CockpitPanels(this.rig);
+    this.panels = new CockpitPanels(this.rig, this.art);
+    this.makeGarage();
+    this.makeArcadeElements();
     this.makeControllers();
     this.makeComfortMask();
     this.raycaster = new THREE.Raycaster();
     this.rayMatrix = new THREE.Matrix4();
     this.previewYaw = 0;
-    this.previewPitch = 0;
+    this.previewPitch = -.08;
     this.lastMirror = -Infinity;
     this.head = new THREE.Vector3();
     this.forward = new THREE.Vector3();
@@ -104,13 +112,18 @@ export class VRScene {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3).setUsage(THREE.DynamicDrawUsage));
     geometry.setIndex(indices);
     const mesh = new THREE.Mesh(geometry, this.material(color, true));
+    // Draw the road before the cockpit in both eye viewports.
+    mesh.renderOrder = -10;
+    mesh.material.depthWrite = false;
     mesh.frustumCulled = false;
     this.scene.add(mesh);
-    return { left, right, y, geometry, positions };
+    return { left, right, y, geometry, positions, mesh };
   }
 
   makeSky() {
     const ground = new THREE.Mesh(new THREE.PlaneGeometry(1600, 1600), this.material(C.bg, true));
+    ground.renderOrder = -20;
+    ground.material.depthWrite = false;
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -1;
     this.scene.add(ground);
@@ -204,9 +217,9 @@ export class VRScene {
     this.mesh(this.cockpit, .35, .5, -2.28, 1.7, .05, .06, C.line);
     this.mesh(this.cockpit, -.15, .6, -1.04, .52, .025, .07, C.bg);
     this.mesh(this.cockpit, .85, .6, -1.04, .52, .025, .07, C.bg);
-    this.mesh(this.cockpit, .35, .65, -.68, 1.9, .32, .44, C.bg);
-    this.mesh(this.cockpit, .35, .83, -.8, 1.85, .035, .36, C.line);
-    this.mesh(this.cockpit, .35, .8, -.56, 1.78, .018, .018, C.cyan, true);
+    this.mesh(this.cockpit, .35, .65, -1.2, 1.9, .32, .44, C.bg);
+    this.mesh(this.cockpit, .35, .83, -1.2, 1.85, .035, .36, C.line);
+    this.mesh(this.cockpit, .35, .8, -.96, 1.78, .018, .018, C.cyan, true);
     this.mesh(this.cockpit, .7, .4, .08, .26, .32, 1.3, C.bg);
     this.mesh(this.cockpit, .7, .61, -.2, .055, .22, .055, C.line);
     this.mesh(this.cockpit, .7, .73, -.2, .1, .07, .1, C.muted);
@@ -228,7 +241,7 @@ export class VRScene {
       this.mesh(this.cockpit, x, 1.04, .69, .28, .2, .1, C.bg);
     }
     this.wheel = new THREE.Group();
-    this.wheel.position.set(0, .69, -.4);
+    this.wheel.position.set(0, .72, -.65);
     this.wheel.rotation.x = -.28;
     this.cockpit.add(this.wheel);
     const rim = new THREE.Mesh(new THREE.TorusGeometry(.19, .019, 6, 20), this.material(C.bg));
@@ -244,6 +257,206 @@ export class VRScene {
     mirror.position.set(.46, 1.36, -.75);
     this.mesh(this.cockpit, .46, 1.36, -.763, .44, .22, .026, C.bg);
     this.cockpit.add(mirror);
+    this.mirror = mirror;
+    this.mirrorCamera.layers.enable(3);
+    this.occupants = new THREE.Group();
+    this.rig.add(this.occupants);
+    this.exhaust = new THREE.Group();
+    for (const x of [-.12, .82]) {
+      this.mesh(this.exhaust, x, .24, 1.75, .18, .18, 1.1, 0x7aa2f7, true);
+      this.mesh(this.exhaust, x, .24, 1.57, .1, .1, .9, C.cyan, true);
+      this.mesh(this.exhaust, x, .24, 1.36, .06, .06, .55, C.text, true);
+    }
+    this.rig.add(this.exhaust);
+    this.exhaust.visible = false;
+  }
+
+  makeGarage() {
+    this.garage = new THREE.Group();
+    this.scene.add(this.garage);
+    this.mesh(this.garage, 0, -.06, -7, 26, .1, 30, C.panel);
+    const wall = this.art.garageWall();
+    wall.position.set(0, 3.5, -18);
+    this.garage.add(wall);
+    const sign = this.art.logoSign('omarchy');
+    sign.position.set(0, 3.4, -9.5);
+    this.garage.add(sign);
+    for (const side of [-1, 1]) {
+      this.mesh(this.garage, side * 10, 3.5, -11, .2, 7, .2, C.line);
+      this.mesh(this.garage, side * 7, 6.9, -11, 6, .1, .2, C.line);
+      this.mesh(this.garage, side * 7, 6.83, -11, 5.5, .06, .22, C.cyan, true);
+      for (let i = 0; i < 5; i++) this.mesh(this.garage, side * 6, .01, -1.8 - i * 3.8, 6, .02, .08, C.yellow, true);
+    }
+    this.garageCars = new THREE.Group();
+    this.garage.add(this.garageCars);
+    this.cast = CHARACTERS.map(({ id }) => this.art.character(id, { action: `driver:${id}` }));
+    this.castRoot = new THREE.Group();
+    this.castRoot.add(...this.cast);
+    this.scene.add(this.castRoot);
+    this.castPositions = [[1.65, -3.5], [-1.65, -3.5], [2.85, -4.7], [-2.85, -4.7], [3.85, -6.2], [-3.85, -6.2], [2.8, -8.6], [-2.8, -8.6], [0, -9]];
+  }
+
+  makeArcadeElements() {
+    this.arcadeSigns = [
+      this.art.logoSign('cliamp'), this.art.logoSign('omarchy'),
+      this.art.sign('東京', '#7dcfff', true), this.art.sign('RAMEN', '#e0af68'),
+      this.art.sign('ホテル', '#f7768e', true), this.art.sign('NIGHT', '#bb9af7', true),
+      this.art.logoSign('cliamp'), this.art.sign('24H', '#7dcfff'),
+    ];
+    this.scene.add(...this.arcadeSigns);
+    this.trafficDetails = new THREE.Group();
+    this.trafficSprites = Array.from({ length: 24 }, () => {
+      const mesh = new THREE.Mesh(new THREE.PlaneGeometry(1.65, 1.65 * 55 / 96), new THREE.MeshBasicMaterial({ alphaTest: .45, toneMapped: false }));
+      mesh.visible = false;
+      this.trafficDetails.add(mesh);
+      return mesh;
+    });
+    this.scene.add(this.trafficDetails);
+    this.pitArea = new THREE.Group();
+    this.pitArea.visible = false;
+    this.pitAt = null;
+    this.pitSide = 1;
+    this.mesh(this.pitArea, 0, .015, 0, 6.4, .07, 18, C.line);
+    for (const side of [-1, 1]) {
+      this.mesh(this.pitArea, side * 2.9, .06, 0, .08, .04, 17, C.green, true);
+      this.mesh(this.pitArea, side * 2, 1.4, -5, .12, 2.8, .12, C.line);
+    }
+    const label = this.art.nameTag('PIT STOP', '#9ece6a');
+    label.scale.setScalar(4);
+    label.position.set(0, 3, -5);
+    this.pitArea.add(label);
+    const hint = this.art.nameTag('STEER ONTO THE SHOULDER', '#7dcfff');
+    hint.scale.setScalar(3.6);
+    hint.position.set(0, 2.2, -5);
+    this.pitArea.add(hint);
+    this.scene.add(this.pitArea);
+  }
+
+  updatePitArea(game) {
+    if (game.pitStopAt !== null) {
+      this.pitAt = game.pitStopAt;
+      this.pitSide = Math.sign(game.pitStopLane) || 1;
+    }
+    const ahead = this.pitAt === null ? Infinity : (this.pitAt - game.distance) * WORLD_SCALE;
+    this.pitArea.visible = ahead < 300 && ahead > -45;
+    if (this.pitArea.visible) this.pitArea.position.set(roadOffset(game.distance, ahead) + this.pitSide * 8.5, 0, -ahead);
+    this.pitAhead = ahead;
+  }
+
+  updateGarage(game) {
+    const key = `${game.carId}:${game.paintId}`;
+    if (this.garageCarKey === key) return;
+    this.garageCarKey = key;
+    this.garageCars.clear();
+    const cars = [CARS.find((car) => car.id === game.carId), ...CARS.filter((car) => car.id !== game.carId)];
+    cars.forEach((car, index) => {
+      const model = this.art.car(car.id, index === 0 ? game.paintId : PAINTS[index % PAINTS.length].id, `car:${car.id}`);
+      if (index === 0) model.position.set(0, 0, -5.4);
+      else {
+        const side = index <= 4 ? -1 : 1;
+        model.position.set(side * 5.7, 0, -4 - (index - 1) % 4 * 3.8);
+        model.rotation.y = side < 0 ? Math.PI / 2 : -Math.PI / 2;
+      }
+      this.garageCars.add(model);
+    });
+  }
+
+  updateOccupants(game, options) {
+    if (this.occupantId !== game.characterId) {
+      this.occupants.traverse((object) => { if (object.isInstancedMesh) object.dispose(); });
+      this.occupants.clear();
+      this.occupantId = game.characterId;
+      const index = CHARACTERS.findIndex(({ id }) => id === game.characterId);
+      this.selfAvatar = this.art.character(game.characterId, { seated: true });
+      this.companionAvatar = this.art.character(CHARACTERS[(index + 1) % CHARACTERS.length].id, { seated: true });
+      this.occupants.add(this.selfAvatar, this.companionAvatar);
+      this.selfAvatar.rotation.y = Math.PI;
+      this.companionAvatar.position.set(.95, -.26, -.35);
+      this.companionAvatar.rotation.y = Math.PI;
+      this.companionAvatar.head.rotation.y = 1.9;
+    }
+    const pose = cameoPose(game.cameoTime, options.reducedMotion);
+    const lift = pose?.lift || 0;
+    this.selfAvatar.position.set(-.63 * lift, -.26 + .18 * lift, .2 - 1.25 * lift);
+    this.selfAvatar.head.rotation.y = pose ? Math.PI + .5 : 0;
+    this.selfAvatar.head.traverse((object) => object.layers.set(lift > .65 ? 0 : 3));
+    this.art.face(this.selfAvatar, pose?.facing || 'smile');
+    this.selfAvatar.tag.visible = Boolean(pose?.greeting);
+    this.selfAvatar.tag.rotation.y = Math.PI;
+    this.companionAvatar.head.rotation.z = options.reducedMotion ? 0 : Math.sin(game.elapsed * 1.6) * .025;
+    this.exhaust.visible = game.boosting && !options.garage;
+    this.exhaust.scale.z = options.reducedMotion ? 1 : .9 + Math.sin(game.elapsed * 26) * .1;
+  }
+
+  updateCast(game, options) {
+    const pit = game.state === 'pit' || game.state === 'pit-enter';
+    const ending = game.state === 'ending' || game.state === 'complete';
+    const approach = !options.garage && !pit && !ending && this.pitArea.visible && this.pitAhead > 0 && this.pitAhead < 160;
+    const driverIndex = CHARACTERS.findIndex(({ id }) => id === game.characterId);
+    this.castRoot.visible = options.garage || pit || ending || approach;
+    this.cast.forEach((avatar, index) => {
+      const id = avatar.userData.characterId;
+      avatar.visible = !pit || id === game.characterId || id === game.pitStop?.companionId;
+      if (approach) avatar.visible = index === (driverIndex + 1) % CHARACTERS.length || index === (driverIndex + 2) % CHARACTERS.length;
+      let [x, z] = this.castPositions[index];
+      if (pit) { x = this.rig.position.x + (id === game.characterId ? -1.7 : 1.7); z = -3.1; }
+      if (approach) { x = this.pitArea.position.x + (index === (driverIndex + 1) % CHARACTERS.length ? -1 : 1); z = this.pitArea.position.z - 3; }
+      if (ending) { x = (index - 4) * .85; z = -5.8 - Math.abs(index - 4) * .35; }
+      avatar.position.set(x, 0, z);
+      avatar.rotation.y = Math.atan2(this.rig.position.x - x, -z);
+      avatar.head.rotation.z = options.reducedMotion || game.state === 'paused' ? 0 : Math.sin(game.elapsed * 1.5 + index) * .025;
+      avatar.tag.visible = true;
+      avatar.tag.rotation.y = 0;
+    });
+  }
+
+  makeArcade() {
+    this.arcade = new THREE.Group();
+    this.mesh(this.arcade, 0, 4, -4, 18, 8, 1, C.panel);
+    this.mesh(this.arcade, 0, 7, 0, 18, 1.5, 8, C.bg);
+    for (const side of [-1, 1]) this.mesh(this.arcade, side * 8.5, 3, 0, 1, 6, 8, C.line);
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(11, 3.4), this.signTextures[4].mesh.material);
+    sign.position.set(0, 6.2, 4.02);
+    this.arcade.add(sign);
+    for (let i = 0; i < 7; i++) {
+      const x = (i - 3) * 1.6;
+      this.mesh(this.arcade, x, 1.3, 1, 1.1, 2.6, 1, C.bg);
+      this.mesh(this.arcade, x, 1.8, 1.52, .8, .85, .02, ACCENTS[i % 5], true);
+      this.mesh(this.arcade, x, 1.06, 1.72, 1.08, .16, .45, C.line);
+    }
+    this.scene.add(this.arcade);
+    this.arcade.visible = false;
+  }
+
+  updatePickups(game) {
+    let bodies = 0;
+    let lights = 0;
+    if (game.state !== 'title') {
+      const pickups = [...(game.missionStatus().complete ? [] : game.pickups), ...game.nitroPickups];
+      for (const pickup of pickups) {
+        if (pickup.resolved) continue;
+        const p = trafficPosition(game, pickup);
+        if (p.z < -230 || p.z > 10) continue;
+        const tape = pickup.kind === 'tape';
+        const nitro = pickup.kind === 'nitro';
+        this.place(this.pickupBodies, bodies++, p.x, 1, p.z, tape ? 1.1 : .65, tape ? .65 : 1, .28, tape ? C.pink : nitro ? C.cyan : C.green);
+        if (tape) {
+          for (const side of [-1, 1]) this.place(this.pickupLights, lights++, p.x + side * .25, 1.02, p.z + .15, .2, .2, .02, C.bg);
+          this.place(this.pickupLights, lights++, p.x, .78, p.z + .15, .6, .08, .02, C.text);
+        } else {
+          this.place(this.pickupBodies, bodies++, p.x, 1.55, p.z, .24, .12, .24, C.text);
+          this.place(this.pickupLights, lights++, p.x, 1.02, p.z + .15, .4, .08, .02, C.bg);
+          this.place(this.pickupLights, lights++, p.x, 1.02, p.z + .16, .08, .4, .02, C.bg);
+        }
+        this.place(this.pickupLights, lights++, p.x, .03, p.z, 2.6, .02, 6, nitro ? C.cyan : C.green);
+        for (const side of [-1, 1]) this.place(this.pickupLights, lights++, p.x + side * 1.3, 1.7, p.z, .06, 3.4, .06, C.cyan);
+        this.place(this.pickupLights, lights++, p.x, 3.4, p.z, 2.65, .06, .06, C.cyan);
+      }
+    }
+    this.finishBatch(this.pickupBodies, bodies);
+    this.finishBatch(this.pickupLights, lights);
+    this.arcade.visible = ['ending', 'complete'].includes(game.state);
+    this.arcade.position.set(roadOffset(game.distance, 16), 0, -16);
   }
 
   makeControllers() {
@@ -259,7 +472,7 @@ export class VRScene {
       this.mesh(grip, 0, 0, -.022, .054, .052, .02, C.text, true);
       controller.addEventListener('selectstart', () => {
         const hit = this.point(controller);
-        const action = this.panels.hit(hit);
+        const action = this.interaction(hit);
         if (action) this.onAction(action);
       });
       this.rig.add(controller, grip);
@@ -287,12 +500,42 @@ export class VRScene {
     this.rayMatrix.extractRotation(controller.matrixWorld);
     this.raycaster.ray.origin.setFromMatrixPosition(controller.matrixWorld);
     this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.rayMatrix);
-    const targets = [this.panels.menu.mesh, this.panels.dashboard.mesh].filter((mesh) => mesh.visible);
-    return this.raycaster.intersectObjects(targets, false)[0];
+    const targets = [this.panels.menu.mesh.visible ? this.panels.menu.mesh : this.panels.dashboard.mesh];
+    if (!targets[0].visible) targets.length = 0;
+    if (this.garage.visible) targets.push(...this.cast.map((avatar) => avatar.pickTarget), ...this.garageCars.children.map((car) => car.pickTarget));
+    return this.raycaster.intersectObjects(targets, false).find((hit) => {
+      let object = hit.object;
+      while (object) { if (!object.visible) return false; object = object.parent; }
+      return true;
+    });
+  }
+
+  interaction(hit) {
+    if (!hit) return null;
+    const panel = this.panels.hit(hit);
+    if (panel) return panel;
+    let object = hit.object;
+    while (object) {
+      if (object.userData.action) return object.userData.action;
+      object = object.parent;
+    }
+    return null;
+  }
+
+  selectAt(pointer) {
+    this.raycaster.setFromCamera(pointer, this.camera);
+    const targets = this.garage.visible ? [...this.cast.map((avatar) => avatar.pickTarget), ...this.garageCars.children.map((car) => car.pickTarget)] : [this.panels.dashboard.mesh];
+    const hit = this.raycaster.intersectObjects(targets, false).find((entry) => {
+      let object = entry.object;
+      while (object) { if (!object.visible) return false; object = object.parent; }
+      return true;
+    });
+    const action = this.interaction(hit);
+    if (action) this.onAction(action);
   }
 
   selectGaze() {
-    this.onAction(this.panels.hit(this.point(this.renderer.xr.isPresenting ? this.renderer.xr.getCamera() : this.camera)) || 'start');
+    this.onAction(this.interaction(this.point(this.renderer.xr.isPresenting ? this.renderer.xr.getCamera() : this.camera)) || 'start');
   }
 
   updateWorld(game) {
@@ -315,9 +558,10 @@ export class VRScene {
       const center = roadOffset(distance, ahead);
       const yaw = -Math.atan2(roadOffset(distance, ahead + 10) - roadOffset(distance, ahead - 10), 20);
       for (const side of [-1, 1]) {
-        this.place(this.structures, s++, center + side * 5.8, .45, -ahead, .2, .7, 20.5, C.line, yaw);
+        const pitOpening = side === this.pitSide && Math.abs(ahead - this.pitAhead) < 18;
+        if (!pitOpening) this.place(this.structures, s++, center + side * 5.8, .45, -ahead, .2, .7, 20.5, C.line, yaw);
         this.place(this.lights, l++, center + side * 5.55, .06, -ahead, .08, .03, 20.5, side < 0 ? C.yellow : C.cyan, yaw);
-        this.place(this.lights, l++, center + side * 5.64, .8, -ahead, .08, .045, 20.5, C.muted, yaw);
+        if (!pitOpening) this.place(this.lights, l++, center + side * 5.64, .8, -ahead, .08, .045, 20.5, C.muted, yaw);
         this.place(this.lights, l++, center + side * 1.65, .035, -ahead, .11, .025, 5, C.muted, yaw);
         this.place(this.structures, s++, center + side * 6.4, 3.6, -ahead, .12, 7.2, .12, C.line);
         this.place(this.structures, s++, center + side * 5.45, 7.2, -ahead, 2, .1, .12, C.line);
@@ -355,6 +599,13 @@ export class VRScene {
       sign.material = this.signTextures[((n % 5) + 5) % 5].mesh.material;
       this.place(this.structures, s++, x, 2.6, -ahead - .1, .12, 5.2, .12, C.muted);
     });
+    this.arcadeSigns.forEach((sign, i) => {
+      const n = Math.floor(travel / 55) - 1 + i;
+      const ahead = n * 55 - travel;
+      const side = i % 2 ? -1 : 1;
+      sign.position.set(roadOffset(distance, ahead) + side * (9 + i % 3 * 2.5), i % 3 ? 5 : 3.8, -ahead);
+      this.place(this.structures, s++, sign.position.x, sign.position.y / 2, sign.position.z - .05, .12, sign.position.y, .12, C.line);
+    });
     const ahead = (game.nextCheckpoint - game.distance) * WORLD_SCALE;
     this.checkpoint.mesh.visible = ahead < 420;
     if (ahead < 420) {
@@ -374,10 +625,18 @@ export class VRScene {
     const demo = [{ x: -.65, z: 80, color: 1 }, { x: .65, z: 135, color: 2 }, { x: 0, z: 235, color: 4 }];
     const cars = game.state === 'title' ? demo : game.traffic;
     const state = game.state === 'title' ? { distance: 0 } : game;
-    for (const car of cars.slice(0, 24)) {
+    this.trafficSprites.forEach((sprite) => { sprite.visible = false; });
+    for (const [index, car] of cars.slice(0, 24).entries()) {
       const p = trafficPosition(state, car);
       const color = ACCENTS[car.color % 5];
       const van = car.type === 'van';
+      const sprite = this.trafficSprites[index];
+      sprite.visible = !van;
+      if (!van) {
+        const map = this.art.carTexture(CARS[(car.id ?? index) % CARS.length].id, PAINTS[(car.color || 0) % PAINTS.length].id);
+        if (sprite.material.map !== map) { sprite.material.map = map; sprite.material.needsUpdate = true; }
+        sprite.position.set(p.x, 1.65 * 55 / 96 / 2, p.z + 1.98);
+      }
       this.place(this.trafficBodies, bodies++, p.x, .48, p.z, 1.6, .55, 3.8, color);
       this.place(this.trafficBodies, bodies++, p.x, van ? 1.05 : .91, p.z + .25, 1.38, van ? 1 : .48, van ? 3 : 1.85, color);
       this.place(this.trafficBodies, bodies++, p.x, van ? 1.15 : .96, p.z + (van ? 1.77 : 1.19), 1.17, .29, .035, C.night);
@@ -401,10 +660,12 @@ export class VRScene {
   }
 
   resetView() {
-    this.previewYaw = this.previewPitch = 0;
+    this.previewYaw = 0;
+    this.previewPitch = -.08;
     this.camera.position.set(0, SEAT_HEIGHT, 0);
     this.camera.rotation.set(0, 0, 0);
     this.camera.scale.set(1, 1, 1);
+    this.camera.fov = 72;
   }
 
   update(game, options, time) {
@@ -416,8 +677,22 @@ export class VRScene {
     this.paintMaterial.color.set(getPaint(game.paintId).hex);
     this.hood.scale.z = ['countach', 'f40', '240z'].includes(game.carId) ? 1.45 : 1.1;
     this.wheel.rotation.z = -game.steer * .65;
-    this.updateWorld(game);
-    this.updateTraffic(game);
+    if (!options.garage) {
+      this.updatePitArea(game);
+      this.updateWorld(game);
+      this.updateTraffic(game);
+      this.updatePickups(game);
+    }
+    this.updateGarage(game);
+    this.updateOccupants(game, options);
+    this.updateCast(game, options);
+    this.garage.visible = options.garage;
+    this.cockpit.visible = !options.garage;
+    this.occupants.visible = !options.garage && !['pit', 'pit-enter'].includes(game.state);
+    this.panels.dashboard.mesh.visible = !options.garage;
+    const roadVisible = !options.garage;
+    for (const object of [this.structures, this.lights, this.trafficBodies, this.trafficLights, this.pickupBodies, this.pickupLights, this.trafficDetails, ...this.ribbons.map((ribbon) => ribbon.mesh), ...this.signs, ...this.arcadeSigns]) object.visible = roadVisible;
+    if (!roadVisible) this.checkpoint.mesh.visible = this.tower.visible = this.arcade.visible = this.pitArea.visible = false;
     this.panels.update(game, options, time);
     const strength = options.comfort && game.state === 'playing' ? clamp((game.speed - 130) / 270, 0, .9) : 0;
     this.comfort.material.uniforms.strength.value = strength;
@@ -426,13 +701,13 @@ export class VRScene {
     this.panels.hover = null;
     for (const { controller, ray } of this.controllers) {
       const hit = controller.visible ? this.point(controller) : null;
-      const action = this.panels.hit(hit);
+      const action = this.interaction(hit);
       ray.visible = options.immersive && (this.panels.menu.mesh.visible || Boolean(action));
       ray.scale.z = hit?.distance || 3;
       if (action) this.panels.hover = action;
     }
     this.gaze.visible = options.immersive && this.panels.menu.mesh.visible && !this.controllers.some(({ controller }) => controller.visible);
-    if (time - this.lastMirror > .1) {
+    if (!options.garage && time - this.lastMirror > .1) {
       this.renderMirror();
       this.lastMirror = time;
     }
@@ -448,15 +723,15 @@ export class VRScene {
     const target = this.renderer.getRenderTarget();
     const xr = this.renderer.xr.enabled;
     const comfort = this.comfort.visible;
-    this.rig.visible = false;
+    this.mirror.visible = false;
     this.comfort.visible = false;
     this.renderer.xr.enabled = false;
-    this.mirrorCamera.position.set(this.rig.position.x + .35, 1, 1.2);
+    this.mirrorCamera.position.set(this.rig.position.x + .46, 1.3, -.68);
     this.renderer.setRenderTarget(this.mirrorTarget);
     this.renderer.render(this.scene, this.mirrorCamera);
     this.renderer.setRenderTarget(target);
     this.renderer.xr.enabled = xr;
-    this.rig.visible = true;
+    this.mirror.visible = true;
     this.comfort.visible = comfort;
   }
 
@@ -476,6 +751,7 @@ export class VRScene {
     materials.forEach((material) => material.dispose());
     textures.forEach((texture) => texture.dispose());
     this.mirrorTarget.dispose();
+    this.art.dispose();
     this.renderer.dispose();
   }
 }

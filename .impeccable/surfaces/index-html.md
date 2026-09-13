@@ -26,11 +26,17 @@ Pixel lettering, rectangular controls, lane markers, and instrument readouts for
 
 ### STORY
 
-The player selects DHH or Ryan, starts the engine, and reaches checkpoints before the timer expires.
+The player chooses from nine drivers, nine cars, and nine paint colors before a four-chapter campaign.
+The player collects a tape and power cells, passes traffic, and reaches the Omarchy arcade before sunrise.
+Chapter briefings state each objective. The final arrival scene and completion screen close the story.
 Nitro creates the signature moment through exhaust flames, speed lines, and a higher engine pitch.
 The user requests faster travel and a stronger sense of acceleration.
 Occasional boosts trigger the selected driver's cameo. The character emerges, turns toward the player, smiles, and returns inside the car.
 The first boost introduces the character. Later cameos use a cooldown and a chance roll.
+Nitro lasts eight seconds per tank, with blue canisters available along the route.
+Green roadside pit bays appear at random locations. Deliberate entry transitions to a full-body conversation about verified Omarchy topics.
+Driving past a bay continues the race without an interruption.
+The conversation pauses the clock and returns to the same lane and distance with a refilled tank.
 The selector uses pixel portraits and native radio controls. Ryan's portrait follows the supplied photo's glasses, swept-back hair, and goatee.
 DHH's portrait follows the supplied photo's wavy brown hair, blue-gray eyes, short beard, and broad smile.
 
@@ -40,6 +46,9 @@ A narrow identity strip sits above a large, crisp 16:9 game canvas.
 The title sits above the skyline and road, with the yellow car centered below it.
 A yellow start control sits within reach above a concise keyboard control strip.
 The original Omarchy block logo sits below the car on the start screen and appears on roadside signs.
+All nine character sprites form a lineup at the lower-right of the start screen.
+The lineup links to the larger garage page.
+Cliamp advertisements use its block wordmark, spectrum bars, and verified site address.
 Mobile places touch controls below the canvas and preserves the full road width.
 
 ### FORM

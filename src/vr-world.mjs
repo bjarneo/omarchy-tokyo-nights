@@ -4,6 +4,16 @@ export const SEAT_HEIGHT = 1.18;
 export const ROAD_HALF_WIDTH = 5;
 export const WORLD_SCALE = .5;
 
+export function advanceVRSimulation(game, delta) {
+  if (!Number.isFinite(delta)) return;
+  let remaining = Math.max(0, Math.min(delta, .25));
+  while (remaining > .000001) {
+    const step = Math.min(remaining, 1 / 60);
+    game.update(step);
+    remaining -= step;
+  }
+}
+
 export function roadOffset(distance, ahead) {
   return roadCurve(distance + ahead) * ahead * ahead / 1800;
 }
