@@ -218,3 +218,23 @@ test('the coffee gesture raises, holds, and lowers the cup', () => {
   assert.equal(gestureAt('coffee', 7).amount, 0);
   assert.equal(gestureAt('coffee', 14).amount, 0);
 });
+
+test('the Malibu map destination and display work while the glazed walls remain solid', () => {
+  const game = new ClubGame(); game.enter();
+  const desk = STATIONS.find((station) => station.id === 'malibu-desk');
+  assert.equal(game.devices[desk.id].power, false);
+  game.action('zone:malibu');
+  assert.equal(game.zone.id, 'malibu');
+  assert.ok(canStand(game.position.x, game.position.z, game.obstacles));
+  assert.ok(game.interact(desk.id, desk.stand));
+  assert.equal(game.panel().title, 'THE MALIBU DESK');
+  game.action('mode:coastal-desktop');
+  assert.equal(game.devices[desk.id].power, true);
+  assert.equal(game.devices[desk.id].mode, 'coastal-desktop');
+  game.action('mode:coastal-view');
+  assert.equal(game.devices[desk.id].mode, 'coastal-view');
+  game.action('power'); assert.equal(game.devices[desk.id].power, false);
+  assert.equal(game.interact(desk.id, { x: 18.3, z: -11.65 }), false);
+  assert.equal(teleportArc({ x: 17.3, y: 1.4, z: -12.7 }, { x: 1, y: -.1, z: 0 }, game.obstacles).valid, false);
+  assert.equal(teleportArc({ x: 16.8, y: 1.4, z: -13.1 }, { x: 0, y: -.1, z: -1 }, game.obstacles).valid, false);
+});

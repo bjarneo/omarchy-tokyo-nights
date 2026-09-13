@@ -57,7 +57,7 @@ export class ClubGame {
   constructor({ onChange = () => {}, onEvent = () => {}, best = {} } = {}) {
     this.onChange = onChange; this.onEvent = onEvent;
     this.state = 'entry'; this.previousState = 'explore'; this.position = { ...ENTRY };
-    this.devices = Object.fromEntries(STATIONS.map((station) => [station.id, { power: true, mode: station.initial, clock: 0, online: false, pattern: 0, pixels: [] }]));
+    this.devices = Object.fromEntries(STATIONS.map((station) => [station.id, { power: station.kind !== 'malibu', mode: station.initial, clock: 0, online: false, pattern: 0, pixels: [] }]));
     this.best = Object.fromEntries(['star', 'brick', 'snake'].map((id) => { const value = Number(best?.[id]); return [id, Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0]; }));
     this.selected = null; this.reply = ''; this.arcade = null; this.revision = 0;
     this.elapsed = 0;
@@ -117,7 +117,7 @@ export class ClubGame {
     }
     if (id.startsWith('mode:') && this.selected && this.devices[this.selected.id]) {
       const mode = id.slice(5);
-      const allowed = ['workbench', 'boing', 'starfield', 'basic', 'list', 'directory', 'spectrum', 'load', 'gem', 'midi', 'terminal', 'dial', 'messages', 'users', 'mac', 'sketch', 'console'];
+      const allowed = ['workbench', 'boing', 'starfield', 'basic', 'list', 'directory', 'spectrum', 'load', 'gem', 'midi', 'terminal', 'dial', 'messages', 'users', 'mac', 'sketch', 'console', 'coastal-desktop', 'coastal-view'];
       if (!allowed.includes(mode)) return;
       const device = this.devices[this.selected.id];
       device.power = true; device.mode = mode; device.clock = 0;
@@ -191,8 +191,9 @@ export class ClubGame {
       else if (station.software === 'race') controls = [option('race', 'OPEN TOKYO NIGHTS')];
       else if (station.software === 'music') controls = [option('song', songLabel)];
       else if (station.software === 'video') controls = [option('video', 'WATCH OMACON 2026')];
+      else if (station.software === 'coastal') controls = [option('mode:coastal-desktop', 'DESKTOP DEMO'), option('mode:coastal-view', 'COASTAL WALLPAPER')];
       else controls = [option(`game:${station.id === 'brick-break' || station.id === 'atari2600' ? 'brick' : 'star'}`, 'PLAY THE CLUB GAME'), option('mode:console', 'COLOR & SPRITE TEST')];
-      return { title: station.name.toUpperCase(), subtitle: `${station.year} · ${device.power ? 'POWER ON' : 'POWER OFF'}`, text: station.detail, options: [...controls, option('power', device.power ? 'POWER OFF' : 'POWER ON'), option('back', 'BACK TO THE ROOM')] };
+      return { title: station.name.toUpperCase(), subtitle: `${station.year ? `${station.year} · ` : ''}${device.power ? 'POWER ON' : 'POWER OFF'}`, text: station.detail, options: [...controls, option('power', device.power ? 'POWER OFF' : 'POWER ON'), option('back', 'BACK TO THE ROOM')] };
     }
     if (this.state === 'arcade') return { title: this.arcade.kind === 'snake' ? 'SNAKE' : this.arcade.kind === 'star' ? 'STAR PATROL' : 'BRICK BREAK', text: this.arcade.kind === 'snake' ? 'Use the stick or arrow keys to turn. Collect food and avoid the walls and your tail.' : 'Use the stick or arrow keys to move. Press a trigger or Space to fire in Star Patrol.', options: [option('start-game', this.arcade.state === 'playing' ? 'RESTART GAME' : 'START GAME'), option('pause', 'PAUSE'), option('back', 'LEAVE THE GAME')] };
     if (this.state === 'sketch') return { title: 'SKETCHPAD', text: 'Point at the Macintosh screen and press a trigger to paint a cell. Select a painted cell to erase it.', options: [option('clear-sketch', 'CLEAR SKETCH'), option('back', 'CLOSE SKETCHPAD')] };

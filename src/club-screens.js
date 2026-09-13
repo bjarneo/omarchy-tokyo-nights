@@ -1,4 +1,5 @@
 import { CLUB_CREW, ZONES, STATIONS, CLUB } from './club-data.mjs';
+import { drawMalibuDisplay } from './club-malibu-screen.js';
 
 const C = { ink: '#16161e', paper: '#c0caf5', cyan: '#7dcfff', gold: '#e0af68', pink: '#f7768e', purple: '#bb9af7', green: '#9ece6a', muted: '#9aa5ce' };
 const hash = (n) => { const value = Math.sin(n * 93.7) * 43758.54; return value - Math.floor(value); };
@@ -92,6 +93,7 @@ export function drawCabinet(ctx, game, width = 256, height = 192) {
 
 export function drawStation(ctx, station, state, game, jukebox) {
   ctx.imageSmoothingEnabled = false;
+  if (station.kind === 'malibu') { drawMalibuDisplay(ctx, state); return; }
   ctx.fillStyle = '#0b1015'; ctx.fillRect(0, 0, 256, 192);
   if (!state.power) return;
   const time = state.clock;
@@ -176,7 +178,7 @@ export function drawStation(ctx, station, state, game, jukebox) {
 export function drawMap(ctx, x, y, width, height, player) {
   ctx.fillStyle = '#24283b'; ctx.fillRect(x, y, width, height);
   for (const [i, zone] of ZONES.entries()) {
-    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639'][i];
+    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b'][i];
     ctx.fillRect(x + (zone.x - zone.width / 2 + 18) / CLUB.width * width, y + (zone.z - zone.depth / 2 + 14) / CLUB.depth * height, zone.width / CLUB.width * width, zone.depth / CLUB.depth * height);
   }
   ctx.fillStyle = C.muted;

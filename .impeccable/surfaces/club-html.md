@@ -19,6 +19,16 @@ The extension adds original project marks, a local Omarchy Radio jukebox, and a 
 The user approves official YouTube playback in the browser after XR ends.
 This ordinary extension preserves the established Tokyo Night identity, tokens, and direction contract.
 
+### Malibu desk addition
+
+The user approves a walk-up 3D recreation of the supplied `early-malibu.jpg` reference.
+A sculpted white loop desk, silver monitor, dark mesh chair, and tabletop objects occupy the northeast Amiga corner.
+Two tall glazed walls frame a layered coastal sunrise. Pale wood flooring and restrained warm light distinguish this corner.
+The curved desk silhouette and wraparound view carry the photograph's identity within the existing 3D room.
+The room map provides direct access. The monitor offers a local desktop and coastal wallpaper.
+
+Reference: https://world.hey.com/dhh/baefaf09/representations/eyJfcmFpbHMiOnsiZGF0YSI6MTExMTUxODU0MCwicHVyIjoiYmxvYl9pZCJ9fQ--3239074e8fbf1c8170c3478d039bf0d22fe53ca6887b7d534c79aae8d27d3ce5/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlszODQwLDI1NjBdLCJxdWFsaXR5Ijo2MCwibG9hZGVyIjp7InBhZ2UiOm51bGx9LCJjb2FsZXNjZSI6dHJ1ZX0sInB1ciI6InZhcmlhdGlvbiJ9fQ--b3779d742b3242a2a5284869a45b2a113e0c177f0450c29f0baca1ee780f6604/early-malibu.jpg
+
 ## Direction contract
 
 ### THESIS

@@ -10,7 +10,7 @@ export function addOpenSourceWalls(room) {
     { id: 'foundation', x: -10, z: 13.74, y: 2.65, width: 14, height: 3.1, yaw: Math.PI },
     { id: 'editors', x: 10, z: 13.74, y: 2.65, width: 14, height: 3.1, yaw: Math.PI },
     { id: 'languages', x: -17.74, z: -7.5, y: 3.1, width: 11.2, height: 2.7, yaw: Math.PI / 2 },
-    { id: 'apps', x: 17.74, z: -7.5, y: 3.1, width: 11.2, height: 2.7, yaw: -Math.PI / 2 },
+    { id: 'apps', x: 17.74, z: -3.1, y: 3.1, width: 11.2, height: 2.7, yaw: -Math.PI / 2 },
     { id: 'tooling', x: -17.74, z: 6.5, y: 3.1, width: 12.5, height: 2.7, yaw: Math.PI / 2 },
   ];
   room.at(0, 0);

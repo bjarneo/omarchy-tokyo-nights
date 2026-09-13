@@ -510,3 +510,81 @@ test('the headset selects jukebox tracks and exits XR before the official video 
   await expect(page.locator('body')).toHaveAttribute('data-state', 'explore');
   expect(errors).toEqual([]);
 });
+
+test('the Malibu corner has a reachable desk, live display, and motion-aware coastal view', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.evaluate(() => clubView.room.galleryReady);
+  expect(await page.evaluate(() => clubView.room.galleryLoaded)).toBe(65);
+  await page.locator('#club-explore').click(); await page.locator('#club-map').click();
+  await page.getByRole('button', { name: 'MALIBU CORNER', exact: true }).click();
+  await expect(page.locator('#club-location')).toHaveText('MALIBU CORNER');
+  await page.evaluate(() => { if (!clubView.teleport({ x: 13.9, z: -8.8 }, -.55)) throw new Error('The overview is blocked.'); clubView.pitch = -.18; });
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-malibu-desktop.png', fullPage: true });
+  await approach(page, 'malibu-desk'); await page.keyboard.press('KeyE');
+  await expect(page.locator('#club-panel-title')).toHaveText('THE MALIBU DESK');
+  await expect(page.locator('#club-panel-subtitle')).toHaveText('POWER OFF');
+  await page.getByRole('button', { name: 'DESKTOP DEMO', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => clubModel.devices['malibu-desk'].mode)).toBe('coastal-desktop');
+  await page.screenshot({ path: '.impeccable/review/club-malibu-display.png', fullPage: true });
+  await page.keyboard.press('KeyE'); await page.getByRole('button', { name: 'COASTAL WALLPAPER', exact: true }).click();
+  expect(await page.evaluate(() => clubView.room.malibu.water.uniforms.time.value)).toBe(0);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect.poll(() => page.evaluate(() => clubView.room.malibu.water.uniforms.time.value)).toBeGreaterThan(0);
+  await page.keyboard.press('KeyP');
+  const time = await page.evaluate(() => clubView.room.malibu.water.uniforms.time.value);
+  await page.waitForTimeout(300);
+  expect(await page.evaluate(() => clubView.room.malibu.water.uniforms.time.value)).toBe(time);
+  expect(errors).toEqual([]);
+});
+
+test('the Malibu desk and map remain usable on a narrow touch display', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+  const page = await context.newPage();
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.locator('#club-explore').tap(); await page.locator('#club-touch-map').tap();
+  await page.getByRole('button', { name: 'MALIBU CORNER', exact: true }).tap();
+  await expect(page.locator('#club-location')).toHaveText('MALIBU CORNER');
+  await page.evaluate(() => { if (!clubView.teleport({ x: 13.45, z: -7.7 }, -.51)) throw new Error('The overview is blocked.'); clubView.pitch = -.15; });
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-malibu-mobile.png', fullPage: true });
+  await approach(page, 'malibu-desk'); await page.locator('#club-touch-use').tap();
+  await expect(page.locator('#club-panel-title')).toHaveText('THE MALIBU DESK');
+  await page.getByRole('button', { name: 'DESKTOP DEMO', exact: true }).tap();
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'explore');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  await context.close();
+});
+
+test('the headset reaches the Malibu corner and operates its monitor through spatial controls', async ({ page }) => {
+  test.setTimeout(65_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await emulate(page);
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-enter-vr')).toBeEnabled(); await observe(page);
+  await page.locator('#club-enter-vr').click(); await xrClick(page, 'explore');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 1));
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'map');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 0));
+  expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
+  await xrClick(page, 'zone:malibu');
+  await expect(page.locator('#club-location')).toHaveText('MALIBU CORNER');
+  await page.evaluate(() => {
+    clubView.teleport({ x: 13.2, z: -8 }, -.59); xrDevice.quaternion.set(0, 0, 0, 1);
+    for (const controller of Object.values(xrDevice.controllers)) controller.quaternion.set(Math.SQRT1_2, 0, 0, Math.SQRT1_2);
+  });
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-malibu-headset.png', fullPage: true });
+  await approach(page, 'malibu-desk');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('THE MALIBU DESK');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await xrClick(page, 'mode:coastal-desktop');
+  await expect.poll(() => page.evaluate(() => clubModel.devices['malibu-desk'].power)).toBe(true);
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'explore');
+  await page.evaluate(() => xrDevice.activeSession.end());
+  expect(errors).toEqual([]);
+});

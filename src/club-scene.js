@@ -20,7 +20,7 @@ export class ClubScene {
     this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#242536'); this.scene.fog = new THREE.Fog('#343342', 34, 70);
     this.scene.add(new THREE.HemisphereLight('#dbd4d6', '#736152', 2.5));
     const light = new THREE.DirectionalLight('#ffe0b7', 1.5); light.position.set(-4, 9, 8); this.scene.add(light);
-    this.camera = new THREE.PerspectiveCamera(75, 1, .04, 90); this.camera.position.y = CLUB.eyeHeight;
+    this.camera = new THREE.PerspectiveCamera(75, 1, .04, 220); this.camera.position.y = CLUB.eyeHeight;
     this.rig = new THREE.Group(); this.rig.position.set(ENTRY.x, 0, ENTRY.z); this.rig.add(this.camera); this.scene.add(this.rig);
     this.art = new VRArt(); this.room = new ClubRoom(this.art); this.scene.add(this.room.root);
     this.panel = surface(1024, 640, 1.7, 1.0625); this.scene.add(this.panel.mesh);
@@ -357,6 +357,7 @@ export class ClubScene {
       avatar.tag.visible = distance < 9;
       if (avatar.tag.visible) avatar.tag.lookAt(this.head);
     });
+    this.room.malibu.update(game.elapsed, reducedMotion);
     this.hover = null;
     let aimed = null;
     for (const { ray, line } of this.controllers) {
@@ -377,7 +378,7 @@ export class ClubScene {
   dispose() {
     this.renderer.setAnimationLoop(null);
     const geometries = new Set(); const materials = new Set(); const textures = new Set();
-    this.scene.traverse((object) => { if (object.geometry) geometries.add(object.geometry); if (object.material) materials.add(object.material); if (object.material?.map) textures.add(object.material.map); if (object.isInstancedMesh) object.dispose(); });
+    this.scene.traverse((object) => { if (object.geometry) geometries.add(object.geometry); if (object.material) materials.add(object.material); if (object.material?.map) textures.add(object.material.map); if (object.material?.envMap) textures.add(object.material.envMap); if (object.isInstancedMesh) object.dispose(); });
     geometries.forEach((geometry) => geometry.dispose()); materials.forEach((material) => material.dispose()); textures.forEach((texture) => texture.dispose());
     this.art.dispose(); this.renderer.dispose();
   }

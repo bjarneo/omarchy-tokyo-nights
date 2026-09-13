@@ -1,8 +1,9 @@
 import * as THREE from '../assets/three.module.js';
-import { CLUB, STATIONS, CLUB_CREW, FURNITURE, WALLS } from './club-data.mjs';
+import { CLUB, STATIONS, CLUB_CREW, FURNITURE, WALLS, MALIBU } from './club-data.mjs';
 import { ClubAvatarFactory } from './club-avatars.js';
 import { CREW_GESTURES } from './club-motion.mjs';
 import { addOpenSourceWalls } from './club-logo-wall.js';
+import { MalibuCorner } from './club-malibu.js';
 
 const C = { wood: '#80604b', darkWood: '#503d36', beige: '#b7b29a', edge: '#777b73', plastic: '#d5d1b9', ink: '#16161e', dark: '#24283b', cyan: '#7dcfff', pink: '#f7768e', gold: '#e0af68', green: '#9ece6a', paper: '#c0caf5' };
 
@@ -98,6 +99,22 @@ export class ClubRoom {
     floor.renderOrder = -20; floor.material.depthWrite = false;
     floor.rotation.x = -Math.PI / 2; floor.position.y = -.02; this.root.add(floor);
     for (const wall of WALLS) {
+      if (wall.id === 'north-wall') {
+        const width = 18 + MALIBU.northStart; const windowWidth = 18 - MALIBU.northStart;
+        this.box(-18 + width / 2, 2.3, -14, width, 4.6, .35, '#736f70');
+        this.box(-18 + width / 2, .55, -14, width, 1.1, .41, C.darkWood);
+        this.box(MALIBU.northStart + windowWidth / 2, (4.6 + MALIBU.lintel) / 2, -14, windowWidth, 4.6 - MALIBU.lintel, .35, '#736f70');
+        this.box(MALIBU.northStart + windowWidth / 2, MALIBU.sill / 2, -14, windowWidth, MALIBU.sill, .35, '#a6a7a1');
+        continue;
+      }
+      if (wall.id === 'east-wall') {
+        const depth = 14 - MALIBU.eastEnd; const windowDepth = 14 + MALIBU.eastEnd;
+        this.box(18, 2.3, MALIBU.eastEnd + depth / 2, .35, 4.6, depth, '#736f70');
+        this.box(18, .55, MALIBU.eastEnd + depth / 2, .41, 1.1, depth, C.darkWood);
+        this.box(18, (4.6 + MALIBU.lintel) / 2, -14 + windowDepth / 2, .35, 4.6 - MALIBU.lintel, windowDepth, '#736f70');
+        this.box(18, MALIBU.sill / 2, -14 + windowDepth / 2, .35, MALIBU.sill, windowDepth, '#a6a7a1');
+        continue;
+      }
       this.box(wall.x, wall.height / 2, wall.z, wall.width, wall.height, wall.depth, '#736f70');
       this.box(wall.x, .55, wall.z, wall.width + .06, 1.1, wall.depth + .06, C.darkWood);
     }
@@ -110,12 +127,13 @@ export class ClubRoom {
       }
     }
     for (let z = -12.5; z <= 12; z += 1.2) {
-      this.box(-17.78, .55, z, .04, 1.05, .035, '#9b7860'); this.box(17.78, .55, z, .04, 1.05, .035, '#9b7860');
+      this.box(-17.78, .55, z, .04, 1.05, .035, '#9b7860');
+      if (z > MALIBU.eastEnd) this.box(17.78, .55, z, .04, 1.05, .035, '#9b7860');
     }
     this.omarchyWall();
-    this.sign(['AMIGA & 8-BIT LAB', 'DISKS · DEMOS · BASIC'], 11.6, 3.15, -13.76, 7, C.cyan);
+    this.sign(['AMIGA & 8-BIT LAB', 'DISKS · DEMOS · BASIC'], 10.2, 3.15, -13.76, 5.5, C.cyan);
     this.sign(['THE BBS CORNER', '1200 BAUD · LOCAL TERMINAL'], -11.6, 3.15, -13.76, 7, C.green);
-    this.sign(['NINTENDO & SEGA', 'CARTRIDGES · CRTs · CONTROLLERS'], 17.76, 3.1, 5, 6, C.pink, -Math.PI / 2);
+    this.sign(['NINTENDO & SEGA', 'CARTRIDGES · CRTs · CONTROLLERS'], 17.76, 3.1, 6.6, 6, C.pink, -Math.PI / 2);
     this.sign(['ARCADE ROW', 'ORIGINAL CLUB GAMES'], -12.8, 3.75, 6, 4, C.cyan);
     this.sign(['OPEN SOURCE CLUB', 'SHARE CODE · MAKE THINGS'], 0, 3.85, 13.74, 2.7, C.gold, Math.PI);
     this.sign(['EXIT TO THE GARAGE', 'TOKYO NIGHTS'], 0, 2.8, 13.75, 4, C.cyan, Math.PI);
@@ -182,6 +200,7 @@ export class ClubRoom {
   }
 
   buildStation(station) {
+    if (station.kind === 'malibu') { this.malibu = new MalibuCorner(this, station); return; }
     this.at(station.x, station.z, station.yaw);
     const color = station.id === 'spectrum' ? '#30313c' : station.id === 'c64' ? '#aaa084' : station.id === 'cpc464' ? '#404950' : C.beige;
     if (station.kind === 'video') {
@@ -272,6 +291,7 @@ export class ClubRoom {
   }
 
   buildFurniture(item) {
+    if (item.kind === 'malibu-chair') return;
     this.at(item.x, item.z);
     if (item.kind === 'sofa') {
       this.box(0, .28, 0, item.width, .45, item.depth, item.color);
