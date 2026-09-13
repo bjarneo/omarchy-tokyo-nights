@@ -27,7 +27,7 @@ export function createStaticServer() {
   try {
     const pathname = decodeURIComponent(new URL(request.url, 'http://localhost').pathname);
     const relative = pathname === '/' ? 'index.html' : pathname.slice(1);
-    if (!/^(index\.html|style\.css|(?:music-video|vr|garage)\.(html|css)|src\/[\w.-]+|assets\/(?:[\w.-]+|cameo-cards\/[\w-]+\.png)|exports\/(?:[\w-]+\.mp4|cameo-cards\.zip|cameo-cards\/[\w-]+\.png))$/.test(relative)) {
+    if (!/^(index\.html|(?:style|radio)\.css|(?:music-video|vr|garage|club)\.(html|css)|src\/[\w.-]+|assets\/(?:[\w.-]+|(?:cameo-cards|patrons)\/[\w-]+\.png|(?:open-source|radio)\/[\w.-]+\.(?:svg|png|mp3|json|txt|md))|exports\/(?:[\w-]+\.mp4|cameo-cards\.zip|cameo-cards\/[\w-]+\.png))$/.test(relative)) {
       response.writeHead(404).end('Not found.');
       return;
     }

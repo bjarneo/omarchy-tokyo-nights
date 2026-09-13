@@ -6,6 +6,8 @@ import { VRArt } from './vr-art.js';
 import { loadOmarchyLogo } from './omarchy-logo.js';
 import { CockpitPanels, canvasPanel } from './vr-panels.js';
 import { SEAT_HEIGHT, ROAD_HALF_WIDTH, WORLD_SCALE, roadOffset, trafficPosition } from './vr-world.mjs';
+import { VRRocket } from './vr-rocket.js';
+import { FOUNDING_PATRONS } from './patrons.mjs';
 
 const C = { bg: 0x16161e, night: 0x1a1b26, panel: 0x24283b, line: 0x343b58, muted: 0x9aa5ce, text: 0xc0caf5, yellow: 0xe0af68, cyan: 0x7dcfff, pink: 0xf7768e, purple: 0xbb9af7, green: 0x9ece6a };
 const hash = (n) => { const value = Math.sin(n * 127.1 + 311.7) * 43758.5453; return value - Math.floor(value); };
@@ -48,8 +50,12 @@ export class VRScene {
     this.makeArcade();
     this.makeCockpit();
     this.panels = new CockpitPanels(this.rig, this.art);
+    this.radioCase = this.mesh(this.rig, .9, .94, -1.022, .77, .34, .04, C.line);
+    this.radioCase.rotation.x = -.12;
     this.makeGarage();
     this.makeArcadeElements();
+    this.makePatrons();
+    this.rocket = new VRRocket(this.scene, this.art);
     this.makeControllers();
     this.makeComfortMask();
     this.raycaster = new THREE.Raycaster();
@@ -127,6 +133,7 @@ export class VRScene {
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -1;
     this.scene.add(ground);
+    this.skyGround = ground;
     const positions = new Float32Array(360 * 3);
     for (let i = 0; i < 360; i++) {
       const angle = hash(i) * Math.PI * 2;
@@ -136,9 +143,11 @@ export class VRScene {
     geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const stars = new THREE.Points(geometry, new THREE.PointsMaterial({ color: C.muted, size: .5, fog: false, sizeAttenuation: true }));
     this.scene.add(stars);
+    this.skyStars = stars;
     const moon = new THREE.Mesh(new THREE.CircleGeometry(13, 20), new THREE.MeshBasicMaterial({ color: C.text, fog: false }));
     moon.position.set(-160, 150, -420);
     this.scene.add(moon);
+    this.skyMoon = moon;
     this.tower = new THREE.Group();
     for (let level = 0; level < 5; level++) {
       const y = level * 12;
@@ -343,6 +352,37 @@ export class VRScene {
     this.pitAhead = ahead;
   }
 
+  makePatrons() {
+    this.roadPatrons = FOUNDING_PATRONS.map(({ id }) => {
+      const group = new THREE.Group();
+      const sign = this.art.patronSign(id);
+      sign.position.y = 3.4;
+      group.add(sign);
+      this.mesh(group, 0, 1.2, -.05, .12, 2.4, .12, C.line);
+      this.scene.add(group);
+      return { id, group };
+    });
+    this.garagePatrons = FOUNDING_PATRONS.slice(0, 3).map(({ id }, index) => {
+      const sign = this.art.patronSign(id);
+      sign.position.set((index - 1) * 6.8, 4.4, -15.5);
+      this.garage.add(sign);
+      return sign;
+    });
+  }
+
+  updatePatrons(game, roadVisible) {
+    for (const { id, group } of this.roadPatrons) {
+      const patron = game.patronTour?.roadside.find((entry) => entry.id === id);
+      const ahead = patron ? (patron.at - game.distance) * WORLD_SCALE : Infinity;
+      group.visible = roadVisible && ahead > -18 && ahead < 350;
+      if (group.visible) group.position.set(roadOffset(game.distance, ahead) + patron.side * 9.5, 0, -ahead);
+    }
+    if (game.patronTour && this.garagePatronTour !== game.patronTour) {
+      this.garagePatronTour = game.patronTour;
+      this.garagePatrons.forEach((sign, index) => { sign.material.map = this.art.patronTexture(game.patronTour.garage[index]); });
+    }
+  }
+
   updateGarage(game) {
     const key = `${game.carId}:${game.paintId}`;
     if (this.garageCarKey === key) return;
@@ -502,6 +542,7 @@ export class VRScene {
     this.raycaster.ray.direction.set(0, 0, -1).applyMatrix4(this.rayMatrix);
     const targets = [this.panels.menu.mesh.visible ? this.panels.menu.mesh : this.panels.dashboard.mesh];
     if (!targets[0].visible) targets.length = 0;
+    if (this.panels.radio.mesh.visible) targets.push(this.panels.radio.mesh);
     if (this.garage.visible) targets.push(...this.cast.map((avatar) => avatar.pickTarget), ...this.garageCars.children.map((car) => car.pickTarget));
     return this.raycaster.intersectObjects(targets, false).find((hit) => {
       let object = hit.object;
@@ -524,7 +565,7 @@ export class VRScene {
 
   selectAt(pointer) {
     this.raycaster.setFromCamera(pointer, this.camera);
-    const targets = this.garage.visible ? [...this.cast.map((avatar) => avatar.pickTarget), ...this.garageCars.children.map((car) => car.pickTarget)] : [this.panels.dashboard.mesh];
+    const targets = this.garage.visible ? [...this.cast.map((avatar) => avatar.pickTarget), ...this.garageCars.children.map((car) => car.pickTarget)] : [this.panels.dashboard.mesh, this.panels.radio.mesh];
     const hit = this.raycaster.intersectObjects(targets, false).find((entry) => {
       let object = entry.object;
       while (object) { if (!object.visible) return false; object = object.parent; }
@@ -558,7 +599,8 @@ export class VRScene {
       const center = roadOffset(distance, ahead);
       const yaw = -Math.atan2(roadOffset(distance, ahead + 10) - roadOffset(distance, ahead - 10), 20);
       for (const side of [-1, 1]) {
-        const pitOpening = side === this.pitSide && Math.abs(ahead - this.pitAhead) < 18;
+        const pitOpening = side === this.pitSide && Math.abs(ahead - this.pitAhead) < 18
+          || game.rocketAt != null && side === Math.sign(game.rocketLane) && Math.abs(ahead - (game.rocketAt - game.distance) * WORLD_SCALE) < 18;
         if (!pitOpening) this.place(this.structures, s++, center + side * 5.8, .45, -ahead, .2, .7, 20.5, C.line, yaw);
         this.place(this.lights, l++, center + side * 5.55, .06, -ahead, .08, .03, 20.5, side < 0 ? C.yellow : C.cyan, yaw);
         if (!pitOpening) this.place(this.lights, l++, center + side * 5.64, .8, -ahead, .08, .045, 20.5, C.muted, yaw);
@@ -670,6 +712,9 @@ export class VRScene {
 
   update(game, options, time) {
     this.rig.position.x = game.playerX * ROAD_HALF_WIDTH - .35;
+    const spaceView = this.rocket.update(game, options, this.rig.position.x);
+    this.skyGround.visible = this.skyStars.visible = this.skyMoon.visible = !spaceView;
+    if (!spaceView) this.scene.background.set(C.night);
     if (!this.renderer.xr.isPresenting) {
       this.camera.position.set(0, SEAT_HEIGHT, 0);
       this.camera.rotation.set(this.previewPitch, this.previewYaw, 0, 'YXZ');
@@ -677,7 +722,7 @@ export class VRScene {
     this.paintMaterial.color.set(getPaint(game.paintId).hex);
     this.hood.scale.z = ['countach', 'f40', '240z'].includes(game.carId) ? 1.45 : 1.1;
     this.wheel.rotation.z = -game.steer * .65;
-    if (!options.garage) {
+    if (!options.garage && !spaceView) {
       this.updatePitArea(game);
       this.updateWorld(game);
       this.updateTraffic(game);
@@ -686,11 +731,14 @@ export class VRScene {
     this.updateGarage(game);
     this.updateOccupants(game, options);
     this.updateCast(game, options);
-    this.garage.visible = options.garage;
-    this.cockpit.visible = !options.garage;
+    this.garage.visible = options.garage && !spaceView;
+    this.cockpit.visible = !options.garage || spaceView;
     this.occupants.visible = !options.garage && !['pit', 'pit-enter'].includes(game.state);
     this.panels.dashboard.mesh.visible = !options.garage;
-    const roadVisible = !options.garage;
+    this.panels.radio.mesh.visible = this.radioCase.visible = !options.garage;
+    const roadVisible = !options.garage && !spaceView;
+    this.updatePatrons(game, roadVisible);
+    if (spaceView) this.castRoot.visible = false;
     for (const object of [this.structures, this.lights, this.trafficBodies, this.trafficLights, this.pickupBodies, this.pickupLights, this.trafficDetails, ...this.ribbons.map((ribbon) => ribbon.mesh), ...this.signs, ...this.arcadeSigns]) object.visible = roadVisible;
     if (!roadVisible) this.checkpoint.mesh.visible = this.tower.visible = this.arcade.visible = this.pitArea.visible = false;
     this.panels.update(game, options, time);

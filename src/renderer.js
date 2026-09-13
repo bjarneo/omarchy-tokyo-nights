@@ -6,6 +6,9 @@ import { getCar, getPaint } from './cars.mjs';
 import { makeCarSprite } from './car-sprites.js';
 import { makeFullCharacter } from './full-characters.js';
 import { drawGarageBackdrop } from './garage-scene.js';
+import { isRocketView } from './rocket.mjs';
+import { drawRocket, renderRocketFlight, renderMars } from './rocket-art.js';
+import { getPatronPoster, loadPatronArt } from './patron-art.js';
 
 const WORLD_SPEED = 1.85;
 
@@ -317,6 +320,7 @@ export class Renderer {
     this.player = makePlayer();
     this.carSprites = new Map();
     this.fullCharacters = new Map();
+    this.patronsReady = loadPatronArt();
     this.drivers = Object.fromEntries(CHARACTERS.map(({ id }) => [id, {
       back: makeDriver('back', id), profile: makeDriver('profile', id), smile: makeDriver('smile', id),
     }]));
@@ -369,13 +373,21 @@ export class Renderer {
 
   getFullCharacter(characterId, facing = 'smile') {
     const character = getCharacter(characterId);
-    const key = `${character.id}:${facing}`;
-    if (!this.fullCharacters.has(key)) this.fullCharacters.set(key, makeFullCharacter(this.drivers[character.id][facing], character.id));
+    const key = `${character.id}:${facing}:${character.id === 'dhh' && this.logo ? 'branded' : 'plain'}`;
+    if (!this.fullCharacters.has(key)) this.fullCharacters.set(key, makeFullCharacter(this.drivers[character.id][facing], character.id, { logo: this.logo }));
     return this.fullCharacters.get(key);
   }
 
-  drawGarage(ctx, width, height) {
+  getPatronPoster(id) {
+    return getPatronPoster(id);
+  }
+
+  drawGarage(ctx, width, height, patrons = []) {
     drawGarageBackdrop(ctx, width, height, { logo: this.logo });
+    const posterWidth = Math.round(width * .155);
+    patrons.forEach((id, index) => {
+      ctx.drawImage(getPatronPoster(id), Math.round(width * (.195 + index * .313) - posterWidth / 2), Math.round(height * .29), posterWidth, Math.round(posterWidth * 88 / 160));
+    });
   }
 
   getCarSprite(carId, paintId) {
@@ -547,6 +559,7 @@ export class Renderer {
       if (z < 0) continue;
       for (const side of [-1, 1]) {
         if (this.pitBay && side === Math.sign(this.pitBay.lane) && Math.abs((z + this.distance) / WORLD_SPEED - this.pitBay.at) < 45) continue;
+        if (this.rocketPad && side === Math.sign(this.rocketPad.lane) && Math.abs((z + this.distance) / WORLD_SPEED - this.rocketPad.at) < 45) continue;
         const a = this.project(z, side * 1.10);
         const b = this.project(z + 24, side * 1.10);
         const heightA = 15 * a.scale;
@@ -656,6 +669,16 @@ export class Renderer {
     ctx.restore();
   }
 
+  drawPatron(z, side, id) {
+    const p = this.project(z, side * 1.5);
+    if (p.scale < .05 || p.x < -150 || p.x > this.width + 150) return;
+    const width = Math.round(160 * p.scale * 1.1);
+    const height = Math.round(width * 88 / 160);
+    const bottom = Math.round(p.y - 58 * p.scale);
+    rect(this.ctx, p.x - 2 * p.scale, bottom, Math.max(1, 4 * p.scale), p.y - bottom, C.line);
+    this.ctx.drawImage(getPatronPoster(id), Math.round(p.x - width / 2), bottom - height, width, height);
+  }
+
   drawPickup(pickup) {
     const z = pickup.z * WORLD_SPEED - this.distance;
     if (pickup.resolved || z < 0 || z > 650) return;
@@ -718,6 +741,26 @@ export class Renderer {
     text(this.ctx, 'P', -5, -92, C.green, 4);
     text(this.ctx, 'PIT', -6, -73, C.text);
     this.ctx.restore();
+  }
+
+  drawRocketPad() {
+    if (!this.rocketPad) return;
+    const relative = this.rocketPad.at * WORLD_SPEED - this.distance;
+    if (relative < -55 || relative > 1200) return;
+    const side = Math.sign(this.rocketPad.lane);
+    const near = Math.max(0, relative - 32 * WORLD_SPEED);
+    const far = Math.max(1, relative + 20 * WORLD_SPEED);
+    const corners = [this.project(near, side * 1.03), this.project(near, side * 1.44), this.project(far, side * 1.44), this.project(far, side * 1.03)];
+    polygon(this.ctx, corners.map(({ x, y }) => [x, y]), '#294555');
+    this.ctx.strokeStyle = C.cyan;
+    this.ctx.lineWidth = Math.max(1, corners[0].scale * 3);
+    this.ctx.beginPath();
+    corners.forEach(({ x, y }, index) => index ? this.ctx.lineTo(Math.round(x), Math.round(y)) : this.ctx.moveTo(Math.round(x), Math.round(y)));
+    this.ctx.closePath();
+    this.ctx.stroke();
+    const p = this.project(Math.max(0, relative), this.rocketPad.lane);
+    drawRocket(this.ctx, p.x, p.y, p.scale * 1.25, { logo: this.logo, open: true });
+    if (p.scale > .13) text(this.ctx, 'MARS', p.x - 8, p.y + 6, C.cyan);
   }
 
   renderEnding(game) {
@@ -932,6 +975,14 @@ export class Renderer {
 
   render(game) {
     this.frame++;
+    if (isRocketView(game)) {
+      renderRocketFlight(this.ctx, this.width, this.height, game, { logo: this.logo, car: this.getCarSprite(game.carId, game.paintId), reducedMotion: this.reducedMotion });
+      return;
+    }
+    if (game.state === 'mars') {
+      renderMars(this.ctx, this.width, this.height, { logo: this.logo, car: this.getCarSprite(game.carId, game.paintId), figure: this.getFullCharacter(game.characterId), patronPoster: game.patronTour && getPatronPoster(game.patronTour.mars[0]) });
+      return;
+    }
     if (game.state === 'pit' && game.pitStop) {
       this.renderPitStop(game);
       return;
@@ -944,6 +995,7 @@ export class Renderer {
     this.distance = (demo ? this.reducedMotion ? 300 : game.demoDistance : game.distance) * WORLD_SPEED;
     this.playerX = demo ? 0 : game.playerX;
     this.pitBay = !demo && game.pitStopAt != null ? { at: game.pitStopAt, lane: game.pitStopLane } : null;
+    this.rocketPad = !demo && game.rocketAt != null ? { at: game.rocketAt, lane: game.rocketLane } : null;
     const targetFocalLength = game.boosting && !this.reducedMotion ? 42 : 55;
     this.focalLength += (targetFocalLength - this.focalLength) * .08;
     const ctx = this.ctx;
@@ -954,6 +1006,7 @@ export class Renderer {
     ctx.drawImage(this.background, shift, 0, this.width, this.horizon + 10, 0, 0, this.width, this.horizon + 10);
     this.drawRoad();
     this.drawPitBay();
+    this.drawRocketPad();
 
     const objects = [];
     for (let i = 0; i < 9; i++) {
@@ -968,6 +1021,10 @@ export class Renderer {
       }
     }
     const checkpointZ = game.nextCheckpoint * WORLD_SPEED - this.distance;
+    for (const patron of game.patronTour?.roadside || []) {
+      const z = patron.at * WORLD_SPEED - this.distance;
+      if (z > 0 && z < 650) objects.push({ z, draw: () => this.drawPatron(z, patron.side, patron.id) });
+    }
     if (!demo && checkpointZ < 600) objects.push({ z: checkpointZ, draw: () => this.drawGate(checkpointZ) });
     const traffic = demo ? [
       { z: this.distance + 108, x: -.65, color: 3, type: 'car' },

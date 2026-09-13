@@ -65,8 +65,7 @@ export class SpatialRaceAudio extends ArcadeAudio {
   }
 
   dispose() {
-    this.engine?.stop();
     this.voices?.forEach((voice) => voice.oscillator.stop());
-    void this.context?.close().catch(() => {});
+    super.dispose();
   }
 }

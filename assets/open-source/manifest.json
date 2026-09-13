@@ -1,0 +1,1013 @@
+{
+  "simpleIconsVersion": "16.31.0",
+  "omarchyCommit": "760a546a1c883d9bf3f33e3675920318fbf3fe76",
+  "references": [
+    {
+      "file": "README.md",
+      "sha256": "661a0208f2fb226d587eab16b0c35389bcecfe41ad94a315ab35ccf48bb06e6b",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/README.md"
+    },
+    {
+      "file": "manual/29-other-packages.md",
+      "sha256": "ba65ff6ac9a1141cdf28d8b642f301d1ed44fbfb020008f45582ece738d5f4a9",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/manual/29-other-packages.md"
+    },
+    {
+      "file": "install/omarchy-other.packages",
+      "sha256": "ea065a5168a1b7b7ef69d26a0bdb035654a18d4a6bebffea6263ed15c1991bf4",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/install/omarchy-other.packages"
+    },
+    {
+      "file": "install/omarchy-base.packages",
+      "sha256": "778e206043d773ceb49fad2f847ce38302ea7fe1639f2b5e73d3ec807c04375c",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/install/omarchy-base.packages"
+    },
+    {
+      "file": "manual/18-development-tools.md",
+      "sha256": "76d53d8a81ab67c31baf65c819c25fe55da722c0e9dd28dc0cf54a3ea04a6fbe",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/manual/18-development-tools.md"
+    },
+    {
+      "file": "manual/15-terminal.md",
+      "sha256": "a8b9496f85383b5ab8bd3e2937a8582847208af9b319aa4ecd307d30c68d4e9b",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/manual/15-terminal.md"
+    },
+    {
+      "file": "manual/17-ai.md",
+      "sha256": "defd67c640f5e60b059352cbb352a2bbe82e19248bc236ee346288cd2952e4df",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/manual/17-ai.md"
+    },
+    {
+      "file": "manual/23-browsers.md",
+      "sha256": "bff6106e52bb0845cf80cfa83ac117b2a199911a9c4256378bdd48dd743c9907",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/manual/23-browsers.md"
+    },
+    {
+      "file": "manual/22-guis.md",
+      "sha256": "5d5f25bac010d55094b06860cb6efb1152184ce7e6e293c202599f46760fdfdd",
+      "source": "https://github.com/omacom/omarchy/blob/quattro/manual/22-guis.md"
+    }
+  ],
+  "groups": [
+    {
+      "id": "foundation",
+      "title": "THE OMARCHY DESKTOP",
+      "subtitle": "THE DESKTOP AND ITS OPEN-SOURCE ROOTS",
+      "entries": [
+        {
+          "id": "omarchy",
+          "name": "Omarchy",
+          "role": "Linux distribution",
+          "scope": "foundation",
+          "file": "omarchy.svg",
+          "source": "https://omarchy.org",
+          "license": "MIT",
+          "sha256": "6547b68fd782437bc6d01a063cd6e8c8893a330835011b60296c9a1597d2ab69",
+          "evidence": {
+            "file": "README.md",
+            "term": "Omarchy"
+          }
+        },
+        {
+          "id": "archlinux",
+          "name": "Arch Linux",
+          "role": "Distribution base",
+          "scope": "foundation",
+          "file": "archlinux.svg",
+          "source": "https://www.archlinux.org/art",
+          "license": "CC0-1.0",
+          "sha256": "141dc447005af861f1368302413e60cc24c9911199b12d48e65f6a02c79d1645",
+          "evidence": {
+            "file": "manual/29-other-packages.md",
+            "term": "Arch"
+          }
+        },
+        {
+          "id": "linux",
+          "name": "Linux",
+          "role": "Kernel",
+          "scope": "base",
+          "file": "linux.svg",
+          "source": "https://www.linuxfoundation.org/the-linux-mark/",
+          "license": "CC0-1.0",
+          "sha256": "26d8aa32b51843da60a33940d45c18d1257d091be1c8df08ffef778e49acdac9",
+          "evidence": {
+            "file": "install/omarchy-other.packages",
+            "term": "linux"
+          }
+        },
+        {
+          "id": "gnu",
+          "name": "GNU",
+          "role": "System tools",
+          "scope": "foundation",
+          "file": "gnu.svg",
+          "source": "https://gnu.org",
+          "license": "CC0-1.0",
+          "sha256": "7d27ccb2203b1cbcd45cd54c7a2a5fc9dcc07ee9d38d2b3804fc3d7390addf1e",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "bash-completion"
+          }
+        },
+        {
+          "id": "hyprland",
+          "name": "Hyprland",
+          "role": "Compositor",
+          "scope": "base",
+          "file": "hyprland.svg",
+          "source": "https://hyprland.org",
+          "license": "CC0-1.0",
+          "sha256": "93728155a6aee69f846a60236a6a3502d9aa211e37cf8e4680e9a7b92c7bf0e7",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "hyprland"
+          }
+        },
+        {
+          "id": "wayland",
+          "name": "Wayland",
+          "role": "Display protocol",
+          "scope": "base",
+          "file": "wayland.svg",
+          "source": "https://gitlab.freedesktop.org/wayland/weston/-/blob/77ede00a938b8137bd638ce67b6f58cb52b1d1b0/data/wayland.svg",
+          "license": "CC0-1.0",
+          "sha256": "10a7e98ac5eda776c77c323432d4678d94c9d4359a4bd85874ef6f45add94f7c",
+          "evidence": {
+            "file": "install/omarchy-other.packages",
+            "term": "egl-wayland"
+          }
+        },
+        {
+          "id": "quickshell",
+          "name": "Quickshell",
+          "role": "Desktop shell",
+          "scope": "base",
+          "file": "quickshell.svg",
+          "source": "https://quickshell.org/favicon.svg",
+          "license": "Upstream project artwork",
+          "sha256": "c32a5c356d23e9eb42c08e3213ffb3f8da280c2ae530bafb7680bb69a9f773a0",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "quickshell"
+          }
+        },
+        {
+          "id": "pipewire",
+          "name": "PipeWire",
+          "role": "Audio and video",
+          "scope": "base",
+          "file": "pipewire.svg",
+          "source": "https://quickshell.org/assets/logos/pipewire.svg",
+          "license": "Upstream project artwork",
+          "sha256": "510716b5f9ff484f05ff9f638debea9b7355544397183df0a7c9fafd8a937964",
+          "evidence": {
+            "file": "install/omarchy-other.packages",
+            "term": "pipewire"
+          }
+        },
+        {
+          "id": "freedesktop",
+          "name": "freedesktop.org",
+          "role": "Desktop standards",
+          "scope": "foundation",
+          "file": "freedesktop.svg",
+          "source": "https://commons.wikimedia.org/wiki/File:Freedesktop-logo.svg",
+          "license": "CC0-1.0",
+          "sha256": "2710c34e751e2ba989ae5656865681248280f557f95aa25ebc7928a68df0393a",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "xdg-desktop-portal-hyprland"
+          }
+        },
+        {
+          "id": "qemu",
+          "name": "QEMU",
+          "role": "Virtual machines",
+          "scope": "base",
+          "file": "qemu.svg",
+          "source": "https://wiki.qemu.org/Logo",
+          "license": "CC0-1.0",
+          "sha256": "8a475f4d3ced752afa23c2bc71995933361c0f7e1896818f87a813211831225a",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "qemu-user-static-binfmt"
+          }
+        }
+      ]
+    },
+    {
+      "id": "editors",
+      "title": "EDITORS & TERMINALS",
+      "subtitle": "DEFAULTS AND SUPPORTED ALTERNATIVES",
+      "entries": [
+        {
+          "id": "neovim",
+          "name": "Neovim",
+          "role": "Default editor",
+          "scope": "base",
+          "file": "neovim.svg",
+          "source": "https://neovim.io",
+          "license": "CC0-1.0",
+          "sha256": "cfc719281ed51f1be3d85fd655d7ad356e9c0cb5855a3ac921305983b3e675c4",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "nvim"
+          }
+        },
+        {
+          "id": "vim",
+          "name": "Vim",
+          "role": "Editor option",
+          "scope": "optional",
+          "file": "vim.svg",
+          "source": "https://commons.wikimedia.org/wiki/File:Vimlogo.svg",
+          "license": "CC0-1.0",
+          "sha256": "7a9dd3992c78df60ab9d3c045e4084691647b623ba97183bc9d9a319e06ce7f3",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Vim"
+          }
+        },
+        {
+          "id": "emacs",
+          "name": "Emacs",
+          "role": "Editor option",
+          "scope": "optional",
+          "file": "emacs.svg",
+          "source": "https://git.savannah.gnu.org/cgit/emacs.git/tree/etc/images/icons/hicolor/scalable/apps/emacs.svg",
+          "license": "CC0-1.0",
+          "sha256": "bcadfdf6b354be8cbde6c974104a4879abc47a2d28f7cb0b619e1b1d21f38cf2",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Emacs"
+          }
+        },
+        {
+          "id": "helix",
+          "name": "Helix",
+          "role": "Editor option",
+          "scope": "optional",
+          "file": "helix.svg",
+          "source": "https://helix-editor.com",
+          "license": "CC0-1.0",
+          "sha256": "effbaf350216e35663bc70cb220381c779408287239655497b49599dd214a573",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Helix"
+          }
+        },
+        {
+          "id": "zed",
+          "name": "Zed",
+          "role": "Editor option",
+          "scope": "optional",
+          "file": "zed.svg",
+          "source": "https://github.com/zed-industries/zed/blob/ccc939124fa2f366b3029926447fd0a0c46a85c7/assets/icons/logo_96.svg",
+          "license": "CC0-1.0",
+          "sha256": "356434a202e4ff4d181599f099dbf9149f31d5fe3cddc084ca6c7a45d03193e5",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Zed"
+          }
+        },
+        {
+          "id": "vscodium",
+          "name": "VSCodium",
+          "role": "Editor integration",
+          "scope": "optional",
+          "file": "vscodium.svg",
+          "source": "https://github.com/VSCodium/vscodium.github.io/blob/ed028c57f10e6432ec55dfc34d4db1a83fba941d/img/codium_cnl.svg",
+          "license": "CC0-1.0",
+          "sha256": "23a768e32e51ce27d6fa6bf8267ea9af6c0f08c3ef54a540e9759b2bb25cba9a",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "VSCodium"
+          }
+        },
+        {
+          "id": "foot",
+          "name": "Foot",
+          "role": "Default terminal",
+          "scope": "base",
+          "file": "foot.svg",
+          "source": "https://codeberg.org/dnkl/foot/raw/branch/master/foot.svg",
+          "license": "CC-BY-SA-4.0",
+          "creator": "Lennard Hofmann",
+          "sha256": "00c07e17ced9593fbe14bc77c3b53e41a6619671b4dcdaafa512dd444956f1fd",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "foot"
+          }
+        },
+        {
+          "id": "alacritty",
+          "name": "Alacritty",
+          "role": "Terminal option",
+          "scope": "optional",
+          "file": "alacritty.svg",
+          "source": "https://github.com/alacritty/alacritty/blob/6d8db6b9dfadd6164c4be7a053f25db8ef6b7998/extra/logo/alacritty-simple.svg",
+          "license": "CC0-1.0",
+          "sha256": "abb2f59f5c8b5e56a7cf31974ed13981e42c9223fed5af4dcaaeb422d112118d",
+          "evidence": {
+            "file": "manual/15-terminal.md",
+            "term": "Alacritty"
+          }
+        },
+        {
+          "id": "ghostty",
+          "name": "Ghostty",
+          "role": "Terminal option",
+          "scope": "optional",
+          "file": "ghostty.svg",
+          "source": "https://github.com/ghostty-org/website/blob/7093f052a2f35e0247fcb828ede644ed74a749a0/public/ghostty-logo.svg",
+          "license": "CC0-1.0",
+          "sha256": "c15c4a031ef32b665f34830cdef30f5d4242c7f3aa0b8c8f255183631b1f40d2",
+          "evidence": {
+            "file": "manual/15-terminal.md",
+            "term": "Ghostty"
+          }
+        },
+        {
+          "id": "kitty",
+          "name": "Kitty",
+          "role": "Terminal option",
+          "scope": "optional",
+          "file": "kitty.svg",
+          "source": "https://raw.githubusercontent.com/kovidgoyal/kitty/master/logo/kitty.svg",
+          "license": "Upstream project artwork",
+          "sha256": "3d790c7d6c83ecee0df4bacf7dca5e443a38d383a96e5d664f17c49c0c43c19d",
+          "evidence": {
+            "file": "manual/15-terminal.md",
+            "term": "Kitty"
+          }
+        },
+        {
+          "id": "tmux",
+          "name": "tmux",
+          "role": "Terminal multiplexer",
+          "scope": "base",
+          "file": "tmux.svg",
+          "source": "https://github.com/tmux/tmux/blob/e26356607e38cbb4676a7c91815ae2d5734443c3/logo/tmux-logo-1-color.svg",
+          "license": "CC0-1.0",
+          "sha256": "5c9481ea6b740caf055bf79635a8b313f369d31fecb83af65fdc92790046330a",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "tmux"
+          }
+        },
+        {
+          "id": "starship",
+          "name": "Starship",
+          "role": "Shell prompt",
+          "scope": "base",
+          "file": "starship.svg",
+          "source": "https://starship.rs",
+          "license": "CC0-1.0",
+          "sha256": "3c21432b7fa3506cc34d9ee6d5bd3cd83ec5883f8dd7a23c6d6597b89fd593f2",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "starship"
+          }
+        },
+        {
+          "id": "bash",
+          "name": "Bash",
+          "role": "Shell",
+          "scope": "base",
+          "file": "bash.svg",
+          "source": "https://github.com/odb/official-bash-logo/tree/61eff022f2dad3c7468f5deb4f06652d15f2c143",
+          "license": "CC0-1.0",
+          "sha256": "e6177b1e3ac968478ed9d45a6e1213d36bf110c8a82d794a32eecb5c809ecf49",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "bash-completion"
+          }
+        }
+      ]
+    },
+    {
+      "id": "tooling",
+      "title": "TOOLS & FRAMEWORKS",
+      "subtitle": "DEVELOPMENT TOOLS AND SUPPORTED FRAMEWORKS",
+      "entries": [
+        {
+          "id": "git",
+          "name": "Git",
+          "role": "Version control",
+          "scope": "base",
+          "file": "git.svg",
+          "source": "https://git-scm.com/community/logos",
+          "license": "CC0-1.0",
+          "sha256": "3f04979d1e7b82ae92833232ed02f53d2ebedd6f5a37076679a5228398bc6042",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "git"
+          }
+        },
+        {
+          "id": "lazygit",
+          "name": "Lazygit",
+          "role": "Git interface",
+          "scope": "base",
+          "file": "lazygit.png",
+          "source": "https://user-images.githubusercontent.com/8456633/174470852-339b5011-5800-4bb9-a628-ff230aa8cd4e.png",
+          "license": "Upstream project artwork",
+          "sha256": "80624dea9d248bc14f0ebcb088d229d0821d7d2b420eeb241ed410229ee1ee02",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "lazygit"
+          }
+        },
+        {
+          "id": "docker",
+          "name": "Docker",
+          "role": "Containers",
+          "scope": "base",
+          "file": "docker.svg",
+          "source": "https://www.docker.com/company/newsroom/media-resources",
+          "license": "CC0-1.0",
+          "sha256": "e9f9d568293db143295e45df32b4d8f79335dd80672d4ec31c834640866eaa0f",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "docker"
+          }
+        },
+        {
+          "id": "mise",
+          "name": "Mise",
+          "role": "Runtime manager",
+          "scope": "base",
+          "file": "mise.svg",
+          "source": "https://mise.jdx.dev/logo.svg",
+          "license": "Upstream project artwork",
+          "sha256": "f1caf386df302136bedb833aa232d625ec95b6124157df5bb9ee1f862dc88964",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "mise-bin"
+          }
+        },
+        {
+          "id": "bat",
+          "name": "bat",
+          "role": "File previews",
+          "scope": "base",
+          "file": "bat.svg",
+          "source": "https://github.com/sharkdp/bat/blob/018a4826211b8b486883b720a5daa65eca2d4604/doc/logo-header.svg",
+          "license": "CC0-1.0",
+          "sha256": "69da1104f90ab96d4c5ebd8bb24ba7c5d3f4bcec3820f18e6479543e2aaf4d2f",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "bat"
+          }
+        },
+        {
+          "id": "fzf",
+          "name": "fzf",
+          "role": "Fuzzy finder",
+          "scope": "base",
+          "file": "fzf.png",
+          "source": "https://raw.githubusercontent.com/junegunn/i/master/fzf-color.png",
+          "license": "MIT",
+          "sha256": "53705c798857ce9729df5c6979032b19c9b22f87c36d88f0936a3d55a7a0d62e",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "fzf"
+          }
+        },
+        {
+          "id": "rails",
+          "name": "Ruby on Rails",
+          "role": "Framework option",
+          "scope": "optional",
+          "file": "rails.svg",
+          "source": "https://github.com/simple-icons/simple-icons/issues/9619#issuecomment-1735150580",
+          "license": "CC0-1.0",
+          "sha256": "b4c924855f05b5fe516b34e03054b0205d3853c0fdbfc0357227fbb6ad0f3c5c",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Ruby on Rails"
+          }
+        },
+        {
+          "id": "laravel",
+          "name": "Laravel",
+          "role": "Framework option",
+          "scope": "optional",
+          "file": "laravel.svg",
+          "source": "https://github.com/laravel/art/tree/5a8325b064634b900f25dbb6f1cafd888b2d2211",
+          "license": "CC0-1.0",
+          "sha256": "e8a7a6df2eeeb385d2db6f935a377099869e6f0a563e6fac658c3188ae308ca9",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Laravel"
+          }
+        },
+        {
+          "id": "symfony",
+          "name": "Symfony",
+          "role": "Framework option",
+          "scope": "optional",
+          "file": "symfony.svg",
+          "source": "https://symfony.com/logo",
+          "license": "CC0-1.0",
+          "sha256": "061cfd6c1f432d7794616cb34a8dd68efd7777fe4f1347f99e6c2aafeca3cd5f",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Symfony"
+          }
+        },
+        {
+          "id": "phoenix",
+          "name": "Phoenix",
+          "role": "Framework option",
+          "scope": "optional",
+          "file": "phoenix.svg",
+          "source": "https://github.com/phoenixframework/phoenix/blob/e9f1975d5aa15bee22bab6a4acae8f543886b17a/installer/templates/phx_assets/logo.svg",
+          "license": "CC0-1.0",
+          "sha256": "f49dee418a332513d5435d1678f25f4f1b0eab3bd810a649c28cb02ab7041244",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Phoenix"
+          }
+        },
+        {
+          "id": "llvm",
+          "name": "LLVM",
+          "role": "Compiler tools",
+          "scope": "base",
+          "file": "llvm.svg",
+          "source": "https://llvm.org/Logo.html",
+          "license": "CC0-1.0",
+          "sha256": "b2b572173edc886632a006c0abf94a1b6948d26c2237c39c5137fb035be3fedd",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "llvm"
+          }
+        },
+        {
+          "id": "mariadb",
+          "name": "MariaDB",
+          "role": "Database libraries",
+          "scope": "base",
+          "file": "mariadb.svg",
+          "source": "https://mariadb.com/about-us/logos/",
+          "license": "CC0-1.0",
+          "sha256": "6ab71a92058c4ad1319c5de142f260b29a9b1195e4a6d80ea91a36ee8afbc0bf",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "mariadb-libs"
+          }
+        },
+        {
+          "id": "postgresql",
+          "name": "PostgreSQL",
+          "role": "Database libraries",
+          "scope": "base",
+          "file": "postgresql.svg",
+          "source": "https://wiki.postgresql.org/wiki/Logo",
+          "license": "CC0-1.0",
+          "sha256": "30c216c501011c2332f44bf444a237635ee6bb1c4e705edfe4c9e7464ce01a17",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "postgresql-libs"
+          }
+        },
+        {
+          "id": "opencode",
+          "name": "OpenCode",
+          "role": "Coding tool option",
+          "scope": "optional",
+          "file": "opencode.svg",
+          "source": "https://github.com/anomalyco/opencode/blob/1251a870cb384543c150c4a72fb101b55eec971b/packages/identity/mark.svg",
+          "license": "CC0-1.0",
+          "sha256": "b1128dd7b01d8df8a77c8e91ef27de5d9fca65c6018e40c931fc49608583220f",
+          "evidence": {
+            "file": "manual/17-ai.md",
+            "term": "opencode"
+          }
+        },
+        {
+          "id": "ollama",
+          "name": "Ollama",
+          "role": "Local model option",
+          "scope": "optional",
+          "file": "ollama.svg",
+          "source": "https://github.com/ollama/ollama/issues/2152#issuecomment-1905286922",
+          "license": "CC0-1.0",
+          "sha256": "8367d43ea13e82efb76d3af6b0d015e7e4f9726dd4b768022cef7c922da869d1",
+          "evidence": {
+            "file": "manual/17-ai.md",
+            "term": "Ollama"
+          }
+        }
+      ]
+    },
+    {
+      "id": "languages",
+      "title": "LANGUAGES & RUNTIMES",
+      "subtitle": "RUNTIMES SUPPORTED BY OMARCHY DEVELOPMENT SETUP",
+      "entries": [
+        {
+          "id": "ruby",
+          "name": "Ruby",
+          "role": "Programming language",
+          "scope": "base",
+          "file": "ruby.svg",
+          "source": "https://www.ruby-lang.org/en/about/logo/",
+          "license": "CC0-1.0",
+          "sha256": "91f1e563747ece582c39ef3954f4dd93a88bd1979a7e4c6be0c5293f230eb867",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "ruby"
+          }
+        },
+        {
+          "id": "python",
+          "name": "Python",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "python.svg",
+          "source": "https://www.python.org/community/logos/",
+          "license": "CC0-1.0",
+          "sha256": "4eeb19d85b687484caaf02f2a106c997891745da317e8a6580889d55476c9f9c",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Python"
+          }
+        },
+        {
+          "id": "nodejs",
+          "name": "Node.js",
+          "role": "JavaScript runtime",
+          "scope": "optional",
+          "file": "nodejs.svg",
+          "source": "https://nodejs.org/en/about/branding",
+          "license": "CC0-1.0",
+          "sha256": "fdea2bb5ee0e47157b88541dd0bf338a1d6e38b22f9eb22e62bb0d119755b2a7",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Node.js"
+          }
+        },
+        {
+          "id": "bun",
+          "name": "Bun",
+          "role": "JavaScript runtime",
+          "scope": "optional",
+          "file": "bun.svg",
+          "source": "https://bun.sh/press-kit",
+          "license": "CC0-1.0",
+          "sha256": "71ae7d6de8dab411add1540a9e863143e7988d138e7d81bd65313ba2480ad52d",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Bun"
+          }
+        },
+        {
+          "id": "deno",
+          "name": "Deno",
+          "role": "JavaScript runtime",
+          "scope": "optional",
+          "file": "deno.svg",
+          "source": "https://github.com/denoland/docs/blob/5dee713844c7447f80acd4093caa9d350d80bf36/static/img/logo.svg",
+          "license": "CC0-1.0",
+          "sha256": "6f36d5b5409d2720baa1a3aa88cc7218ff035bf09fd64d6a2d55d4574633622d",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Deno"
+          }
+        },
+        {
+          "id": "go",
+          "name": "Go",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "go.svg",
+          "source": "https://blog.golang.org/go-brand",
+          "license": "CC0-1.0",
+          "sha256": "14cec61d37ffc4d7c877d0babe00a6cd57ec03b217b28b53407a2dfb0a4d35f7",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Go"
+          }
+        },
+        {
+          "id": "rust",
+          "name": "Rust",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "rust.svg",
+          "source": "https://www.rust-lang.org",
+          "license": "CC0-1.0",
+          "sha256": "d9674479756c06f312fa45a24b8eb46a2255e0cd2f97f782d336d0ece4c19fb8",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Rust"
+          }
+        },
+        {
+          "id": "zig",
+          "name": "Zig",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "zig.svg",
+          "source": "https://github.com/ziglang/logo/blob/6446ba8e37a0651da720d8869e1ce9264fa0c0b9/zig-mark.svg",
+          "license": "CC0-1.0",
+          "sha256": "e865bb1fd4d357d5dc0e740fe675bf076a8d6bd00614699729cce347e3e075a9",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Zig"
+          }
+        },
+        {
+          "id": "php",
+          "name": "PHP",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "php.svg",
+          "source": "https://php.net/download-logos.php",
+          "license": "CC0-1.0",
+          "sha256": "e7ad295712cb54c1607d526507831c5594f39356f01a2613d9b79b04aa337c02",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "PHP"
+          }
+        },
+        {
+          "id": "elixir",
+          "name": "Elixir",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "elixir.svg",
+          "source": "https://github.com/elixir-lang/elixir-lang.github.com/tree/031746384ee23b9be19298c92a9699c56cc05845/images/logo",
+          "license": "CC0-1.0",
+          "sha256": "92143c0dab87d51a13f282a94403536d02cb7a75163573caf67a8eaf0ffa1e64",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Elixir"
+          }
+        },
+        {
+          "id": "java",
+          "name": "OpenJDK",
+          "role": "Java development",
+          "scope": "optional",
+          "file": "java.svg",
+          "source": "https://hg.openjdk.java.net/duke/duke/file/ca00f100dafc/vector/Agent.svg",
+          "license": "CC0-1.0",
+          "sha256": "f019d4f2fcfce6dd4e804a43f327c4026706c6cb7b7fc5497a5bfefe0179cf66",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Java"
+          }
+        },
+        {
+          "id": "dotnet",
+          "name": ".NET",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "dotnet.svg",
+          "source": "https://github.com/dotnet/brand/blob/c7d0f51b8ec59531332d05fb27a5b758a7a3d689/logo/dotnet-logo.svg",
+          "license": "CC0-1.0",
+          "sha256": "f6958e2198c52e878f69843159a014e8cd3271835b6cd4eab6a350f1671c0997",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": ".NET"
+          }
+        },
+        {
+          "id": "lua",
+          "name": "Lua",
+          "role": "Editor and runtime",
+          "scope": "base",
+          "file": "lua.svg",
+          "source": "https://www.lua.org/images/",
+          "license": "CC0-1.0",
+          "sha256": "6773bb35a3ab00764a343c3535cc0fb832fcb5862591e900eb249d995ec00c07",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "lua51"
+          }
+        },
+        {
+          "id": "ocaml",
+          "name": "OCaml",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "ocaml.svg",
+          "source": "https://ocaml.org/logo",
+          "license": "CC0-1.0",
+          "sha256": "6010f832e0384b1b4700f18adf81502bad4594658d0a6ab7a6f5c49d8f66bfb9",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "OCaml"
+          }
+        },
+        {
+          "id": "scala",
+          "name": "Scala",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "scala.svg",
+          "source": "https://www.scala-lang.org",
+          "license": "CC0-1.0",
+          "sha256": "2063de8a898ff00d2ae05bced4f53681d83d816aa698ade45be6a150af1aa927",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Scala"
+          }
+        },
+        {
+          "id": "clojure",
+          "name": "Clojure",
+          "role": "Development option",
+          "scope": "optional",
+          "file": "clojure.svg",
+          "source": "https://commons.wikimedia.org/wiki/File:Clojure_logo.svg",
+          "license": "CC0-1.0",
+          "sha256": "bbc51fab932eb31b2ed436d9cb9b766a8d32087ccf0c44d7411330e3943a0e36",
+          "evidence": {
+            "file": "manual/18-development-tools.md",
+            "term": "Clojure"
+          }
+        }
+      ]
+    },
+    {
+      "id": "apps",
+      "title": "OPEN-SOURCE APPS",
+      "subtitle": "BASE APPLICATIONS AND SUPPORTED OPTIONS",
+      "entries": [
+        {
+          "id": "chromium",
+          "name": "Chromium",
+          "role": "Default browser",
+          "scope": "base",
+          "file": "chromium.png",
+          "source": "https://raw.githubusercontent.com/chromium/chromium/main/chrome/app/theme/chromium/product_logo_256.png",
+          "license": "Upstream project artwork",
+          "sha256": "838a604985a269e155107f711d4137e54ab0b7798de1f0a7b5b1df511c864222",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "chromium"
+          }
+        },
+        {
+          "id": "firefox",
+          "name": "Firefox",
+          "role": "Browser option",
+          "scope": "optional",
+          "file": "firefox.svg",
+          "source": "https://mozilla.design/firefox/logos-usage/",
+          "license": "CC0-1.0",
+          "sha256": "92f39571245f643279f1c5818acadee8e36090e9a227ba45b11d66a5544f4b35",
+          "evidence": {
+            "file": "manual/23-browsers.md",
+            "term": "Firefox"
+          }
+        },
+        {
+          "id": "libreoffice",
+          "name": "LibreOffice",
+          "role": "Office suite",
+          "scope": "base",
+          "file": "libreoffice.svg",
+          "source": "https://wiki.documentfoundation.org/Marketing/Branding",
+          "license": "CC0-1.0",
+          "sha256": "cd6c69b293c6318395c60fb2cbaa10485b5e032c7947ccb4842750204eeb17f9",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "libreoffice-fresh"
+          }
+        },
+        {
+          "id": "kdenlive",
+          "name": "Kdenlive",
+          "role": "Video editor",
+          "scope": "base",
+          "file": "kdenlive.svg",
+          "source": "https://kdenlive.org/trademark-logo/",
+          "license": "CC0-1.0",
+          "sha256": "864b9f040b2e767f0ae093f869095ba38cebdcc0db2db6b11f2677a36fba5850",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "kdenlive"
+          }
+        },
+        {
+          "id": "obsstudio",
+          "name": "OBS Studio",
+          "role": "Capture and stream",
+          "scope": "base",
+          "file": "obsstudio.svg",
+          "source": "https://commons.wikimedia.org/wiki/File:OBS.svg",
+          "license": "CC0-1.0",
+          "sha256": "3394b5d12774c289e1530fb6cc405c145adc9179767a5eae29dab454042d2511",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "obs-studio"
+          }
+        },
+        {
+          "id": "localsend",
+          "name": "LocalSend",
+          "role": "Local file transfer",
+          "scope": "base",
+          "file": "localsend.svg",
+          "source": "https://github.com/localsend/localsend/blob/f57cae55616e6d2f0ab20cad41e0697cba7885e5/app/assets/img/logo-512.png",
+          "license": "CC0-1.0",
+          "sha256": "d7d0303f3cf831d28e021d92b84bf314138699da8cc43733fc7ed39c10c1e701",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "localsend"
+          }
+        },
+        {
+          "id": "mpv",
+          "name": "mpv",
+          "role": "Media player",
+          "scope": "base",
+          "file": "mpv.svg",
+          "source": "https://github.com/mpv-player/mpv/blob/da400ed3a9b54408d1b5112855a7281380a1ef52/etc/mpv.svg",
+          "license": "CC0-1.0",
+          "sha256": "8af16671e71b4bad771c5d20cc47cc5b4250a8df79d62234cef80e58fb75292d",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "mpv"
+          }
+        },
+        {
+          "id": "ffmpeg",
+          "name": "FFmpeg",
+          "role": "Media processing",
+          "scope": "base",
+          "file": "ffmpeg.svg",
+          "source": "https://commons.wikimedia.org/wiki/File:FFmpeg_Logo_new.svg",
+          "license": "CC0-1.0",
+          "sha256": "5c61a2d489f0a6b14f7b878c2b44fbef1e358037d5411fa27988e601c2b1a0ad",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "ffmpegthumbnailer"
+          }
+        },
+        {
+          "id": "imagemagick",
+          "name": "ImageMagick",
+          "role": "Image tools",
+          "scope": "base",
+          "file": "imagemagick.png",
+          "source": "https://imagemagick.org/image/wizard.png",
+          "license": "Upstream project artwork",
+          "sha256": "13c650fd192cc615427eeb292649a987e05841f1da9e5272e32768ee22e070e3",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "imagemagick"
+          }
+        },
+        {
+          "id": "cliamp",
+          "name": "Cliamp",
+          "role": "Terminal music player",
+          "scope": "base",
+          "file": "cliamp.svg",
+          "source": "https://cliamp.stream",
+          "license": "MIT",
+          "sha256": "2e63cbc8708d30458d46f6bcd655b339aeeaf7ef8bc349f7af4178ada0655246",
+          "evidence": {
+            "file": "install/omarchy-base.packages",
+            "term": "cliamp"
+          }
+        },
+        {
+          "id": "signal",
+          "name": "Signal",
+          "role": "Messenger option",
+          "scope": "optional",
+          "file": "signal.svg",
+          "source": "https://signal.org/brand",
+          "license": "CC0-1.0",
+          "sha256": "8f4ebed3592df64197c00cad3c1e049905324a54646bf5b7d7c69a721754d458",
+          "evidence": {
+            "file": "manual/22-guis.md",
+            "term": "Signal"
+          }
+        }
+      ]
+    }
+  ],
+  "terminalNames": [
+    "btop",
+    "fastfetch",
+    "ripgrep",
+    "fd",
+    "eza",
+    "zoxide",
+    "yay",
+    "jq",
+    "tldr",
+    "yt-dlp",
+    "herdr",
+    "gum"
+  ]
+}

@@ -1,14 +1,19 @@
 import { Renderer } from './renderer.js';
 import { CHARACTERS } from './characters.mjs';
 import { getCar, getPaint } from './cars.mjs';
+import { createPatronTour, getPatron, PATRONS_SOURCE } from './patrons.mjs';
 
 const canvas = document.getElementById('garage-scene');
 const ctx = canvas.getContext('2d');
 const renderer = new Renderer(document.createElement('canvas'));
-await renderer.logoReady;
+await Promise.all([renderer.logoReady, renderer.patronsReady]);
 await document.fonts.ready;
 ctx.imageSmoothingEnabled = false;
-renderer.drawGarage(ctx, canvas.width, canvas.height);
+const patrons = createPatronTour().garage;
+renderer.drawGarage(ctx, canvas.width, canvas.height, patrons);
+const patronNames = patrons.map((id) => getPatron(id).name).join(', ');
+document.getElementById('garage-patrons').textContent = `On the garage displays: ${patronNames}.`;
+document.getElementById('patrons-source').href = PATRONS_SOURCE;
 
 let carId = 'countach';
 let paintId = 'amber';
@@ -43,4 +48,4 @@ CHARACTERS.forEach((character, index) => {
   });
   navigation.append(button);
 });
-canvas.setAttribute('aria-label', `Full-body lineup outside the Omarchy garage: ${CHARACTERS.map(({ name }) => name).join(', ')}.`);
+canvas.setAttribute('aria-label', `Full-body lineup outside the Omarchy garage: ${CHARACTERS.map(({ name }) => name).join(', ')}. Founding patron displays: ${patronNames}.`);

@@ -9,6 +9,11 @@
     "dev": "node tools/server.mjs",
     "assets": "node tools/vendor-font.mjs",
     "assets:vr": "node tools/vendor-three.mjs",
+    "assets:logos": "node tools/vendor-open-source-logos.mjs",
+    "assets:club-radio": "node tools/vendor-club-radio.mjs",
+    "assets:patrons": "node tools/vendor-patrons.mjs",
+    "assets:rocket-themes": "node tools/vendor-rocket-themes.mjs",
+    "assets:radio": "node tools/vendor-radio.mjs",
     "cover": "node tools/create-cover.mjs",
     "cards": "node tools/create-cameo-cards.mjs",
     "video": "node tools/create-video.mjs",
@@ -19,7 +24,8 @@
   "devDependencies": {
     "@fontsource/press-start-2p": "^5.2.7",
     "@playwright/test": "^1.58.2",
-    "iwer": "2.4.0"
+    "iwer": "2.4.0",
+    "simple-icons": "16.31.0"
   },
   "dependencies": {
     "three": "0.180.0"

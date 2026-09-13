@@ -36,7 +36,7 @@ jobs:
       - name: Stage the site
         run: |
           mkdir -p _site
-          cp index.html style.css music-video.html music-video.css vr.html vr.css garage.html garage.css _site/
+          cp index.html style.css radio.css music-video.html music-video.css vr.html vr.css garage.html garage.css club.html club.css _site/
           cp -r src assets _site/
 
       - name: Upload the site artifact

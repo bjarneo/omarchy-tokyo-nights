@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { readFile, writeFile } from 'node:fs/promises';
 import { chromium } from '@playwright/test';
+import { FOUNDING_PATRONS } from '../src/patrons.mjs';
 
 const root = new URL('../', import.meta.url);
 const routes = new Map([
@@ -12,6 +13,12 @@ const routes = new Map([
   ['/src/cars.mjs', ['src/cars.mjs', 'text/javascript']],
   ['/src/story.mjs', ['src/story.mjs', 'text/javascript']],
   ['/src/pit-stops.mjs', ['src/pit-stops.mjs', 'text/javascript']],
+  ['/src/rocket.mjs', ['src/rocket.mjs', 'text/javascript']],
+  ['/src/rocket-art.js', ['src/rocket-art.js', 'text/javascript']],
+  ['/src/rocket-themes.mjs', ['src/rocket-themes.mjs', 'text/javascript']],
+  ['/assets/omarchy-themes.js', ['assets/omarchy-themes.js', 'text/javascript']],
+  ['/src/patrons.mjs', ['src/patrons.mjs', 'text/javascript']],
+  ['/src/patron-art.js', ['src/patron-art.js', 'text/javascript']],
   ['/src/car-sprites.js', ['src/car-sprites.js', 'text/javascript']],
   ['/src/full-characters.js', ['src/full-characters.js', 'text/javascript']],
   ['/src/garage-scene.js', ['src/garage-scene.js', 'text/javascript']],
@@ -19,6 +26,7 @@ const routes = new Map([
   ['/assets/arcade.woff2', ['assets/arcade.woff2', 'font/woff2']],
   ['/assets/omarchy-logo.txt', ['assets/omarchy-logo.txt', 'text/plain; charset=utf-8']],
   ['/assets/cliamp-logo.txt', ['assets/cliamp-logo.txt', 'text/plain; charset=utf-8']],
+  ...FOUNDING_PATRONS.map(({ portrait }) => [`/${portrait}`, [portrait, 'image/png']]),
 ]);
 const server = createServer(async (request, response) => {
   if (request.url === '/') {

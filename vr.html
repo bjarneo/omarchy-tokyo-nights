@@ -10,6 +10,7 @@
     <link rel="preload" href="assets/arcade.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="style.css" />
     <link rel="stylesheet" href="vr.css" />
+    <link rel="stylesheet" href="radio.css" />
     <script type="module" src="src/vr-main.js"></script>
   </head>
   <body class="vr-page" data-state="title" data-xr="checking">
@@ -36,6 +37,7 @@
           <span>NITRO <b id="vr-nitro">100</b>%</span>
           <span id="vr-mission">TAPE 0/1 · DROP: CENTER</span>
         </div>
+        <div class="vr-readouts" id="vr-rocket-readouts" hidden aria-label="Rocket telemetry"><span id="vr-rocket-phase">OMARCHY ROCKET</span><span id="vr-rocket-time">MARS ETA 20.0s</span><span id="vr-rocket-thrust">THRUST 0%</span><div class="vr-flight-theme"><span id="vr-rocket-theme"></span><div class="rocket-palette" id="vr-rocket-palette" aria-hidden="true"></div></div></div>
       </div>
       <section class="vr-panel" id="vr-panel" aria-labelledby="vr-heading">
         <h1 id="vr-heading">TOKYO<br /><span>NIGHTS VR<span class="title-period">.</span></span></h1>
@@ -59,6 +61,7 @@
         </div>
         <div class="vr-actions">
           <button class="primary-button" id="vr-enter" disabled>CHECK HEADSET</button>
+          <a class="vr-secondary room-link" href="club.html">EXPLORE RETRO ROOM</a>
           <button class="vr-secondary" id="vr-drive" disabled>DRIVE ON SCREEN</button>
           <button class="text-button" id="vr-new-run" hidden>START A NEW RUN</button>
         </div>
@@ -88,6 +91,7 @@
         <button data-control="nitro">NITRO</button>
       </div>
     </main>
+    <section id="vr-radio" aria-label="Car radio"></section>
     <footer class="vr-footer" id="vr-keyboard-help"><span>SEATED COCKPIT · WEBXR</span><span>ARROWS: DRIVE · SPACE: NITRO · P: PAUSE · R: CENTER · DRAG: LOOK</span></footer>
     <p class="sr-only" id="vr-announcer" aria-live="polite" aria-atomic="true"></p>
   </body>

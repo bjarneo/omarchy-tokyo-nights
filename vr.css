@@ -32,6 +32,7 @@
 .vr-comfort span { grid-column: 2; color: var(--muted); font-size: 12px; line-height: 1.6; }
 .vr-actions { display: grid; gap: 10px; }
 .vr-actions button { width: 100%; }
+.vr-actions .room-link { display: flex; align-items: center; justify-content: center; text-align: center; text-decoration: none; }
 .vr-secondary { min-height: 46px; padding: 10px 16px; color: var(--cyan); background: transparent; border: 1px solid var(--line); font: 12px/1.7 "Arcade", monospace; }
 .vr-secondary:hover { border-color: var(--cyan); background: var(--panel); }
 .vr-support { font-size: 12px; line-height: 1.7; color: var(--muted); margin: 14px 0 22px; }
@@ -45,9 +46,11 @@
 .vr-footer { min-height: 48px; display: flex; align-items: center; justify-content: space-between; gap: 24px; padding: 12px 32px; position: relative; font-size: 12px; line-height: 1.7; color: var(--muted); background: var(--bg); border-top: 1px solid var(--line); }
 .vr-readouts { position: absolute; inset: 24px auto auto 32px; display: flex; flex-wrap: wrap; gap: 16px 28px; padding: 14px 18px; color: var(--muted); background: var(--night); font-size: 12px; pointer-events: none; }
 .vr-readouts b { font-size: 18px; font-weight: 400; color: var(--text); font-variant-numeric: tabular-nums; }
+.vr-flight-theme { flex-basis: 100%; color: var(--text); }
+.vr-page:is([data-state="rocket-flight"], [data-state="mars"]) .vr-scene-label { display: none; }
 .vr-result { color: var(--yellow); font-size: 16px; line-height: 1.8; }
 .vr-objective { color: var(--cyan); font-size: 14px; line-height: 1.8; margin: 0 0 28px; }
-.vr-page[data-state="playing"] .vr-main, .vr-page[data-state="countdown"] .vr-main { height: calc(100dvh - var(--vr-chrome, 120px)); }
+.vr-page:is([data-state="playing"], [data-state="countdown"], [data-state="rocket-flight"]) .vr-main { height: calc(100dvh - var(--vr-chrome, 120px)); }
 .vr-touch { position: absolute; z-index: 2; inset: auto 16px 16px; display: none; gap: 8px; }
 .vr-touch button { min-height: 54px; min-width: 0; flex: 1; background: var(--panel); border: 1px solid var(--line); color: var(--text); font-size: 12px; touch-action: none; user-select: none; }
 .vr-touch button:last-child { color: var(--yellow); }
@@ -69,7 +72,7 @@
   .vr-footer > span:last-child { display: none; }
   .vr-readouts { inset: 12px 12px auto; padding: 10px 12px; gap: 10px 20px; }
   .vr-readouts b { font-size: 16px; }
-  .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-main { height: calc(100dvh - var(--vr-chrome, 152px)); min-height: 260px; }
-  .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-viewport { height: 100%; }
+  .vr-page:is([data-state="playing"], [data-state="countdown"], [data-state="rocket-flight"]) .vr-main { height: calc(100dvh - var(--vr-chrome, 152px)); min-height: 260px; }
+  .vr-page:is([data-state="playing"], [data-state="countdown"], [data-state="rocket-flight"]) .vr-viewport { height: 100%; }
   .vr-page:is([data-state="playing"], [data-state="countdown"]) .vr-scene-label { display: none; }
 }

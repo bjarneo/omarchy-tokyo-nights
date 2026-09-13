@@ -1,7 +1,8 @@
 export class SongPlayer {
-  constructor({ onChange = () => {}, onError = () => {} } = {}) {
+  constructor({ onChange = () => {}, onError = () => {}, onPlay = () => {} } = {}) {
     this.onChange = onChange;
     this.onError = onError;
+    this.onPlay = onPlay;
     this.pending = false;
     this.error = '';
     this.request = 0;
@@ -25,6 +26,7 @@ export class SongPlayer {
   notify() { this.onChange({ playing: this.playing, pending: this.pending, error: this.error }); }
 
   async play() {
+    this.onPlay();
     const request = ++this.request;
     this.pending = true;
     this.error = '';

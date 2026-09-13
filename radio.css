@@ -1,0 +1,46 @@
+.car-radio { border-top: 1px solid var(--line); padding: 12px 20px; background: var(--panel); color: var(--text); font: 12px/1.5 "Courier New", monospace; }
+.radio-face { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 16px; }
+.radio-display { min-width: 0; padding: 8px 12px; background: var(--bg); border: 1px solid var(--line); }
+.radio-brand { color: var(--green); text-underline-offset: 3px; font-size: 12px; }
+.radio-title { margin: 4px 0; font-size: 14px; line-height: 1.4; overflow-wrap: anywhere; }
+.radio-detail { margin: 0; color: var(--muted); font-size: 12px; }
+.radio-buttons { display: flex; gap: 6px; }
+.radio-buttons button { display: grid; place-items: center; min-width: 44px; height: 44px; padding: 8px; border: 1px solid var(--muted); background: var(--night); color: var(--text); font: 12px "Courier New", monospace; touch-action: manipulation; }
+.radio-buttons button:hover { color: var(--cyan); border-color: var(--cyan); }
+.radio-buttons svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.radio-buttons .radio-power { color: var(--green); }
+.radio-power[aria-pressed="true"] { background: var(--green); color: var(--bg); border-color: var(--green); }
+.radio-tuner { display: grid; grid-template-columns: minmax(0, 1fr) 160px; gap: 16px; margin-top: 12px; }
+.radio-tuner label { min-width: 0; display: grid; gap: 4px; color: var(--muted); }
+.radio-tuner select { width: 100%; min-width: 0; min-height: 44px; border: 1px solid var(--muted); border-radius: 0; background: var(--night); color: var(--text); font: 12px "Courier New", monospace; padding: 8px; }
+.radio-volume { grid-template-columns: 1fr auto; }
+.radio-volume input { grid-column: 1 / -1; width: 100%; min-width: 0; min-height: 44px; margin: 0; accent-color: var(--green); }
+.radio-volume output { color: var(--text); }
+.car-radio :is(button, select, input, a):focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; }
+.radio-notice { margin: 8px 0 0; color: var(--cyan); }
+.car-radio[data-mode="error"] .radio-notice { color: var(--pink); }
+.car-radio [hidden] { display: none; }
+@media (max-width: 700px) {
+  .car-radio { padding: 10px; }
+  .radio-face { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .radio-buttons { justify-content: flex-end; }
+  .radio-tuner { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+}
+.app:fullscreen .car-radio { padding: 6px 8px; }
+.app:fullscreen .radio-face { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.app:fullscreen .radio-display { padding: 4px 8px; }
+.app:fullscreen .radio-title { margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.app:fullscreen .radio-brand, .app:fullscreen .radio-detail { display: none; }
+.app:fullscreen .radio-buttons { gap: 4px; }
+.app:fullscreen .radio-buttons button { min-width: 36px; width: 36px; height: 40px; padding: 4px; }
+.app:fullscreen .radio-tuner { max-height: 140px; overflow-y: auto; }
+@media (max-height: 520px) and (orientation: landscape) and (pointer: coarse) {
+  .car-radio { padding: 6px 8px; }
+  .radio-face { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .radio-brand, .radio-detail { display: none; }
+  .radio-display { padding: 4px 8px; }
+  .radio-title { margin: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+  .radio-tuner { max-height: 110px; overflow-y: auto; }
+  .app:not(:fullscreen) .screen { max-height: calc(100dvh - 64px - var(--radio-height, 58px)); }
+}
+.vr-page[data-xr="active"] .car-radio { display: none; }

@@ -23,11 +23,11 @@ export function trafficPosition(game, car) {
   return { x: roadOffset(game.distance, ahead) + car.x * ROAD_HALF_WIDTH, y: .5, z: -ahead };
 }
 
-export function seatOffset(position, orientation) {
+export function seatOffset(position, orientation, height = SEAT_HEIGHT) {
   const { x, y, z, w } = orientation;
   const yaw = Math.atan2(2 * (w * y + x * z), 1 - 2 * (y * y + x * x));
   return {
-    position: { x: position.x, y: position.y - SEAT_HEIGHT, z: position.z },
+    position: { x: position.x, y: position.y - height, z: position.z },
     orientation: { x: 0, y: Math.sin(yaw / 2), z: 0, w: Math.cos(yaw / 2) },
   };
 }

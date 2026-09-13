@@ -1,0 +1,114 @@
+.club-page { background: var(--night); --club-chrome: 118px; }
+.club-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 70px; padding: 12px 28px; border-bottom: 1px solid var(--line); background: var(--bg); }
+.club-brand { display: flex; align-items: center; gap: 12px; font: 12px/1.8 "Arcade", monospace; text-decoration: none; }
+.club-brand svg { width: 20px; height: 20px; fill: none; stroke: var(--cyan); stroke-width: 1.5; }
+.club-brand span { color: var(--pink); font: 12px "Courier New", monospace; }
+.club-header nav { display: flex; align-items: stretch; gap: 20px; }
+.club-header button { min-height: 44px; }
+.club-main { position: relative; height: calc(100dvh - var(--club-chrome)); min-height: 420px; isolation: isolate; overflow: hidden; }
+#club-canvas { display: block; width: 100%; height: 100%; touch-action: none; }
+#club-canvas:focus-visible { outline-offset: -4px; }
+.club-location { position: absolute; top: 20px; left: 24px; padding: 10px 12px; color: var(--cyan); background: var(--night); font-size: 12px; letter-spacing: .5px; pointer-events: none; }
+.club-reticle { position: absolute; top: 50%; left: 50%; width: 5px; height: 5px; background: var(--cyan); border: 1px solid var(--bg); transform: translate(-50%, -50%); pointer-events: none; }
+.club-page:not([data-state="explore"], [data-state="sketch"]) .club-reticle { display: none; }
+.club-hint { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); margin: 0; max-width: calc(100% - 32px); padding: 10px 16px; text-align: center; font-size: 12px; line-height: 1.6; color: var(--cyan); background: var(--bg); pointer-events: none; }
+.club-entry { position: absolute; top: 50%; right: 28px; width: 400px; max-height: calc(100% - 40px); transform: translateY(-50%); padding: 28px; overflow-y: auto; background: #16161ef7; border: 1px solid var(--line); }
+.club-entry h1 { margin: 0; font-size: 22px; line-height: 1.6; color: var(--pink); letter-spacing: -.03em; }
+.club-entry h1 > span:last-child { margin: 0; color: var(--text); }
+.club-entry > p { margin: 20px 0; font-size: 15px; line-height: 1.8; }
+.club-entry .club-description { color: var(--muted); font-size: 14px; }
+.club-entry-actions { display: grid; gap: 10px; margin-top: 24px; }
+.club-entry .primary-button { width: 100%; }
+.club-secondary { min-height: 46px; width: 100%; padding: 10px 14px; color: var(--cyan); background: var(--panel); border: 1px solid var(--line); font: 12px/1.7 "Arcade", monospace; }
+.club-secondary:hover { border-color: var(--cyan); background: var(--line); }
+.club-entry .club-support { font-size: 12px; color: var(--muted); line-height: 1.7; }
+.club-page[data-xr="ready"] .club-support { color: var(--green); }
+.club-page[data-xr="error"] .club-support { color: var(--pink); }
+.club-help { border-top: 1px solid var(--line); padding-top: 12px; font-size: 12px; line-height: 1.8; color: var(--muted); }
+.club-help summary { min-height: 32px; cursor: pointer; color: var(--text); }
+.club-help summary:focus-visible { outline: 2px solid var(--cyan); outline-offset: 4px; }
+.club-panel { position: absolute; bottom: 24px; right: 28px; width: min(580px, calc(100% - 56px)); max-height: calc(100% - 48px); padding: 24px; overflow-y: auto; background: #16161ef7; border: 1px solid var(--line); }
+.club-panel-heading { display: flex; gap: 20px; align-items: flex-start; justify-content: space-between; }
+.club-panel h2 { color: var(--pink); font: 18px/1.7 "Arcade", monospace; margin: 0 0 8px; overflow-wrap: anywhere; }
+#club-panel-subtitle { color: var(--yellow); margin: 0; font-size: 12px; line-height: 1.7; }
+#club-panel-text { font-size: 15px; line-height: 1.8; margin: 18px 0 22px; }
+#club-portrait { width: 40px; height: 87px; image-rendering: pixelated; flex-shrink: 0; }
+.club-panel-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.club-panel-actions button { min-height: 46px; padding: 10px 12px; font-size: 13px; line-height: 1.5; text-align: center; background: var(--panel); color: var(--text); border: 1px solid var(--line); }
+.club-panel-actions button[data-primary="true"] { color: var(--night); background: var(--yellow); border-color: var(--yellow-bright); }
+.club-panel-actions button:hover { border-color: var(--cyan); background: var(--line); color: var(--text); }
+.club-panel-actions button[data-primary="true"]:hover { background: var(--yellow-bright); color: var(--night); }
+.club-panel-actions button small { display: block; margin-top: 8px; font-size: 12px; line-height: 1.5; }
+.club-panel-actions button[data-group="track"] { text-align: left; overflow-wrap: anywhere; }
+.club-panel-actions[data-layout="jukebox"] { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.club-panel-actions[data-layout="jukebox"] button { grid-column: span 3; }
+.club-panel-actions[data-layout="jukebox"][data-columns="3"] button[data-group="control"] { grid-column: span 2; }
+.club-panel-actions[data-layout="jukebox"][data-columns="3"] button[data-control-start="true"] { grid-column: 1 / span 2; }
+#club-map-canvas { width: 100%; height: auto; margin-bottom: 20px; }
+#club-game-canvas { width: min(100%, 460px); height: auto; display: block; margin: 0 auto 16px; image-rendering: pixelated; }
+.club-page[data-state="arcade"] .club-panel { width: min(550px, calc(100% - 56px)); }
+.club-page[data-state="arcade"] .club-panel-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.club-page[data-state="sketch"] .club-panel { top: 20px; bottom: auto; width: min(380px, calc(100% - 24px)); }
+.club-page[data-state="arcade"] #club-panel-text { font-size: 12px; line-height: 1.5; margin-block: 12px; }
+.club-game-stats { display: flex; justify-content: space-between; gap: 16px; color: var(--muted); font-size: 12px; line-height: 1.6; }
+.club-game-stats b { color: var(--yellow); font-weight: 400; font-variant-numeric: tabular-nums; }
+.club-feedback, .club-song-status { position: absolute; top: 18px; right: 24px; z-index: 4; max-width: min(480px, calc(100% - 48px)); margin: 0; padding: 12px 16px; background: var(--bg); color: var(--pink); font-size: 12px; line-height: 1.7; border: 1px solid var(--line); }
+.club-song-status { top: 74px; }
+.club-footer { display: flex; justify-content: space-between; align-items: center; gap: 24px; min-height: 48px; padding: 12px 28px; background: var(--bg); color: var(--muted); font-size: 12px; line-height: 1.7; border-top: 1px solid var(--line); }
+.club-touch { position: absolute; bottom: 12px; inset-inline: 12px; display: none; align-items: end; gap: 8px; pointer-events: none; }
+.club-touch button { min-width: 52px; min-height: 44px; padding: 8px; border: 1px solid var(--line); background: #24283bee; color: var(--text); font: 12px "Courier New", monospace; touch-action: none; pointer-events: auto; user-select: none; }
+.club-touch button.is-pressed { background: var(--line); border-color: var(--cyan); }
+.club-touch #club-touch-use { color: var(--yellow); }
+.club-dpad { display: grid; grid-template-columns: repeat(3, 52px); grid-template-rows: repeat(2, 44px); gap: 4px; margin-right: auto; }
+.club-dpad [data-move="forward"] { grid-column: 2; }
+.club-dpad [data-move="left"] { grid-column: 1; grid-row: 2; }
+.club-dpad [data-move="back"] { grid-column: 2; grid-row: 2; }
+.club-dpad [data-move="right"] { grid-column: 3; grid-row: 2; }
+.club-page[data-xr="active"] :is(.club-entry, .club-panel, .club-touch, .club-reticle, .club-location, .club-hint) { visibility: hidden; }
+.club-video { width: min(1000px, calc(100% - 32px)); max-height: calc(100dvh - 32px); padding: 28px; color: var(--text); background: var(--bg); border: 1px solid var(--line); overflow-y: auto; }
+.club-video::backdrop { background: #16161eee; }
+.club-video h2 { margin: 0; color: var(--pink); font: 24px/1.6 "Arcade", monospace; }
+.club-video p { font: 14px/1.7 "Courier New", monospace; }
+.club-video-screen { padding: 12px; background: var(--panel); border: 1px solid var(--line); }
+.club-video-screen iframe { display: block; width: 100%; min-height: 200px; aspect-ratio: 16 / 9; border: 0; background: var(--night); }
+.club-video .club-video-status { min-height: 48px; margin: 16px 0; color: var(--muted); }
+.club-video-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.club-video-actions > * { width: auto; min-height: 46px; flex: 1 1 210px; padding: 12px; text-align: center; font-size: 12px; line-height: 1.7; text-decoration: none; }
+@media (pointer: coarse), (max-width: 760px) { .club-touch:not([hidden]) { display: flex; } .club-hint { bottom: 112px; } }
+@media (max-width: 760px) {
+  .club-header { padding: 8px 16px; gap: 6px; flex-wrap: wrap; }
+  .club-video { padding: 18px; }
+  .club-video h2 { font-size: 18px; }
+  .club-video-screen { padding: 6px; }
+  .club-header nav { width: 100%; gap: 0 8px; flex-wrap: wrap; justify-content: space-between; }
+  .club-header .tool-button { padding-inline: 2px; }
+  .club-main { min-height: 350px; }
+  .club-location { top: 12px; left: 12px; }
+  .club-entry { right: 16px; width: min(380px, calc(100% - 32px)); padding: 22px; }
+  .club-entry h1 { font-size: 18px; }
+  .club-entry > p { font-size: 14px; margin-block: 14px; }
+  .club-page[data-state="entry"] .club-main { height: auto; min-height: 0; overflow: visible; }
+  .club-page[data-state="entry"] #club-canvas { height: 30dvh; min-height: 230px; }
+  .club-page[data-state="entry"] .club-entry { position: relative; inset: auto; transform: none; width: 100%; max-height: none; border-inline: 0; }
+  .club-entry-actions { margin-top: 18px; }
+  .club-panel { right: 12px; bottom: 12px; width: calc(100% - 24px); padding: 18px; max-height: calc(100% - 24px); }
+  .club-panel h2 { font-size: 15px; }
+  #club-panel-text { font-size: 14px; margin-block: 14px 18px; }
+  .club-panel-actions { gap: 8px; }
+  .club-panel-actions button { font-size: 12px; min-height: 44px; padding: 9px; }
+  .club-page[data-state="arcade"] .club-panel { width: calc(100% - 24px); bottom: 112px; max-height: calc(100% - 124px); }
+  .club-footer { padding: 10px 16px; min-height: 44px; }
+  .club-footer > span:first-child { display: none; }
+  .club-footer > span:last-child { font-size: 12px; }
+  .club-feedback { top: 60px; right: 12px; max-width: calc(100% - 24px); }
+  .club-song-status { top: 118px; right: 12px; max-width: calc(100% - 24px); }
+}
+@media (prefers-reduced-motion: reduce) { .club-page button { transition: none; } }
+@media (max-height: 520px) and (orientation: landscape) {
+  .club-header { min-height: 50px; padding-block: 4px; }
+  .club-main { min-height: 200px; }
+  .club-footer { display: none; }
+  .club-entry { width: 360px; padding: 18px; }
+  .club-entry h1 { font-size: 17px; }
+  .club-panel { max-height: calc(100% - 24px); }
+}

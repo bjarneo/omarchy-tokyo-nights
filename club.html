@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#16161e" />
+    <meta name="description" content="Walk through a large 1980s computer club in VR. Meet the Tokyo Nights crew, explore Amiga and Nintendo hardware, and play the club games." />
+    <title>The Midnight Computer Club · Tokyo Nights</title>
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href="assets/arcade.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="club.css" />
+    <script type="module" src="src/club-main.js"></script>
+  </head>
+  <body class="club-page" data-state="entry" data-xr="checking">
+    <header class="club-header">
+      <a href="vr.html" class="club-brand"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="m9 4-6 6 6 6M3 10h14"/></svg>MIDNIGHT CLUB<span>1989</span></a>
+      <nav aria-label="Room controls">
+        <button class="tool-button" id="club-sound" aria-label="Turn sound on" aria-pressed="false">SOUND OFF</button>
+        <button class="tool-button song-button" id="club-song" aria-label="Play MP3 song" aria-pressed="false" aria-describedby="club-song-status">PLAY SONG</button>
+        <button class="tool-button" id="club-map">MAP</button>
+        <button class="tool-button" id="club-pause" disabled>PAUSE</button>
+        <button class="tool-button" id="club-vr">ENTER VR</button>
+      </nav>
+    </header>
+    <main class="club-main" id="club-main">
+      <canvas id="club-canvas" tabindex="0" aria-label="A large 1980s computer club with the Tokyo Nights crew. Use WASD or arrow keys to walk. Drag to look around. Press E to interact." aria-describedby="club-controls"></canvas>
+      <div class="club-location" id="club-location">THE LOUNGE</div>
+      <div class="club-reticle" aria-hidden="true"></div>
+      <p class="club-hint" id="club-hint" hidden></p>
+      <section class="club-entry" id="club-entry" aria-labelledby="club-title">
+        <h1 id="club-title">THE MIDNIGHT<br /><span>COMPUTER CLUB.</span></h1>
+        <p>Meet the crew. Try the machines.<br />Stay for another game.</p>
+        <p class="club-description">A 36 × 28 meter room of Amiga demos, Nintendo cartridges, and computer conversations. The entrance has an Omarchy Radio jukebox and the Omacon video CRT.</p>
+        <div class="club-entry-actions">
+          <button class="primary-button" id="club-enter-vr" disabled>CHECK HEADSET</button>
+          <button class="club-secondary" id="club-explore" disabled>EXPLORE ON SCREEN</button>
+        </div>
+        <p class="club-support" id="club-support" role="status">Load the room and check WebXR support.</p>
+        <details class="club-help">
+          <summary>HOW TO EXPLORE</summary>
+          <p>Use the left stick to walk. Use the right stick for 30-degree snap turns.</p>
+          <p>Hold the left trigger and point at the floor. Release it to teleport to the green marker.</p>
+          <p>Point at a nearby character or machine and press the right trigger. A also interacts with the center of your view.</p>
+          <p>B closes a panel or pauses. Y opens the map. X centers the view.</p>
+          <p>On screen, use WASD or arrow keys to walk. Drag to look around. E interacts. Tab opens the map.</p>
+          <p>The characters have scripted conversations. Read aloud uses your browser's system voice.</p>
+        </details>
+      </section>
+      <section class="club-panel" id="club-panel" aria-labelledby="club-panel-title" hidden>
+        <div class="club-panel-heading"><div><h2 id="club-panel-title"></h2><p id="club-panel-subtitle"></p></div><canvas id="club-portrait" width="48" height="104" aria-hidden="true" hidden></canvas></div>
+        <p id="club-panel-text"></p>
+        <canvas id="club-map-canvas" width="600" height="250" aria-label="Map of the computer club" role="img" hidden></canvas>
+        <canvas id="club-game-canvas" width="512" height="384" aria-label="The active club game" role="img" hidden></canvas>
+        <p class="club-game-stats" id="club-game-stats" hidden><span>SCORE <b id="club-game-score">0</b></span><span>PERSONAL BEST <b id="club-game-best">0</b></span></p>
+        <div class="club-panel-actions" id="club-panel-actions"></div>
+      </section>
+      <p class="club-feedback" id="club-feedback" role="status" hidden></p>
+      <p class="club-song-status song-notice" id="club-song-status" role="status" hidden></p>
+      <div class="club-touch" id="club-touch" aria-label="Touch controls" hidden>
+        <div class="club-dpad"><button data-move="forward" aria-label="Walk forward">UP</button><button data-move="left" aria-label="Walk left">LEFT</button><button data-move="back" aria-label="Walk backward">DOWN</button><button data-move="right" aria-label="Walk right">RIGHT</button></div>
+        <button id="club-touch-use">USE</button>
+        <button id="club-touch-map">MAP</button>
+      </div>
+    </main>
+    <dialog class="club-video" id="club-video" aria-labelledby="club-video-title" aria-describedby="club-video-description">
+      <h2 id="club-video-title">OMACON 2026</h2>
+      <p id="club-video-description">The PrimeTime · Club cinema. The official YouTube player uses the browser view.</p>
+      <div class="club-video-screen" data-video-screen></div>
+      <p class="club-video-status" data-video-status role="status"></p>
+      <div class="club-video-actions">
+        <button class="primary-button" data-video-close autofocus>BACK TO THE ROOM</button>
+        <button class="club-secondary" data-video-retry>RETRY PLAYER</button>
+        <a class="club-secondary" href="https://www.youtube.com/watch?v=Bic2KjFFj6w" target="_blank" rel="noopener">OPEN ON YOUTUBE</a>
+      </div>
+    </dialog>
+    <footer class="club-footer" id="club-controls"><span>AMIGA · NINTENDO · COMMODORE · ATARI · APPLE · IBM · SEGA</span><span>WASD: WALK · DRAG: LOOK · E: USE · TAB: MAP</span></footer>
+    <p class="sr-only" id="club-announcer" aria-live="polite" aria-atomic="true"></p>
+    <noscript><p class="no-script">Enable JavaScript to explore the computer club.</p></noscript>
+  </body>
+</html>

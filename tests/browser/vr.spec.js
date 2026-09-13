@@ -371,3 +371,155 @@ GameEngine = class EarlyPitStop extends RaceEngine {
   await expect(page.locator('#vr-nitro')).toHaveText('100');
   await page.evaluate(() => xrDevice.activeSession.end());
 });
+
+test('the headset boards the rocket, pauses the flight, reaches Mars, and returns to Tokyo', async ({ page }) => {
+  test.setTimeout(80_000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await emulateHeadset(page);
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.route('**/src/vr-rocket.js', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, body: `${await response.text()}
+const updateRocket = VRRocket.prototype.update;
+VRRocket.prototype.update = function (game, ...args) {
+  if (game.state === 'rocket-flight') (window.vrVisitedThemes ??= new Set()).add(rocketThemeAt(game.rocketTime).id);
+  return updateRocket.call(this, game, ...args);
+};` });
+  });
+  await page.route('**/src/engine.mjs', async (route) => {
+    const response = await route.fetch();
+    await route.fulfill({ response, body: `${await response.text()}
+const RaceEngine = GameEngine;
+GameEngine = class NearbyRocket extends RaceEngine {
+  start(...args) { super.start(...args); this.rocketAt = 80; this.pitStopAt = null; window.rocketProbe = this; }
+};` });
+  });
+  await page.goto('/vr.html');
+  await expect(page.locator('#vr-enter')).toBeEnabled();
+  await page.selectOption('#vr-driver', 'outfoxxed');
+  await page.selectOption('#vr-car', 'f40');
+  await page.selectOption('#vr-paint', 'blue');
+  await page.getByRole('button', { name: 'Turn sound on', exact: true }).click();
+  await page.locator('#vr-enter').click();
+  await expect(page.locator('body')).toHaveAttribute('data-xr', 'active');
+  await selectStartInHeadset(page);
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'story');
+  await selectStartInHeadset(page);
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'playing');
+  await page.evaluate(() => xrDevice.controllers.left.updateAxis('thumbstick', 'x-axis', 1));
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'rocket-flight', { timeout: 12_000 });
+  await page.evaluate(() => xrDevice.controllers.left.updateAxis('thumbstick', 'x-axis', 0));
+  const campaign = await page.evaluate(() => ({ distance: rocketProbe.distance, time: rocketProbe.time, score: rocketProbe.score }));
+  await xrButton(page, 'right', 'b-button', 1);
+  await xrButton(page, 'right', 'b-button', 0);
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'paused');
+  const flightTime = await page.evaluate(() => rocketProbe.rocketTime);
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => rocketProbe.rocketTime)).toBe(flightTime);
+  await selectStartInHeadset(page);
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'rocket-flight');
+  await expect(page.locator('#vr-rocket-phase')).toHaveText('HYPER BOOST', { timeout: 10_000 });
+  await expect(page.locator('#vr-rocket-theme')).toContainText('/22');
+  await page.screenshot({ path: '.impeccable/review/vr-rocket-headset.png', fullPage: true });
+  await expect(page.locator('#vr-rocket-theme')).toContainText('LUPINE', { timeout: 8000 });
+  await page.screenshot({ path: '.impeccable/review/vr-rocket-light-headset.png', fullPage: true });
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'mars', { timeout: 22_000 });
+  expect(await page.evaluate(async () => [...vrVisitedThemes].sort().join(',') === (await import('/assets/omarchy-themes.js')).OMARCHY_THEMES.map(({ id }) => id).sort().join(','))).toBe(true);
+  expect(await page.evaluate(() => ({
+    distance: rocketProbe.distance, time: rocketProbe.time, score: rocketProbe.score,
+    flightTime: rocketProbe.rocketTime, character: rocketProbe.characterId, car: rocketProbe.carId, paint: rocketProbe.paintId,
+  }))).toEqual({ ...campaign, score: campaign.score + 5000, flightTime: 20, character: 'outfoxxed', car: 'f40', paint: 'blue' });
+  await page.screenshot({ path: '.impeccable/review/vr-mars-headset.png', fullPage: true });
+  await page.evaluate(() => xrDevice.quaternion.set(0, -Math.sin(.7 / 2), 0, Math.cos(.7 / 2)));
+  await page.evaluate(() => new Promise((resolve) => xrDevice.activeSession.requestAnimationFrame(() => xrDevice.activeSession.requestAnimationFrame(resolve))));
+  await page.screenshot({ path: '.impeccable/review/vr-mars-patrons.png', fullPage: true });
+  await page.evaluate(() => xrDevice.quaternion.set(0, 0, 0, 1));
+  await selectStartInHeadset(page, { x: 0, y: 1.8 });
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'playing');
+  await expect(page.locator('#vr-nitro')).toHaveText('100');
+  await page.evaluate(() => xrDevice.activeSession.end());
+  expect(errors).toEqual([]);
+});
+
+test('reduced-motion rocket stars and rings stay still while their colors change', async ({ page }) => {
+  await page.goto('/');
+  const result = await page.evaluate(async () => {
+    const THREE = await import('/assets/three.module.js');
+    const { VRRocket } = await import('/src/vr-rocket.js');
+    const { VRArt } = await import('/src/vr-art.js');
+    const { GameEngine } = await import('/src/engine.mjs');
+    const { OMARCHY_THEMES } = await import('/assets/omarchy-themes.js');
+    const { ROCKET_THEME_SECONDS } = await import('/src/rocket-themes.mjs');
+    const scene = new THREE.Scene(); scene.background = new THREE.Color('#101321');
+    const rocket = new VRRocket(scene, new VRArt());
+    const game = new GameEngine(); game.state = 'rocket-flight'; game.rocketTime = 2.4;
+    rocket.update(game, { reducedMotion: true }, 0);
+    const stars = Array.from(rocket.streaks.instanceMatrix.array);
+    const rings = Array.from(rocket.rings.instanceMatrix.array);
+    const colors = Array.from(rocket.streaks.instanceColor.array);
+    const result = { stillStars: true, stillRings: true, changedColors: false };
+    OMARCHY_THEMES.forEach((_, index) => {
+      game.rocketTime = (index + .7) * ROCKET_THEME_SECONDS;
+      rocket.update(game, { reducedMotion: true }, 0);
+      result.stillStars &&= stars.every((value, i) => value === rocket.streaks.instanceMatrix.array[i]);
+      result.stillRings &&= rings.every((value, i) => value === rocket.rings.instanceMatrix.array[i]);
+      result.changedColors ||= colors.some((value, i) => value !== rocket.streaks.instanceColor.array[i]);
+    });
+    return result;
+  });
+  expect(result).toEqual({ stillStars: true, stillRings: true, changedColors: true });
+});
+
+test('the headset operates the physical car radio with controller rays', async ({ page }) => {
+  test.setTimeout(60_000);
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await emulateHeadset(page);
+  const music = await readFile(new URL('../../assets/omarchy-tokyo-nights.mp3', import.meta.url));
+  await page.route('https://radio.omarchy.org/tracks/*.mp3', (route) => route.fulfill({ contentType: 'audio/mpeg', body: music }));
+  const errors = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/vr.html');
+  await expect(page.locator('#vr-enter')).toBeEnabled();
+  await page.evaluate(async () => {
+    const { VRScene } = await import('/src/vr-scene.js');
+    const update = VRScene.prototype.update;
+    VRScene.prototype.update = function (...args) { update.apply(this, args); window.radioScene = this; };
+  });
+  await page.locator('#vr-enter').click();
+  await selectStartInHeadset(page);
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'story');
+  await selectStartInHeadset(page);
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'playing');
+  const pressRadio = async (id) => {
+    await page.evaluate(async (id) => {
+      const { Vector3, Quaternion } = await import('/assets/three.module.js');
+      const panel = radioScene.panels.radio;
+      const area = panel.buttons.find((button) => button.id === id);
+      const target = panel.mesh.localToWorld(new Vector3(((area.x + area.width / 2) / 768 - .5) * .74, (.5 - (area.y + area.height / 2) / 320) * .308, 0));
+      const origin = radioScene.controllers[1].controller.getWorldPosition(new Vector3());
+      const direction = target.sub(origin).normalize().applyQuaternion(radioScene.rig.getWorldQuaternion(new Quaternion()).invert());
+      const q = new Quaternion().setFromUnitVectors(new Vector3(0, 0, -1), direction);
+      xrDevice.controllers.right.quaternion.set(q.x, q.y, q.z, q.w);
+    }, id);
+    await page.waitForTimeout(150);
+    await xrButton(page, 'right', 'trigger', 1);
+    await xrButton(page, 'right', 'trigger', 0);
+  };
+  await pressRadio('radio-toggle');
+  await expect.poll(() => page.locator('#radio-audio').evaluate((audio) => audio.currentTime)).toBeGreaterThan(.1);
+  await pressRadio('radio-next');
+  await expect(page.locator('#radio-audio')).toHaveAttribute('src', /michel-krapf-still-licensed\.mp3$/);
+  await pressRadio('radio-down');
+  expect(await page.locator('#radio-audio').evaluate((audio) => audio.volume)).toBeCloseTo(.5);
+  await page.evaluate(() => xrDevice.quaternion.set(0, -Math.sin(.55 / 2), 0, Math.cos(.55 / 2)));
+  await page.waitForTimeout(150);
+  await page.screenshot({ path: '.impeccable/review/radio-headset.png', fullPage: true });
+  await pressRadio('radio-toggle');
+  expect(await page.locator('#radio-audio').evaluate((audio) => audio.paused)).toBe(true);
+  await pressRadio('radio-toggle');
+  await page.evaluate(() => xrDevice.updateVisibilityState('visible-blurred'));
+  await expect.poll(() => page.locator('#radio-audio').evaluate((audio) => audio.paused)).toBe(true);
+  await page.evaluate(() => xrDevice.activeSession.end());
+  expect(errors).toEqual([]);
+});

@@ -72,6 +72,21 @@ export class VRArt {
     return this.spritePlane(canvas, `tag:${label}:${color}`, 1, .1875);
   }
 
+  patronTexture(id) {
+    const key = `patron:${id}`;
+    if (!this.textures.has(key)) {
+      const texture = this.texture(key, this.renderer.getPatronPoster(id));
+      void this.renderer.patronsReady.then(() => { texture.needsUpdate = true; });
+    }
+    return this.textures.get(key);
+  }
+
+  patronSign(id) {
+    const sign = new THREE.Mesh(new THREE.PlaneGeometry(3.8, 2.09), new THREE.MeshBasicMaterial({ map: this.patronTexture(id), side: THREE.DoubleSide, toneMapped: false }));
+    sign.name = `patron-${id}`;
+    return sign;
+  }
+
   voxelPart(id, facing, start, end, pivot = 0) {
     const key = `${id}:${facing}:${start}:${end}`;
     if (!this.characterParts.has(key)) {

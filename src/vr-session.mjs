@@ -1,10 +1,12 @@
 export class VRSession {
-  constructor({ renderer, xr = globalThis.navigator?.xr, secure = globalThis.isSecureContext, onStatus = () => {}, onStart = () => {}, onEnd = () => {}, onVisibility = () => {} }) {
+  constructor({ renderer, xr = globalThis.navigator?.xr, secure = globalThis.isSecureContext, onStatus = () => {}, onStart = () => {}, onEnd = () => {}, onVisibility = () => {}, labels = {}, framebufferScale = .85 }) {
     Object.assign(this, { renderer, xr, secure, onStatus, onStart, onEnd, onVisibility });
     this.session = null;
     this.pending = false;
     this.supported = false;
     this.disposed = false;
+    this.framebufferScale = framebufferScale;
+    this.labels = { screen: 'drive on screen', ready: 'Your headset supports WebXR. Enter VR, center the seat, then start from the cockpit menu.', active: 'The cockpit is active in your headset.', ...labels };
     this.deviceChange = () => { if (!this.session && !this.pending) void this.check(); };
     xr?.addEventListener('devicechange', this.deviceChange);
   }
@@ -17,15 +19,15 @@ export class VRSession {
       return false;
     }
     if (!this.xr) {
-      this.status('unavailable', 'This browser has no WebXR support. Open this page in a headset browser, or drive on screen.');
+      this.status('unavailable', `This browser has no WebXR support. Open this page in a headset browser, or ${this.labels.screen}.`);
       return false;
     }
     try {
       this.supported = await this.xr.isSessionSupported('immersive-vr');
       if (this.disposed || this.session || this.pending) return this.supported;
       this.status(this.supported ? 'ready' : 'unavailable', this.supported
-        ? 'Your headset supports WebXR. Enter VR, center the seat, then start from the cockpit menu.'
-        : 'No VR headset is available. Connect a headset and reload, or drive on screen.');
+        ? this.labels.ready
+        : `No VR headset is available. Connect a headset and reload, or ${this.labels.screen}.`);
     } catch {
       this.supported = false;
       this.status('error', 'The browser cannot check VR access. Allow XR access in browser settings, then reload.');
@@ -56,13 +58,13 @@ export class VRSession {
       session.addEventListener('end', end);
       session.addEventListener('visibilitychange', visibility);
       this.renderer.xr.setReferenceSpaceType('local');
-      this.renderer.xr.setFramebufferScaleFactor(.85);
+      this.renderer.xr.setFramebufferScaleFactor(this.framebufferScale);
       await this.renderer.xr.setSession(session);
       if (this.session !== session || this.disposed) return false;
       this.renderer.xr.setFoveation(1);
       this.pending = false;
       this.onStart(session);
-      this.status('active', 'The cockpit is active in your headset.');
+      this.status('active', this.labels.active);
       return true;
     } catch (error) {
       if (session) {

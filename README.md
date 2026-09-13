@@ -14,7 +14,7 @@ npm start
 Open `http://localhost:3000` in your browser.
 The game needs no build step.
 The VR route uses local Three.js modules included in `assets/`.
-The local font, sprites, and audio work without external requests.
+The local font, sprites, and included audio work without external requests. The car radio streams its songs from Omarchy Radio.
 
 To use a different port:
 
@@ -62,6 +62,32 @@ The driver leans out, turns toward you, smiles, and returns inside the car.
 DHH has wavy brown hair, blue-gray eyes, and a short beard based on the supplied reference photo.
 Ryan has glasses, swept-back hair, and a goatee based on the supplied reference photo.
 
+## Car radio
+
+The stereo below the road plays the 33 songs from [Omarchy Radio](https://radio.omarchy.org/).
+Select its play button to start the current track.
+Use the previous and next buttons to change tracks.
+Select `TUNE` to choose a track or change the volume.
+The display retains each song's title, artist credit, and explicit-content flag.
+
+The radio starts only after a playback action.
+Pause retains the current position. The next song starts automatically, and the playlist wraps after its last track.
+The browser saves your selected track and volume.
+The radio and local MP3 stop each other when you select a different music source.
+The Sound control governs race effects and synthesized music independently.
+
+The VR cockpit includes a stereo beside the main instruments.
+Point at its controls and press a trigger to play, pause, change tracks, or adjust the volume.
+Focus or headset visibility loss pauses playback.
+If a track cannot load, use Play to retry or Next to choose another track.
+
+`assets/radio-tracks.js` contains the verified catalog. The MP3 URLs point to the station's public files.
+To refresh the catalog and verify every audio URL:
+
+```sh
+npm run assets:radio
+```
+
 ## Play the song
 
 Select `PLAY SONG` in the arcade toolbar or VR toolbar.
@@ -79,6 +105,181 @@ While the song loads, select the song control to cancel the load.
 A failed request shows a message with a retry action.
 The song pauses when the game loses focus or the headset opens its system menu.
 The VR cockpit menu also contains `PLAY SONG`, `PAUSE SONG`, and load-cancel controls.
+
+## Retro computer club
+
+Open `http://localhost:3000/club.html` to visit the Midnight Computer Club.
+The game page provides `THE CLUB` in the masthead, `RETRO ROOM` in the toolbar, and an `ENTER CLUB` banner.
+The VR route provides an `EXPLORE RETRO ROOM` native link and a `RETRO ROOM` headset-menu portal.
+
+The club is a 36 × 28 meter interior with six areas, 21 interactive stations, and all nine original voxel characters.
+Explore freely, talk to the crew, and try the machines.
+The room includes wood furniture, patterned carpet, curved CRTs, disk shelves, old controllers, posters, and a repair bench.
+The original Omarchy block logo appears on the main wall and the DHH shirt.
+
+The hardware collection includes:
+
+- Amiga 500, Amiga 1000, Commodore 64, ZX Spectrum, and Atari 520ST.
+- IBM PC XT, Apple IIe, Macintosh 128K, and Amstrad CPC 464.
+- Nintendo NES, Famicom, Game Boy, Sega Master System, Mega Drive, and Atari 2600.
+- Three arcade cabinets and a cassette deck.
+- An Omarchy Radio jukebox beside the entrance and a large lounge cinema CRT.
+
+The original 19 stations remain. The jukebox and cinema bring the total to 21.
+
+The machines use interactive recreations of period screens and original club demos.
+Try the Amiga checker ball, a BASIC program display, the local bulletin board, the Atari MIDI pattern, or the Macintosh sketchpad.
+Hardware menus also include power controls.
+The jukebox has a dedicated music menu.
+The hardware recreations do not load ROMs, emulate processors, or connect to a live BBS.
+
+### Crew and original logo gallery
+
+Each character has a distinct gesture, including a wave, glasses adjustment, stretch, beat, disk inspection, or handheld use.
+The coffee animation uses arm inverse kinematics to raise, hold, tilt, and lower the mug.
+Short walks respect obstacles, other characters, map destinations, machine approach points, and conversation-panel space.
+Characters stop their walks within 3.2 meters of the player or during their own conversation.
+The standing height is 1.95 meters, and the player eye height is 1.65 meters.
+Reduced motion stops autonomous walks and gestures. Player-controlled movement and machine demos continue.
+
+Five wall panels display 65 original open-source project marks from local files in `assets/open-source/`.
+The gallery distinguishes desktop foundations, base packages, and optional software. It explicitly excludes GNOME, GTK, and Qt.
+`tools/open-source-catalog.mjs` defines the projects and their Omarchy evidence.
+`tools/vendor-open-source-logos.mjs` imports the marks from pinned `simple-icons` version `16.31.0`, upstream artwork, and the original block logos.
+`assets/open-source/manifest.json` records source URLs, licenses, installation scopes, file hashes, and Omarchy reference hashes.
+The current Omarchy source commit is `760a546a1c883d9bf3f33e3675920318fbf3fe76`.
+The four PNG marks carry embedded provenance.
+
+To refresh the gallery from the sibling Omarchy checkout, run:
+
+```sh
+npm run assets:logos
+```
+
+### Explore the room
+
+Select `ENTER VR` to use a WebXR headset.
+The club uses the same HTTPS or device-local localhost setup as the VR cockpit.
+Select `EXPLORE ON SCREEN` for keyboard, pointer, or touch controls.
+
+| Action | Headset controller | Screen control |
+| --- | --- | --- |
+| Walk | Left stick | WASD or arrow keys |
+| Look around | Head movement | Drag the canvas |
+| Turn in 30-degree steps | Right stick | Drag the canvas |
+| Teleport | Hold the left trigger, aim at the floor, then release | Select a destination from the map |
+| Talk or use a machine | Point and press the right trigger, or use A | Look at the target and press E |
+| Open the map | Y | Tab or `MAP` |
+| Close the current panel | B | Escape |
+| Pause an active game | `PAUSE` in the game panel | P or `PAUSE` |
+| Center the view | X | R |
+
+A green floor marker shows a valid teleport destination.
+Pink marks a blocked destination.
+Virtual movement respects walls, furniture, and character positions.
+Head-relative movement runs at 4.2 meters per second with the same maximum speed on diagonals.
+The map provides six destinations within the room.
+Touch devices show movement, use, and map controls.
+
+Approach a character within three meters to start a conversation.
+Each character has a greeting and three topic choices.
+The dialogue panel appears beside the character.
+`READ ALOUD` uses the browser's system voice for the scripted response.
+
+### Play the club games
+
+The club includes three original mini-games:
+
+- **Star Patrol:** Move the ship and fire at the descending formation.
+- **Brick Break:** Keep the ball above the paddle and clear the bricks with three lives.
+- **Snake:** Collect food and avoid the walls and your own tail.
+
+Use the left stick or arrow keys to control a game.
+Use a trigger or Space to fire in Star Patrol.
+Completed rounds store a personal best in the browser.
+The controls include start, restart, pause, and leave actions.
+
+The Macintosh sketchpad accepts individual cell clicks on its screen.
+Select a painted cell to erase it, or use `CLEAR SKETCH`.
+
+`PLAY SONG` and the cassette deck control the supplied MP3.
+`SOUND ON` enables room fan noise, interaction tones, modem tones, and the Atari pattern demo.
+The Tokyo Nights cabinet opens the existing VR race and garage.
+
+### Play the jukebox
+
+Select the physical jukebox beside the entrance to open its library.
+The library contains 33 local MP3 files from [Omarchy Radio](https://radio.omarchy.org/).
+Library and queue pages show up to six tracks with titles, artist credits, and explicit-content flags.
+
+1. Select a track from the library.
+2. Select `PLAY NOW` to start that track.
+
+`ADD TO QUEUE` appends the selected track. Select a queued track to remove it.
+`CLEAR QUEUE` removes all queued tracks. The queue accepts up to 100 entries.
+`NEXT TRACK` and automatic track completion consume the queue first.
+When the queue is empty, playback advances through the library in source order and loops after its final track.
+
+`PAUSE MUSIC` retains the position. `RESUME MUSIC` continues from that position.
+`CANCEL LOAD` cancels a pending request. A failed request offers retry through `PLAY NOW` or a different track through `NEXT TRACK`.
+The jukebox and original `PLAY SONG` control pause each other.
+Music starts after a playback action. Focus or XR visibility or tracking loss pauses both music sources.
+
+`assets/radio/` contains the 33 MP3 files and `playlist.json`.
+`assets/club-radio.js` supplies the runtime metadata.
+The import uses the sibling `radio.omarchy.org/public/tracks/` directory.
+It preserves source order, titles, artist credits, explicit flags, and SHA-256 hashes for the playlist and every MP3.
+The focused tests verify the local MP3 hashes against the metadata.
+
+To refresh the local library, run:
+
+```sh
+npm run assets:club-radio
+```
+
+To use another source directory, run:
+
+```sh
+CLUB_RADIO_SOURCE=/path/to/public/tracks npm run assets:club-radio
+```
+
+### Watch the club cinema
+
+The large lounge CRT shows the Omacon 2026 title card and opens its station menu.
+Select `WATCH OMACON 2026` to open the official YouTube player for `Bic2KjFFj6w`.
+This user-approved browser flow ends an active XR session before the native dialog opens.
+The action pauses the room, stops other music and room effects, and cancels speech.
+The dialog creates the official iframe only after that action. Use the YouTube controls to start playback.
+
+`RETRY PLAYER` replaces the iframe. `OPEN ON YOUTUBE` opens the official watch page.
+`BACK TO THE ROOM` or Escape closes the dialog, removes the iframe, and returns to exploration.
+The CRT uses a local title-card texture. The video plays in the browser dialog, not as a VR texture or local download.
+
+### Club source and verification
+
+- `src/club-data.mjs` defines room measurements, stations, dialogue, and collision footprints.
+- `src/club-engine.mjs` defines interaction states, collision rules, and scores.
+- `src/club-main.js` connects native controls, WebXR, audio, and recovery.
+- `src/club-controls.mjs` maps controller and gamepad input.
+- `src/club-room.js` builds hardware, furniture, and the original wall sign.
+- `src/club-avatars.js` and `src/club-motion.mjs` define calibrated articulated characters, gestures, and short walks.
+- `src/club-logo-wall.js` draws the local project-mark gallery.
+- `src/club-scene.js` renders the room, teleport arc, and spatial panels.
+- `src/club-screens.js` draws machine demos, game displays, maps, and media title cards.
+- `src/club-games.mjs` contains the three mini-games.
+- `src/club-audio.js` supplies spatial room effects.
+- `src/club-jukebox.mjs` manages the local music library and queue.
+- `src/club-cinema.js` manages the official YouTube dialog.
+- `club.html` and `club.css` define the native interface. GitHub Pages packaging includes both files, `src/`, and `assets/`.
+
+The supplied results report all 24 focused Node tests and all ten clubhouse browser tests as passed.
+The three media browser cases pass again after the final queue-grid and caption fixes.
+The MP3 browser tests play real local tracks and seek near their ends to exercise automatic queue advance.
+Cinema captures use an explicit test iframe and do not prove live YouTube playback.
+IWER provides stereo emulation without a physical headset. Speech checks spy on requests rather than verify audible output.
+The fresh finish reviewer returns `ship` for the supplied desktop, mobile, and stereo clubhouse scope with no material fixes.
+The club surface brief records the 14 reviewed captures and remaining verification limits.
+The full suite against an isolated staged candidate remains in progress at this handoff. These results do not establish its final counts.
 
 ## VR cockpit
 
@@ -113,6 +314,9 @@ Marked pit areas have openings in the roadside barrier.
 Steer onto the indicated shoulder to enter a pit area.
 The scene shows both characters, and the dialogue panel shows the current speaker's original full-body artwork.
 Select `CONTINUE` through the conversation, then select `BACK TO RACE` to leave with a full nitro charge.
+
+The cockpit also supports the Omarchy rocket and the twenty-second Mars trip.
+On Mars, look right to see the outpost's founding-patron displays.
 
 ### Enter VR
 
@@ -212,7 +416,7 @@ The roster contains DHH, Ryan, Bjarne, Tobi, Hancore, Spencer, Krzysztof, Outfox
 Each driver has back, profile, and front cameo poses.
 Bjarne has a coffee mug and navy jacket. Spencer has a blue shirt.
 Hancore uses the supplied skull emblem.
-Outfoxxed follows the replacement portrait with swept brown hair, silver-framed glasses, a teal shirt, and a dark jacket.
+Outfoxxed follows the replacement portrait with swept brown hair, silver-framed glasses, a Tokyo Night blue shirt, and a dark jacket.
 The start screen shows all nine drivers in the lower-right corner.
 Select that lineup or open `http://localhost:3000/garage.html` to see their larger full-body figures outside the garage.
 The garage page supports horizontal scroll on smaller screens and buttons that locate each driver.
@@ -268,12 +472,72 @@ Select `BACK TO THE RUN` after the final reply.
 The race clock pauses during the stop.
 The car returns to the same lane and distance with a full nitro tank.
 
+## Mars rocket
+
+A cyan ramp marks the Omarchy rocket on the right shoulder, 850 meters into each chapter until you visit it.
+To board the rocket, steer your car into that ramp.
+The flight lasts twenty active seconds and carries your selected car to Mars.
+
+| Flight time | Phase |
+| --- | --- |
+| 0–2 seconds | Cargo closure |
+| 2–6 seconds | Liftoff |
+| 6–16 seconds | Hyper boost |
+| 16–20 seconds | Mars approach |
+
+Pause also stops the flight clock.
+The race clock pauses throughout the flight and the Mars visit.
+Arrival adds 5000 points once per run.
+Select `RETURN TO TOKYO` to resume the campaign.
+The car returns to the same lane and distance with a full nitro tank.
+
+### Theme colors and star music
+
+The flight visits all 22 native Omarchy themes in twenty seconds.
+Each theme colors the star trails, segmented rings, rocket, and VR cargo cabin.
+The HUD shows the theme name, sequence position, and complete palette.
+Smooth blends connect the palettes, including transitions between dark and light themes.
+Reduced motion keeps the stars and rings stationary while their colors change.
+
+With sound enabled, the rocket plays an original stereo soundtrack with chimes, soft synth chords, bass, and reverb.
+Each theme receives a four-note phrase.
+Pause stops the music. Resume aligns the music with the flight clock.
+The Sound control mutes the soundtrack. The radio or MP3 takes precedence while it plays.
+The game creates and caches the soundtrack locally through Web Audio.
+
+`assets/omarchy-themes.js` contains the complete native palettes and their upstream source revision.
+It also includes the RGB endpoints from native border-gradient overrides.
+To refresh the palettes from an Omarchy Git checkout:
+
+```sh
+npm run assets:rocket-themes -- /path/to/omarchy
+```
+
+## Founding patrons
+
+The twelve individual [Omarchy founding patrons](https://omarchy.org/patrons/) appear on pixel portrait displays.
+Each new run changes their order, roadside positions, and road sides.
+The garage page selects three patrons per visit and names them below the scene.
+The arcade Mars outpost displays one patron. The VR outpost displays two.
+
+The displays use local `48 × 48` portraits from `assets/patrons/`.
+Each PNG includes its official source URL and palette conversion details.
+If a portrait cannot load, its nameplate remains visible.
+`src/patrons.mjs` records the verified roster and the randomized placements.
+
+To refresh the source portraits:
+
+```sh
+npm run assets:patrons
+```
+
 ## Rules
 
 - Complete each chapter objective before its three-kilometer exit.
 - Each of the first three exits adds 35 seconds, 2,500 points, and nitro charge.
 - Each mission pickup adds 500 points and nitro charge.
 - Each blue nitro canister adds 200 points and 45 nitro charge.
+- The optional Mars visit adds 5000 points once per run.
 - The final delivery adds 5,000 points and 100 points for each remaining second.
 - Each car you pass adds 150 points.
 - A close pass adds 450 points and nitro charge.
@@ -488,6 +752,14 @@ gh workflow run deploy.yml
 - `src/garage.js` renders the crew lineup page.
 - `src/garage-scene.js` draws the shared garage backdrop.
 - `src/pit-stops.mjs` defines Omarchy conversation topics and crew selection.
+- `src/rocket.mjs` defines flight timing, phases, and the Mars bonus.
+- `src/rocket-art.js` draws the rocket, flight, and Mars outpost.
+- `src/rocket-themes.mjs` maps flight time to the native theme sequence and smooth color blends.
+- `src/rocket-score.mjs` defines the original star soundtrack.
+- `src/rocket-music.js` renders and plays the soundtrack at the current flight position.
+- `src/vr-rocket.js` renders the rocket and Mars outpost in the 3D cockpit.
+- `src/patrons.mjs` defines the founding-patron roster and randomized displays.
+- `src/patron-art.js` caches the local pixel portraits and nameplates.
 - `src/cars.mjs` defines the car models and Tokyo Night paint colors.
 - `src/car-sprites.js` draws and colors each car model.
 - `src/story.mjs` defines the four chapters, objectives, and item drops.
@@ -495,6 +767,9 @@ gh workflow run deploy.yml
 - `src/renderer.js` draws the original pixel-art skyline, sprites, road, and effects.
 - `src/audio.js` synthesizes the engine, effects, and arcade soundtrack with Web Audio.
 - `src/main.js` connects the controls, interface, and local storage.
+- `src/radio-player.js` manages the car radio, track changes, cancellation, and saved preferences.
+- `src/radio-controls.js` creates its accessible stereo controls.
+- `radio.css` defines the responsive stereo layout.
 - `style.css` defines the responsive arcade interface.
 - `assets/arcade.woff2` contains the local Press Start 2P font.
 - `assets/FONT-LICENSE.txt` contains the font license.

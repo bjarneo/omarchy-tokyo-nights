@@ -9,6 +9,7 @@
     <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
     <link rel="preload" href="assets/arcade.woff2" as="font" type="font/woff2" crossorigin />
     <link rel="stylesheet" href="style.css" />
+    <link rel="stylesheet" href="radio.css" />
     <script type="module" src="src/main.js"></script>
   </head>
   <body>
@@ -22,7 +23,7 @@
           <a class="edition" href="music-video.html">MUSIC VIDEO</a>
           <a class="edition" href="garage.html">THE CREW</a>
           <span class="high-score">PERSONAL BEST <strong id="header-best">000000</strong></span>
-          <span class="edition">ARCADE / VOL. 01</span>
+          <a class="edition" href="club.html">THE CLUB</a>
         </div>
       </header>
 
@@ -34,6 +35,10 @@
               <a class="tool-button vr-link" href="vr.html" aria-label="Open VR cockpit" title="VR cockpit">
                 <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 5h14l1 8-3 2-5-3-5 3-3-2z"/><path d="M6 8v3m8-3v3"/></svg>
                 <span>VR COCKPIT</span>
+              </a>
+              <a class="tool-button vr-link" href="club.html" aria-label="Open retro computer club" title="Retro computer club">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3h14v10H3zM6 17h8M10 13v4M6 6h8"/></svg>
+                <span>RETRO ROOM</span>
               </a>
               <button class="tool-button" id="sound-button" aria-label="Turn sound on" aria-pressed="false" title="Sound · M">
                 <svg id="sound-icon" viewBox="0 0 20 20" aria-hidden="true"><path d="M3 8h3l4-4v12l-4-4H3zM14 7l4 6m0-6-4 6"/></svg>
@@ -123,6 +128,7 @@
 
             <div class="hud" id="hud" hidden aria-label="Race dashboard">
               <div class="pit-bay-indicator" id="pit-bay-indicator" hidden>PIT BAY: RIGHT</div>
+              <div class="rocket-pad-indicator" id="rocket-pad-indicator" hidden>ROCKET: RIGHT</div>
               <div class="mission-instrument"><strong id="mission-status">TAPE 0/1</strong><span id="mission-route">NEXT DROP: CENTER</span></div>
               <div class="hud-top">
                 <div class="hud-score"><span class="hud-label">SCORE</span><strong id="score">000000</strong><span class="hud-small" id="stage-name">01 / SHINJUKU</span></div>
@@ -155,6 +161,16 @@
             </div>
 
             <div class="pit-transition" id="pit-transition" hidden><strong>PIT STOP</strong><span>The crew waits at the garage.</span></div>
+            <section class="rocket-hud" id="rocket-hud" aria-label="Rocket flight" hidden>
+              <div class="rocket-telemetry"><div><span>OMARCHY ROCKET</span><strong id="rocket-phase">CARGO BAY CLOSING</strong><span class="rocket-theme-name" id="rocket-theme-name"></span><div class="rocket-palette" id="rocket-palette" aria-hidden="true"></div></div><div class="rocket-eta"><span>MARS ETA</span><strong id="rocket-eta">20.0s</strong></div></div>
+              <div class="rocket-thrust">THRUST <b id="rocket-thrust">0%</b></div>
+              <div class="rocket-progress" id="rocket-progress" role="progressbar" aria-label="Flight to Mars" aria-valuemin="0" aria-valuemax="20" aria-valuenow="0"><div id="rocket-progress-fill"></div></div>
+            </section>
+            <section class="mars-panel" id="mars-panel" aria-labelledby="mars-heading" hidden>
+              <h2 id="mars-heading">MARS REACHED.</h2>
+              <p>20-second flight complete. Your car reaches the Omarchy outpost.</p>
+              <button class="primary-button" id="mars-return-button">RETURN TO TOKYO</button>
+            </section>
             <section class="pit-dialogue" id="pit-dialogue" aria-labelledby="pit-speaker" hidden>
               <div class="pit-content">
                 <h2 id="pit-speaker">THE CREW</h2>
@@ -181,6 +197,7 @@
             </div>
           </div>
 
+          <section id="car-radio" aria-label="Car radio"></section>
           <div class="cabinet-bottom"><span><i></i><span id="status-text">READY WHEN YOU ARE</span></span><span>NO COINS. JUST ONE MORE RUN.</span></div>
         </section>
 
@@ -200,6 +217,11 @@
           <div class="control-group"><kbd>P</kbd><span>PAUSE</span></div>
           <div class="drive-tip"><span class="tip-dot"></span><span>Auto-cruise is on.<br><b>Dodge traffic. Chase checkpoints.</b></span></div>
         </section>
+
+        <a class="club-visit" href="club.html">
+          <span class="club-visit-copy"><strong>THE MIDNIGHT COMPUTER CLUB</strong><span>Meet the crew. Explore the retro room.</span></span>
+          <span class="club-visit-action">ENTER CLUB<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 10h14m-6-6 6 6-6 6"/></svg></span>
+        </a>
 
         <footer class="page-footer"><span class="footer-tagline">A LATE-NIGHT ARCADE DRIVE.</span><a class="crew-mobile-link" href="garage.html">MEET THE CREW</a><span>PIXEL GRAPHICS <span class="footer-cross">+</span> TOKYO NIGHT COLORS</span></footer>
         <p class="sr-only" id="announcer" aria-live="polite" aria-atomic="true"></p>

@@ -116,6 +116,14 @@ h1 > span:last-child { margin-left: .48em; }
 .page-footer { padding: 22px 0 28px; display: flex; justify-content: space-between; gap: 15px; font-size: 10px; letter-spacing: 1px; color: var(--muted); }
 .footer-cross { color: var(--pink); margin: 0 8px; }
 .crew-mobile-link { display: none; }
+.club-visit { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin-top: 20px; padding: 18px 20px; background: var(--panel); border: 1px solid var(--line); text-decoration: none; }
+.club-visit-copy strong { display: block; color: var(--text); font: 12px/1.8 "Arcade", monospace; }
+.club-visit-copy > span { display: block; margin-top: 6px; color: var(--muted); font-size: 13px; line-height: 1.6; }
+.club-visit-action { display: flex; align-items: center; gap: 12px; flex-shrink: 0; color: var(--cyan); font: 12px/1.8 "Arcade", monospace; }
+.club-visit-action svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; }
+.club-visit:hover { border-color: var(--cyan); }
+.app:fullscreen .club-visit, .app[data-state="select"] .club-visit { display: none; }
+@media (max-width: 700px) { .club-visit { align-items: flex-start; flex-direction: column; gap: 12px; padding: 16px; } }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
 .no-script { color: var(--yellow); line-height: 1.6; }
 
@@ -126,6 +134,27 @@ h1 > span:last-child { margin-left: .48em; }
 .mission-instrument.is-complete strong { color: var(--green); }
 .pit-bay-indicator { position: absolute; right: 4%; bottom: 24%; padding: 5px 8px; color: var(--green); background: #16161eee; font-size: 12px; line-height: 1.5; }
 .pit-bay-indicator[data-side="left"] { right: auto; left: 4%; }
+.rocket-pad-indicator { position: absolute; right: 4%; bottom: 32%; padding: 5px 8px; color: var(--cyan); background: #16161eee; font-size: 12px; line-height: 1.5; }
+.rocket-hud { position: absolute; inset: 0; z-index: 4; pointer-events: none; }
+.rocket-telemetry { position: absolute; top: 5%; inset-inline: 4%; display: flex; justify-content: space-between; gap: 24px; }
+.rocket-telemetry > div { padding: 10px; background: #16161ee6; }
+.rocket-telemetry span { display: block; color: var(--muted); font-size: 12px; line-height: 1.5; }
+.rocket-telemetry strong { display: block; margin-top: 10px; color: var(--cyan); font: clamp(12px, 1.8cqw, 22px)/1.5 "Arcade", monospace; }
+.rocket-eta { text-align: right; }
+.rocket-telemetry .rocket-theme-name { margin-top: 12px; max-width: 240px; color: var(--text); }
+.rocket-palette { display: flex; height: 8px; margin-top: 6px; gap: 1px; }
+.rocket-palette i { flex: 1; min-width: 0; }
+.rocket-eta strong { color: var(--yellow); font-size: clamp(18px, 3cqw, 36px); }
+.rocket-thrust { position: absolute; left: 4%; bottom: 6%; padding: 8px; color: var(--text); background: #16161ed9; font-size: 12px; }
+.rocket-thrust b { color: var(--cyan); }
+.rocket-progress { position: absolute; bottom: 0; width: 100%; height: 4px; background: var(--line); }
+#rocket-progress-fill { height: 100%; background: var(--cyan); transform-origin: left; }
+.mars-panel { position: absolute; bottom: 0; inset-inline: 0; z-index: 6; padding: 20px; background: #16161ef2; text-align: center; }
+.mars-panel h2 { margin: 0 0 10px; color: var(--pink); font: clamp(14px, 2cqw, 24px)/1.5 "Arcade", monospace; }
+.mars-panel p { font-size: 12px; line-height: 1.7; margin: 0 0 14px; color: var(--text); }
+.mars-panel button { margin-inline: auto; }
+.app:is([data-state="rocket-flight"], [data-state="mars"]) .touch-controls,
+.app:is([data-state="rocket-flight"], [data-state="mars"]) .control-strip { display: none; }
 .hud-top, .hud-bottom { position: absolute; inset-inline: 4%; display: flex; justify-content: space-between; }
 .hud-top { top: 5%; align-items: flex-start; }
 .hud-label { display: block; font-size: 12px; letter-spacing: 1px; margin-bottom: 10px; color: var(--text); }
@@ -306,6 +335,7 @@ h1 > span:last-child { margin-left: .48em; }
   .footer-cross { margin-inline: 2px; }
   .hud-top { top: 6%; }
   .mission-instrument { top: 28%; padding: 5px; }
+  .rocket-pad-indicator { display: none; }
   .hud-label { margin-bottom: 8px; font-size: 12px; letter-spacing: 0; }
   .hud-small { margin-top: 7px; font-size: 12px; letter-spacing: 0; }
   .hud-time strong { font-size: 22px; }
@@ -335,6 +365,12 @@ h1 > span:last-child { margin-left: .48em; }
   .results-overlay { padding: 12px; overflow-y: auto; justify-content: safe center; }
   .screen[data-state="story"] { height: 480px; aspect-ratio: auto; }
   .screen[data-state="complete"] { height: 420px; aspect-ratio: auto; }
+  .screen:is([data-state="mars"], [data-state="rocket-flight"]) { height: 460px; aspect-ratio: auto; }
+  .rocket-telemetry { gap: 6px; }
+  .rocket-telemetry > div { padding: 6px; }
+  .rocket-telemetry strong { font-size: 12px; max-width: 150px; }
+  .rocket-eta strong { font-size: 18px; }
+  .mars-panel { padding: 16px; }
   .screen[data-state="pit"] { height: min(560px, calc(100dvh - 150px)); min-height: 500px; aspect-ratio: auto; }
   .pit-dialogue { padding: 14px 16px; }
   .pit-dialogue h2 { font-size: 14px; }
@@ -427,7 +463,7 @@ h1 > span:last-child { margin-left: .48em; }
   .screen-texture { display: none; }
 }
 
-.app:fullscreen { --fullscreen-chrome: 94px; width: 100%; max-width: none; height: 100dvh; padding: 8px 16px; display: flex; align-items: center; justify-content: center; background: var(--bg); }
+.app:fullscreen { --fullscreen-chrome: calc(94px + var(--radio-height, 0px)); width: 100%; max-width: none; height: 100dvh; padding: 8px 16px; display: flex; align-items: center; justify-content: center; background: var(--bg); }
 .app:fullscreen main { width: 100%; display: flex; flex-direction: column; align-items: center; }
 .app:fullscreen .masthead, .app:fullscreen .page-footer, .app:fullscreen .control-strip { display: none; }
 .app:fullscreen .arcade, .app:fullscreen .touch-controls { width: min(100%, calc((100dvh - var(--fullscreen-chrome)) * 16 / 9)); }
@@ -437,14 +473,21 @@ h1 > span:last-child { margin-left: .48em; }
 .app:fullscreen .touch-brake { position: static; }
 .app:fullscreen .results-overlay { overflow-y: auto; justify-content: safe center; }
 .app:fullscreen .screen[data-state="select"] { height: min(560px, calc(100dvh - var(--fullscreen-chrome))); aspect-ratio: auto; }
-@media (pointer: coarse) { .app:fullscreen { --fullscreen-chrome: 166px; } }
-.app[data-state="select"]:fullscreen { --fullscreen-chrome: 74px; }
-.app:is([data-state="story"], [data-state="ending"], [data-state="complete"]):fullscreen { --fullscreen-chrome: 74px; }
+@media (pointer: coarse) { .app:fullscreen { --fullscreen-chrome: calc(166px + var(--radio-height, 0px)); } }
+.app[data-state="select"]:fullscreen { --fullscreen-chrome: calc(74px + var(--radio-height, 0px)); }
+.app:is([data-state="story"], [data-state="ending"], [data-state="complete"]):fullscreen { --fullscreen-chrome: calc(74px + var(--radio-height, 0px)); }
 .app:fullscreen .screen[data-state="story"] { height: min(520px, calc(100dvh - var(--fullscreen-chrome))); aspect-ratio: auto; }
-.app:is([data-state="pit"], [data-state="pit-enter"]):fullscreen { --fullscreen-chrome: 74px; }
+.app:is([data-state="pit"], [data-state="pit-enter"]):fullscreen { --fullscreen-chrome: calc(74px + var(--radio-height, 0px)); }
 .app:fullscreen .screen[data-state="pit"] { height: min(560px, calc(100dvh - var(--fullscreen-chrome))); min-height: 0; aspect-ratio: auto; }
+.app:is([data-state="rocket-flight"], [data-state="mars"]):fullscreen { --fullscreen-chrome: calc(74px + var(--radio-height, 0px)); }
+.app:fullscreen .screen[data-state="mars"] { height: min(480px, calc(100dvh - var(--fullscreen-chrome))); min-height: 0; aspect-ratio: auto; }
+.app:fullscreen .screen[data-state="rocket-flight"] { height: min(480px, calc(100dvh - var(--fullscreen-chrome))); min-height: 0; aspect-ratio: auto; }
 
-@container (max-width: 600px) {
+@media (max-height: 520px) and (orientation: landscape) and (pointer: coarse) {
+  .screen[data-state="rocket-flight"] { height: calc(100dvh - 74px); aspect-ratio: auto; }
+}
+
+@container (max-width: 900px) {
   .cabinet-bar { padding-inline: 10px; gap: 6px; }
   .route-full { display: none; }
   .route-compact { display: inline; }
@@ -454,5 +497,5 @@ h1 > span:last-child { margin-left: .48em; }
   .fullscreen-button { border: 0; padding-left: 3px; }
 }
 @container (max-width: 380px) {
-  .route-label .route-compact { display: none; }
+  .route-label { display: none; }
 }

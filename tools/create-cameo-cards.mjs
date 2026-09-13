@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { chromium } from '@playwright/test';
 import { createStaticServer } from './server.mjs';
+import { provenance } from './png-provenance.mjs';
 
 const root = new URL('../', import.meta.url);
 const output = new URL('exports/cameo-cards/', root);
@@ -14,21 +15,6 @@ await new Promise((resolve, reject) => {
   server.once('error', reject);
   server.listen(0, '127.0.0.1', resolve);
 });
-
-function provenance(png, text) {
-  const content = Buffer.from(`impeccable:prompt\0${text}`, 'latin1');
-  const chunk = Buffer.alloc(content.length + 12);
-  chunk.writeUInt32BE(content.length, 0);
-  chunk.write('tEXt', 4, 'ascii');
-  content.copy(chunk, 8);
-  let crc = 0xffffffff;
-  for (const byte of chunk.subarray(4, -4)) {
-    crc ^= byte;
-    for (let bit = 0; bit < 8; bit++) crc = crc & 1 ? 0xedb88320 ^ crc >>> 1 : crc >>> 1;
-  }
-  chunk.writeUInt32BE((crc ^ 0xffffffff) >>> 0, chunk.length - 4);
-  return Buffer.concat([png.subarray(0, -12), chunk, png.subarray(-12)]);
-}
 
 let browser;
 try {
@@ -42,7 +28,7 @@ try {
     const renderer = new Renderer(document.createElement('canvas'));
     await renderer.logoReady;
     await document.fonts.ready;
-    const accents = ['#bb9af7', '#7dcfff', '#9ece6a', '#9ece6a', '#e0af68', '#7aa2f7', '#e0af68', '#7dcfff', '#7aa2f7'];
+    const accents = ['#bb9af7', '#7dcfff', '#9ece6a', '#9ece6a', '#e0af68', '#7aa2f7', '#e0af68', '#7aa2f7', '#7aa2f7'];
     return CHARACTERS.map((character, index) => {
       const card = document.createElement('canvas');
       card.width = 360;

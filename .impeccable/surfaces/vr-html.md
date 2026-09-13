@@ -2,7 +2,7 @@
 version: 1
 slug: "vr-html"
 primary_target: "vr.html"
-related_targets: ["vr.css", "src/vr-main.js", "src/vr-scene.js", "src/vr-controls.mjs", "src/vr-session.mjs", "src/vr-audio.js", "src/vr-panels.js", "src/vr-world.mjs", "src/song-player.js", "src/audio.js", "src/story.mjs", "src/vr-art.js", "src/renderer.js", "src/full-characters.js", "src/garage-scene.js", "src/pit-stops.mjs", "src/engine.mjs"]
+related_targets: ["vr.css", "src/vr-main.js", "src/vr-scene.js", "src/vr-controls.mjs", "src/vr-session.mjs", "src/vr-audio.js", "src/vr-panels.js", "src/vr-world.mjs", "src/song-player.js", "src/audio.js", "src/story.mjs", "src/vr-art.js", "src/renderer.js", "src/full-characters.js", "src/garage-scene.js", "src/pit-stops.mjs", "src/engine.mjs", "src/rocket.mjs", "src/rocket-art.js", "src/vr-rocket.js", "src/patrons.mjs", "src/patron-art.js"]
 ---
 
 # VR race surface
@@ -11,6 +11,10 @@ related_targets: ["vr.css", "src/vr-main.js", "src/vr-scene.js", "src/vr-control
 
 This surface uses Experience mode. The user confirms WebXR headsets and a seated cockpit with tracked controllers.
 The primary action enters immersive VR. A screen mode provides the same 3D race without a headset.
+
+The in-car radio uses the Omarchy Radio songs and shared playback state.
+A physical stereo beside the instrument panel exposes controller-ray transport and volume actions.
+Screen mode provides the same compact stereo and native track selector below the cockpit.
 
 The user requests visible browser-game characters and complete visual parity in VR.
 The garage shows the original nine characters and recognizable car artwork before the drive.
@@ -37,6 +41,9 @@ Spatial traffic sound and controller pulses reinforce close passes and collision
 
 The same four chapters provide briefings, objectives, marked pickups, failure reasons, and a final delivery at the Omarchy arcade.
 The VR header and cockpit menus include a button to play or pause the supplied MP3 song.
+The optional Omarchy rocket carries the selected car to Mars after twenty active seconds.
+The level cockpit frames the cargo cabin, space flight, and Mars outpost. A headset action returns to the same Tokyo campaign.
+Randomized founding-patron displays reuse the local pixel portraits from the arcade on roadside signs and garage or outpost walls.
 
 ### FIRST VIEWPORT
 
@@ -60,6 +67,7 @@ unreviewed and undocumented is unfinished; this build ends with the finish revie
 ### Entry and recovery
 
 - `index.html` links to `vr.html` through `VR COCKPIT`. The VR header links back to the arcade.
+- `EXPLORE RETRO ROOM` and the headset's `RETRO ROOM` action open `club.html`. The headset action pauses the song and exits XR before navigation.
 - Local Three.js modules render stereo WebXR through an `immersive-vr` session. The route requires WebGL2.
 - WebXR requires HTTPS or localhost on the host device. Unsupported browsers retain `DRIVE ON SCREEN` when WebGL2 is available.
 - `ENTER VR` opens the headset request. The race starts from the cockpit menu after a chapter briefing and `BEGIN CHAPTER`.
@@ -106,6 +114,45 @@ unreviewed and undocumented is unfinished; this build ends with the finish revie
 - Pit entry slows the car before the conversation. Both participants appear as voxel characters, and the headset panel shows the current speaker's original full-body art.
 - `CONTINUE` advances the dialogue. The final `BACK TO RACE` action resumes the run with full nitro. Song and exit controls remain available.
 
+### Rocket and patron extension
+
+The rocket flight visits every native Omarchy palette through instanced star trails, segmented rings, and cargo-cabin light.
+The dashboard names the current theme and displays its full color strip.
+The shared star soundtrack follows the active flight clock, sound preference, pause, and resume.
+The level cockpit uses bounded instanced geometry. Reduced motion fixes the star and ring positions while the palette changes.
+
+The theme snapshot contains 22 native palettes. Each flight interval lasts `20 / 22` seconds and blends during its first `40%`.
+The dashboard shows the theme name and exact source color strip above flight progress.
+The cargo cabin uses isolated materials so its theme colors do not alter the roadside rocket or Mars outpost.
+Rings use 28 fixed color-role slots. VR draws three rings with comfort or reduced motion, and five otherwise.
+The Sound control enables the shared stereo soundtrack. The MP3 takes precedence while it plays.
+The mobile rocket viewport fills the available race height.
+
+`vr-rocket-headset.png` and `vr-rocket-light-headset.png` in `.impeccable/review/` show both palette modes with readable instruments.
+The headset flight check observes every native theme. The reduced-motion check compares unchanged star and ring matrices across all 22 palettes.
+
+The cockpit now includes a physical Omarchy Radio stereo at `[0.9, 0.94, -1]`, beside the primary dashboard.
+Its `768 × 320` texture occupies a `0.74 × 0.308` plane with `-0.12` X rotation.
+The controller rays select previous, play or pause, next, and five-percent volume steps.
+The panel shows the shared track title, artist, state, count, volume, and time.
+Screen controls use the same radio state below the cockpit. The chrome measurement includes their current height.
+Headset visibility loss pauses radio playback. The local MP3 and radio use exclusive playback.
+`tests/browser/vr.spec.js` verifies stereo controls through actual IWER controller rays.
+`.impeccable/review/radio-headset.png` records the physical stereo. `radio-vr-desktop.png` records its native controls.
+
+- The optional Omarchy rocket uses a cyan right-shoulder ramp `850m` into each chapter until visited. A road-lane pass continues the race.
+- The selected car, driver, and paint carry into the flight. `VRRocket` supplies the cargo cabin, space flight, and Mars outpost.
+- The shared sequence uses `0–2s` for cargo closure, `2–6s` for launch, `6–16s` for hyper boost, and `16–20s` for Mars approach.
+- The level cockpit retains head control. Its existing dashboard shows phase, thrust, ETA, progress, and `MENU` during flight.
+- Screen telemetry reuses `.vr-readouts`. The garage toggle disables during flight and Mars, and the pause menu shows `FLIGHT PAUSED.`.
+- Pause freezes flight time. The race timer, distance, lane, and mission progress remain fixed throughout the flight and Mars visit.
+- Arrival awards one `5000`-point bonus per run. The gold `RETURN TO TOKYO` action resumes the same campaign with full nitro.
+- Reduced motion uses stationary short star marks. Comfort view shortens moving flight streaks.
+- `patronRandom` selects the cosmetic tour independently of game randomness. All twelve roadside IDs use the shared spacing and random-side rules.
+- Three garage selections and two Mars selections use distinct IDs from the shuffled deck. The arcade Mars scene uses the first Mars selection.
+- `VRArt.patronTexture` caches each `160 × 88` nameplate. Both filters use `NearestFilter`, with no mipmaps, and portrait decode refreshes the texture.
+- The nameplates reuse local `48 × 48` palette-mapped PNGs. Missing portraits retain initials, names, companies, and source text.
+
 ### Layout and spatial materials
 
 - The desktop setup panel measures `416px` wide, with `32px` left margin and `30px 28px 24px` padding.
@@ -134,12 +181,19 @@ unreviewed and undocumented is unfinished; this build ends with the finish revie
 - The pit dialogue draws the speaker at `[786, 262]` with a `128 × 277` image in the menu texture. Dialogue uses `30px` Courier New within `680px` width.
 - The pit surface measures `6.4 × 18` world units. Road segments within `18` world units of its center omit the guardrail on the pit side.
 
+- Patron signs use `3.8 × 2.09` world-unit planes. Garage signs sit at `x = -6.8, 0, 6.8`, `y = 4.4`, and `z = -15.5`.
+- Within the rocket scene, the Mars outpost center is `[12, 2.8, -18]`.
+- Its two posters sit at `[9.3, 1.4, -13.85]` and `[14.7, 1.4, -13.85]`.
+- The Mars menu says `PATRON DISPLAYS · LOOK RIGHT` in cyan `26px` Courier New at `[48, 372]` texture pixels.
+- The `0.7rad` right-turn IWER capture shows both complete posters below the mirror, clear of the pillars and menu.
+
 ### Simulation timing
 
-- `src/vr-main.js` passes each elapsed frame delta to `advanceVRSimulation` in `src/vr-world.mjs`.
+- Outside `rocket-flight`, `src/vr-main.js` passes each elapsed frame delta to `advanceVRSimulation` in `src/vr-world.mjs`.
 - The adapter accepts at most `0.25s` per frame. It processes steps of at most `1/60s` and includes the final smaller step.
 - This preserves elapsed time within the frame limit across render rates. Non-finite and negative deltas do not advance the engine.
 - Focus and session transitions reset the frame timestamp to avoid catch-up after an interruption.
+- Rocket flight passes the full active frame delta directly to `GameEngine.update`. Its twenty-second clock bypasses race frame limits and substeps.
 
 ### MP3 song behavior
 
@@ -154,6 +208,8 @@ unreviewed and undocumented is unfinished; this build ends with the finish revie
 
 ## Verification evidence
 
+### Earlier VR handoff
+
 - `tests/browser/vr.spec.js` includes stereo IWER emulation, controller menus, song controls, visibility pause, permission retry, exit, and re-entry.
 - The same test file covers screen mode, mobile touch controls, blocked storage, reduced motion, graphics failure, delivery results, and failure feedback.
 - The delivery test prepares the final chapter near its endpoint. It does not drive all four chapters in a physical headset.
@@ -164,8 +220,22 @@ unreviewed and undocumented is unfinished; this build ends with the finish revie
 - `.impeccable/review/vr-desktop.png` and `.impeccable/review/vr-mobile.png` show the garage, original car art, and native setup previews.
 - `.impeccable/review/vr-garage-headset.png` shows the stereo garage with crew, cars, and the textured setup menu.
 - `.impeccable/review/vr-headset-cameo.png` and `.impeccable/review/vr-companion.png` show the driver cameo, passenger, and mirror artwork.
-- **Finish review:** The disposition is `ship` for the browser and IWER scope. The review opens all 11 required captures and reports no remaining material fixes.
+- **Earlier finish review:** The recorded disposition is `ship` for the browser and IWER scope. That review covers the 11 earlier captures.
 - The captures confirm original-art garage crew and cars, the selected-driver cameo, companion and mirror, and neutral stereo instruments. They also confirm pit and failure states and MP3 controls.
-- The full suite passes 50 simulation checks and 37 browser checks. The focused cameo capture test also passes.
+- The earlier suite records 50 simulation checks and 37 browser checks passed. Its focused cameo capture test also passes.
 - The capture test replaces an arbitrary sleep with a test-only engine wrapper. It holds an observed `cameoTime` between `1` and `1.7` for the screenshot, then restores the original update function. Production code has no freeze hook.
 - These test definitions cover browser and emulated-headset behavior. Physical headset comfort, performance, audio, and controller feel remain unverified.
+
+### Rocket and patron extension evidence
+
+- `.impeccable/review/vr-rocket-headset.png` shows stereo hyper boost with phase, thrust, ETA, progress, and `MENU`.
+- `.impeccable/review/vr-mars-headset.png` shows the arrival menu, bonus, return action, and right-look instruction in the neutral view.
+- `.impeccable/review/vr-mars-patrons.png` shows both complete outpost posters after a `0.7rad` right head turn.
+- `tests/browser/vr.spec.js` exercises controller entry, flight pause, twenty-second arrival, retained campaign state and car choices, and return with full nitro.
+- The supplied results report all four rocket browser checks passed again after both fixes, including this headset case. All five patron checks also pass.
+- `.impeccable/surfaces/index-html.md` records the current `72` unit checks and the full browser suite's `50/51` result with its targeted rerun.
+
+The initial extension review identifies two material findings: the covered mobile rocket ramp and obscured VR Mars posters.
+The verdict pass marks both resolved at `10/10`, with disposition `ship`.
+The verdict covers only those two fixes at desktop, mobile, and IWER scope.
+It does not replace the earlier whole-surface review. Physical headset tests are outside the extension scope.

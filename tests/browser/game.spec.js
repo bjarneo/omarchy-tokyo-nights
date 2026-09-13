@@ -109,6 +109,7 @@ test('mobile: touch controls, release, and responsive game art', async ({ browse
   await page.getByRole('button', { name: 'Pause game', exact: true }).tap();
   await expect(page.getByRole('button', { name: 'RESUME DRIVE' })).toBeVisible();
   await page.getByRole('button', { name: 'RESUME DRIVE' }).tap();
+  await touch.send('Emulation.setTouchEmulationEnabled', { enabled: true, maxTouchPoints: 1 });
   await page.getByRole('button', { name: 'Enter fullscreen' }).tap();
   await expect.poll(() => page.evaluate(() => document.fullscreenElement?.className)).toBe('app');
   await expect(page.locator('#touch-controls')).toBeVisible();

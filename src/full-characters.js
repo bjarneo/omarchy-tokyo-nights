@@ -23,7 +23,7 @@ function poly(ctx, points, color) {
   ctx.fill();
 }
 
-export function makeFullCharacter(head, characterId) {
+export function makeFullCharacter(head, characterId, { props = true, logo = null } = {}) {
   const image = document.createElement('canvas');
   image.width = 48;
   image.height = 104;
@@ -80,7 +80,7 @@ export function makeFullCharacter(head, characterId) {
     }
   }
   if (characterId === 'outfoxxed') {
-    rect(ctx, 18, 34, 13, 33, '#218895');
+    rect(ctx, 18, 34, 13, 33, '#7aa2f7');
     poly(ctx, [[13, 31], [20, 35], [17, 48], [14, 42]], '#292f2d');
     poly(ctx, [[33, 31], [28, 36], [32, 49], [37, 40]], '#666b5b');
     for (let y = 38; y < 63; y += 4) rect(ctx, 14, y, 2, 2, '#343a32');
@@ -94,7 +94,7 @@ export function makeFullCharacter(head, characterId) {
     poly(ctx, [[11, 27], [14, 30], [13, 38], [17, 42], [12, 41], [9, 36]], '#584033');
     poly(ctx, [[34, 25], [38, 27], [37, 36], [40, 40], [35, 43], [33, 38]], '#785744');
   }
-  if (characterId === 'bjarne') {
+  if (characterId === 'bjarne' && props) {
     poly(ctx, [[7, 51], [14, 45], [19, 49], [11, 58], [7, 58]], p.top);
     rect(ctx, 11, 47, 13, 18, '#e5e9ff');
     rect(ctx, 12, 47, 11, 2, '#9aa5ce');
@@ -105,6 +105,10 @@ export function makeFullCharacter(head, characterId) {
     rect(ctx, 20, 52, 2, 9, '#739b52');
     poly(ctx, [[16, 52], [20, 58], [20, 61], [16, 55]], '#9ece6a');
     rect(ctx, 8, 57, 4, 6, p.skin);
+  }
+  if (characterId === 'dhh' && logo) {
+    const width = 20; const height = width * logo.height / logo.width;
+    ctx.drawImage(logo, 14, 42, width, height);
   }
   return image;
 }

@@ -1,3 +1,5 @@
+import { RocketMusic } from './rocket-music.js';
+
 export class ArcadeAudio {
   constructor() {
     this.enabled = false;
@@ -29,6 +31,7 @@ export class ArcadeAudio {
       }
       if (enabled) await this.context.resume();
       this.enabled = enabled;
+      if (!enabled) this.starMusic?.stop();
       if (this.master) this.master.gain.setTargetAtTime(enabled ? 0.32 : 0, this.context.currentTime, 0.04);
       return this.enabled;
     } catch {
@@ -55,6 +58,8 @@ export class ArcadeAudio {
   }
 
   event(event) {
+    if (['rocket-launch', 'pause', 'start', 'rocket-return', 'mars-arrival'].includes(event.type)) this.starMusic?.stop();
+    if (event.type === 'mars-arrival') [523.25, 659.25, 783.99, 1046.5].forEach((frequency, i) => this.note(frequency, .6, 'triangle', .18, i * .18));
     if (event.type === 'nitro-pickup') [880, 1174.66, 1567.98].forEach((frequency, i) => this.note(frequency, .16, 'triangle', .15, i * .07));
     if (event.type === 'pit-enter' || event.type === 'pit-resume') this.note(523.25, .25, 'triangle', .12);
     if (event.type === 'pickup') [659.25, 783.99, 1046.5].forEach((frequency, i) => this.note(frequency, .2, 'triangle', .15, i * .08));
@@ -72,6 +77,19 @@ export class ArcadeAudio {
   update(game) {
     if (!this.context || !this.enabled) return;
     const now = this.context.currentTime;
+    if (game.state === 'rocket-flight') {
+      const power = game.rocketTime < 2 ? game.rocketTime / 8 : game.rocketTime < 16 ? 1 : Math.max(.15, (20 - game.rocketTime) / 4);
+      this.engineGain.gain.setTargetAtTime(.025 + power * .045, now, .1);
+      this.engine.frequency.setTargetAtTime(45 + power * 210 + Math.sin(game.rocketTime * 8) * 8, now, .06);
+      this.engineFilter.frequency.setTargetAtTime(450 + power * 1300, now, .08);
+      if (this.musicEnabled) {
+        this.starMusic ??= new RocketMusic(this.context, this.master);
+        this.starMusic.update(game.rocketTime);
+      } else this.starMusic?.stop();
+      this.nextBeat = now;
+      return;
+    }
+    this.starMusic?.stop();
     const driving = game.state === 'playing';
     this.engineGain.gain.setTargetAtTime(driving ? game.boosting ? 0.14 : 0.1 : 0, now, 0.08);
     this.engine.frequency.setTargetAtTime(38 + game.speed * 0.55 + (game.boosting ? 38 : 0), now, 0.04);
@@ -90,10 +108,17 @@ export class ArcadeAudio {
   }
 
   silence() {
+    this.starMusic?.stop();
     if (this.context) this.master.gain.setTargetAtTime(0, this.context.currentTime, 0.02);
   }
 
   restore() {
     if (this.context && this.enabled) this.master.gain.setTargetAtTime(0.32, this.context.currentTime, 0.03);
+  }
+
+  dispose() {
+    this.starMusic?.dispose();
+    this.engine?.stop();
+    void this.context?.close().catch(() => {});
   }
 }

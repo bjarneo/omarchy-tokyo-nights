@@ -1,7 +1,7 @@
 .crew-page { max-width: 1640px; margin: 0 auto; padding: 0 24px; }
 .crew-intro { margin: 18px 0 20px; }
 .crew-intro h1 { color: var(--pink); font-size: clamp(24px, 3vw, 42px); line-height: 1.5; }
-.crew-intro p, .crew-help, .crew-detail { font-size: 14px; line-height: 1.8; color: var(--muted); }
+.crew-intro p, .crew-help, .crew-detail, .crew-patrons { font-size: 14px; line-height: 1.8; color: var(--muted); }
 .crew-intro p { margin: 10px 0 0; }
 .crew-back-link { color: var(--yellow); font-size: 12px; padding: 12px; border: 1px solid var(--line); text-decoration: none; }
 .crew-back-link:hover { background: var(--panel); }
@@ -15,6 +15,8 @@
 .garage-labels { position: absolute; bottom: 8%; inset-inline: 0; display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); text-align: center; }
 .garage-labels span { justify-self: center; padding: 8px 10px; background: #16161ed9; color: var(--text); font-size: 12px; line-height: 1.5; }
 .crew-detail { min-height: 26px; margin: 14px 0 0; }
+.crew-patrons { margin: 12px 0 0; }
+.crew-patrons a { display: inline-block; color: var(--yellow); font-size: 12px; line-height: 2; text-underline-offset: 4px; }
 .crew-downloads { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
 .crew-page .page-footer a { color: var(--yellow); font-size: 12px; }
 @media (max-width: 700px) {

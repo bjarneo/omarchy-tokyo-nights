@@ -2,6 +2,8 @@ import { getCharacter } from './characters.mjs';
 import { getCar, getPaint } from './cars.mjs';
 import { CHAPTERS, getChapter } from './story.mjs';
 import { createPitConversation } from './pit-stops.mjs';
+import { ROCKET_FLIGHT_SECONDS, ROCKET_PAD_OFFSET, MARS_BONUS } from './rocket.mjs';
+import { createPatronTour } from './patrons.mjs';
 
 export const DISTRICTS = ['SHINJUKU', 'SHIBUYA', 'AKIHABARA', 'RAINBOW BRIDGE'];
 export const CRUISE_SPEED = 285;
@@ -32,8 +34,9 @@ export function cameoPose(time, reducedMotion = false) {
 }
 
 export class GameEngine {
-  constructor({ random = Math.random, onEvent = () => {}, characterId = 'dhh', carId = 'countach', paintId = 'amber' } = {}) {
+  constructor({ random = Math.random, patronRandom = Math.random, onEvent = () => {}, characterId = 'dhh', carId = 'countach', paintId = 'amber' } = {}) {
     this.random = random;
+    this.patronRandom = patronRandom;
     this.onEvent = onEvent;
     this.state = 'title';
     this.characterId = getCharacter(characterId).id;
@@ -89,8 +92,13 @@ export class GameEngine {
     this.pitStopsVisited = 0;
     this.lastPitTopic = null;
     this.pitSavedSpeed = 0;
+    this.rocketTime = 0;
+    this.rocketVisited = false;
+    this.rocketSavedSpeed = 0;
     this.preparePickups();
     this.preparePitStop();
+    this.prepareRocket();
+    this.patronTour = createPatronTour(this.patronRandom);
     this.clearInput();
   }
 
@@ -214,6 +222,36 @@ export class GameEngine {
     this.pitStopLane = this.pitStopAt === null ? null : this.random() < .5 ? -1.22 : 1.22;
   }
 
+  prepareRocket() {
+    this.rocketAt = this.rocketVisited ? null : this.stage * CHECKPOINT_LENGTH + ROCKET_PAD_OFFSET;
+    this.rocketLane = 1.22;
+  }
+
+  boardRocket() {
+    if (this.state !== 'playing' || this.rocketAt === null || this.rocketVisited) return;
+    this.rocketSavedSpeed = this.speed;
+    this.rocketTime = 0;
+    this.rocketVisited = true;
+    this.rocketAt = null;
+    this.state = 'rocket-flight';
+    this.speed = 0;
+    this.boosting = false;
+    this.boostWasActive = false;
+    this.cameoTime = -1;
+    this.clearInput();
+    this.onEvent({ type: 'rocket-launch' });
+  }
+
+  returnFromMars() {
+    if (this.state !== 'mars') return;
+    this.state = 'playing';
+    this.speed = Math.min(this.rocketSavedSpeed, CRUISE_SPEED);
+    this.nitro = 100;
+    this.clearInput();
+    this.message(`BACK IN TOKYO\nMARS BONUS +${MARS_BONUS}`, 'purple', 2.4);
+    this.onEvent({ type: 'rocket-return' });
+  }
+
   enterPitStop() {
     if (this.state !== 'playing') return;
     this.pitStopAt = null;
@@ -267,7 +305,7 @@ export class GameEngine {
   }
 
   pause() {
-    if (this.state !== 'playing' && this.state !== 'countdown') return;
+    if (!['playing', 'countdown', 'rocket-flight'].includes(this.state)) return;
     this.previousState = this.state;
     this.state = 'paused';
     this.boosting = false;
@@ -338,6 +376,18 @@ export class GameEngine {
 
   update(delta) {
     const dt = clamp(delta, 0, 0.05);
+    if (this.state === 'rocket-flight') {
+      const flightDelta = Number.isFinite(delta) ? Math.max(0, delta) : 0;
+      this.rocketTime = Math.min(ROCKET_FLIGHT_SECONDS, this.rocketTime + flightDelta);
+      if (this.rocketTime >= ROCKET_FLIGHT_SECONDS - 1e-8) {
+        this.rocketTime = ROCKET_FLIGHT_SECONDS;
+        this.state = 'mars';
+        this.score += MARS_BONUS;
+        this.onEvent({ type: 'mars-arrival', bonus: MARS_BONUS });
+      }
+      return;
+    }
+    if (this.state === 'mars') return;
     if (this.state === 'title' || this.state === 'select' || this.state === 'story') {
       this.demoDistance += dt * 13;
       return;
@@ -453,6 +503,14 @@ export class GameEngine {
       this.finish(getChapter(this.stage).failure);
       return;
     }
+    if (this.rocketAt !== null) {
+      const rocketDistance = this.rocketAt - this.distance;
+      if (Math.abs(rocketDistance) <= 18 && Math.abs(this.playerX) > 1.02 && Math.abs(this.playerX - this.rocketLane) <= .22) {
+        this.boardRocket();
+        return;
+      }
+      if (rocketDistance < -30) this.rocketAt = null;
+    }
     if (this.pitStopAt !== null) {
       const pitDistance = this.pitStopAt - this.distance;
       if (Math.abs(pitDistance) <= 18 && Math.abs(this.playerX) > 1.02 && Math.abs(this.playerX - this.pitStopLane) <= .22) {
@@ -484,6 +542,7 @@ export class GameEngine {
       this.nitroPickups = [];
       this.nextNitroSpawn = this.distance + 120;
       this.preparePitStop();
+      this.prepareRocket();
       this.message(`CHECKPOINT +35 SEC\n${DISTRICTS[this.stage % DISTRICTS.length]}`, 'green', 3);
       this.onEvent({ type: 'checkpoint', stage: this.stage });
       this.showBriefing();

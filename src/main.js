@@ -5,22 +5,36 @@ import { SongPlayer, updateSongButton, updateSongStatus } from './song-player.js
 import { CHARACTERS, getCharacter } from './characters.mjs';
 import { CARS, PAINTS, getCar, getPaint } from './cars.mjs';
 import { CHAPTERS, getChapter } from './story.mjs';
+import { rocketFlightPhase } from './rocket.mjs';
+import { rocketThemeAt } from './rocket-themes.mjs';
+import { updateThemeDisplay } from './rocket-theme-display.js';
+import { RadioPlayer } from './radio-player.js';
+import { mountRadio } from './radio-controls.js';
 
 const $ = (id) => document.getElementById(id);
 const canvas = $('game');
 const screen = $('screen');
 const app = document.querySelector('.app');
 const audio = new ArcadeAudio();
+let radio;
 const song = new SongPlayer({
+  onPlay: () => radio?.pause(),
   onChange(state) {
     updateSongButton($('song-button'), state);
     updateSongStatus($('song-status'), state);
-    audio.musicEnabled = !state.playing;
+    audio.musicEnabled = !state.playing && !state.pending && !radio?.active;
   },
   onError: (message) => announce(message),
 });
+radio = new RadioPlayer({
+  onPlay: () => song.pause(),
+  onChange(state) { audio.musicEnabled = !state.active && !song.playing && !song.pending; },
+});
+mountRadio($('car-radio'), radio);
+const radioSize = new ResizeObserver(() => app.style.setProperty('--radio-height', `${$('car-radio').offsetHeight}px`));
+radioSize.observe($('car-radio'));
 $('song-button').addEventListener('click', () => song.toggle());
-window.addEventListener('pagehide', () => song.pause());
+window.addEventListener('pagehide', () => { song.pause(); radio.pause(); audio.silence(); });
 const motionPreference = window.matchMedia('(prefers-reduced-motion: reduce)');
 const renderer = new Renderer(canvas, { reducedMotion: motionPreference.matches });
 renderer.drawLineup($('title-lineup'));
@@ -52,6 +66,7 @@ let lastUiTime = 0;
 let lastTimestamp = 0;
 let warnedAboutTime = false;
 let lastPitBayAnnounced = null;
+let lastRocketAnnounced = null;
 const heldKeys = new Set();
 let selectedCharacter = getCharacter(storage.get('tokyo-nights.character', 'dhh')).id;
 let selectedCar = getCar(storage.get('tokyo-nights.car', 'countach')).id;
@@ -72,6 +87,7 @@ const game = new GameEngine({
     if (event.type === 'start') {
       warnedAboutTime = false;
       lastPitBayAnnounced = null;
+      lastRocketAnnounced = null;
       announce(`${getCharacter(event.characterId).name} is ready. Use the arrow keys or WASD to drive. Hold Space for nitro.`);
     }
     if (event.type === 'pause') announce('The game is paused.');
@@ -92,6 +108,9 @@ const game = new GameEngine({
     if (event.type === 'pit-enter') announce('Pit stop. The race clock pauses while you talk with the crew.');
     if (event.type === 'pit-line') updatePitDialogue();
     if (event.type === 'pit-resume') announce('The conversation ends. You return to the same road with a full nitro tank.');
+    if (event.type === 'rocket-launch') announce('Your car enters the Omarchy rocket. The flight to Mars takes twenty seconds.');
+    if (event.type === 'mars-arrival') announce('Mars reached. The twenty-second flight is complete. You earn five thousand bonus points.');
+    if (event.type === 'rocket-return') announce('You return to your Tokyo run with a full nitro tank.');
     if (event.type === 'checkpoint') {
       warnedAboutTime = false;
       announce(`Checkpoint. You gain 35 seconds. Enter ${DISTRICTS[event.stage % DISTRICTS.length]}.`);
@@ -258,6 +277,8 @@ function syncState() {
   const ending = game.state === 'ending';
   const pit = game.state === 'pit';
   const pitEntering = game.state === 'pit-enter';
+  const rocket = game.state === 'rocket-flight';
+  const mars = game.state === 'mars';
   const paused = game.state === 'paused';
   const ended = game.state === 'gameover' || game.state === 'complete';
   const driving = game.state === 'playing' || game.state === 'countdown';
@@ -269,12 +290,17 @@ function syncState() {
   $('ending-caption').hidden = !ending;
   $('pit-dialogue').hidden = !pit;
   $('pit-transition').hidden = !pitEntering;
+  $('rocket-hud').hidden = !rocket;
+  $('mars-panel').hidden = !mars;
   $('attract-details').hidden = !title;
   $('attract-footer').hidden = !title;
-  $('hud').hidden = title || ended || selecting || story || ending || pit || pitEntering;
+  $('hud').hidden = title || ended || selecting || story || ending || pit || pitEntering || rocket || mars || paused && game.previousState === 'rocket-flight';
   $('pause-overlay').hidden = !paused;
   $('results-overlay').hidden = !ended;
-  $('pause-button').disabled = !driving && !paused;
+  $('pause-button').disabled = !driving && !paused && !rocket;
+  $('pause-overlay').querySelector('h2').textContent = paused && game.previousState === 'rocket-flight' ? 'FLIGHT PAUSED.' : 'DRIVE PAUSED.';
+  $('pause-overlay').querySelector('p').textContent = paused && game.previousState === 'rocket-flight' ? 'Resume the trip to Mars.' : 'Your next checkpoint can wait.';
+  $('resume-button').textContent = paused && game.previousState === 'rocket-flight' ? 'RESUME FLIGHT' : 'RESUME DRIVE';
   $('pause-button').setAttribute('aria-label', paused ? 'Resume game' : 'Pause game');
   $('pause-button').querySelector('span').textContent = paused ? 'RESUME' : 'PAUSE';
   $('pause-button').querySelector('svg').innerHTML = paused
@@ -286,6 +312,7 @@ function syncState() {
     playing: `CHAPTER ${game.stage + 1} OF ${CHAPTERS.length} · COMPLETE THE OBJECTIVE AND REACH THE EXIT`,
     paused: 'DRIVE PAUSED', gameover: 'RUN ENDED', ending: 'TOKYO BAY · THE FINAL DELIVERY', complete: 'STORY COMPLETE',
     'pit-enter': 'STOPPING AT THE GARAGE', pit: 'PIT STOP · RACE CLOCK PAUSED',
+    'rocket-flight': 'OMARCHY ROCKET · TWENTY SECONDS TO MARS', mars: 'MARS OUTPOST · BONUS +5000',
   }[game.state];
   document.querySelectorAll('[data-control]').forEach((button) => { button.disabled = !driving; });
   clearControls();
@@ -294,6 +321,8 @@ function syncState() {
   else if (story) $('chapter-start-button').focus({ preventScroll: true });
   else if (ending) $('ending-skip-button').focus({ preventScroll: true });
   else if (pit) $('pit-next-button').focus({ preventScroll: true });
+  else if (mars) $('mars-return-button').focus({ preventScroll: true });
+  else if (rocket) canvas.focus({ preventScroll: true });
   else if (paused) $('resume-button').focus({ preventScroll: true });
   else if (ended) $('retry-button').focus({ preventScroll: true });
   else if (title) $('start-button').focus({ preventScroll: true });
@@ -301,6 +330,16 @@ function syncState() {
 }
 
 function updateUI() {
+  const flight = rocketFlightPhase(game.rocketTime);
+  updateThemeDisplay($('rocket-theme-name'), $('rocket-palette'), rocketThemeAt(game.rocketTime));
+  $('rocket-phase').textContent = flight.label;
+  $('rocket-eta').textContent = `${flight.remaining.toFixed(1)}s`;
+  $('rocket-thrust').textContent = `${Math.round(flight.thrust * 100)}%`;
+  $('rocket-progress-fill').style.transform = `scaleX(${flight.progress})`;
+  $('rocket-progress').setAttribute('aria-valuenow', flight.time.toFixed(1));
+  const rocketDistance = game.rocketAt == null ? Infinity : game.rocketAt - game.distance;
+  const rocketAvailable = game.state === 'playing' && rocketDistance <= 600 && rocketDistance >= -18;
+  $('rocket-pad-indicator').hidden = !rocketAvailable;
   const pitDistance = game.pitStopAt === null ? Infinity : game.pitStopAt - game.distance;
   const pitAvailable = game.state === 'playing' && pitDistance <= 450 && pitDistance >= -18;
   $('pit-bay-indicator').hidden = !pitAvailable;
@@ -314,6 +353,13 @@ function updateUI() {
     if (pitAvailable && lastPitBayAnnounced !== game.pitStopAt) {
       lastPitBayAnnounced = game.pitStopAt;
       announce(`A pit bay is ahead on the ${side.toLowerCase()}. Steer into the green bay to stop, or drive past.`);
+    }
+    if (rocketAvailable) {
+      $('status-text').textContent = 'ROCKET RIGHT · DRIVE INTO THE CYAN RAMP';
+      if (lastRocketAnnounced !== game.rocketAt) {
+        lastRocketAnnounced = game.rocketAt;
+        announce('An Omarchy rocket is ahead on the right. Drive into the cyan ramp for a twenty-second Mars flight.');
+      }
     }
   }
   if (game.state === 'pit-enter') $('pit-transition').style.backgroundColor = `rgba(22, 22, 30, ${motionPreference.matches ? .95 : Math.min(.95, game.pitElapsed / 1.25)})`;
@@ -360,6 +406,7 @@ $('cancel-driver-button').addEventListener('click', cancelSelection);
 $('chapter-start-button').addEventListener('click', () => { game.beginChapter(); syncState(); canvas.focus({ preventScroll: true }); });
 $('ending-skip-button').addEventListener('click', () => { game.finishEnding(); syncState(); });
 $('pit-next-button').addEventListener('click', () => { game.advancePitDialogue(); syncState(); });
+$('mars-return-button').addEventListener('click', () => { game.returnFromMars(); syncState(); });
 CHARACTERS.forEach((character) => {
   const option = document.createElement('label');
   option.className = 'driver-option';
@@ -519,6 +566,11 @@ document.addEventListener('keydown', (event) => {
   }
   if (/^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
   const control = keyMap[event.code];
+  if (control && (game.state === 'rocket-flight' || game.state === 'mars')) {
+    if (event.code === 'Space' && event.target.tagName === 'BUTTON') return;
+    event.preventDefault();
+    return;
+  }
   if (control && (game.state === 'playing' || game.state === 'countdown')) {
     event.preventDefault();
     heldKeys.add(event.code);
@@ -530,7 +582,7 @@ document.addEventListener('keydown', (event) => {
     event.preventDefault();
     chooseDriver();
   } else if (event.code === 'KeyP' || event.code === 'Escape') {
-    if (game.state === 'playing' || game.state === 'countdown' || game.state === 'paused') {
+    if (['playing', 'countdown', 'paused', 'rocket-flight'].includes(game.state)) {
       event.preventDefault();
       togglePause();
     }
@@ -576,6 +628,7 @@ function loseFocus() {
   syncState();
   audio.silence();
   song.pause();
+  radio.pause();
 }
 window.addEventListener('blur', loseFocus);
 window.addEventListener('focus', () => audio.restore());
@@ -594,7 +647,8 @@ const observer = new ResizeObserver(([entry]) => {
 observer.observe(screen);
 
 function frame(timestamp) {
-  const dt = lastTimestamp ? Math.min((timestamp - lastTimestamp) / 1000, 0.05) : 0;
+  const elapsed = lastTimestamp ? Math.max(0, (timestamp - lastTimestamp) / 1000) : 0;
+  const dt = game.state === 'rocket-flight' ? elapsed : Math.min(elapsed, .05);
   lastTimestamp = timestamp;
   if (!document.hidden) {
     game.update(dt);
