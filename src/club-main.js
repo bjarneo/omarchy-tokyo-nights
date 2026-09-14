@@ -8,6 +8,7 @@ import { ClubJukebox } from './club-jukebox.mjs';
 import { ClubCinema } from './club-cinema.js';
 import { SongPlayer, updateSongButton, updateSongStatus } from './song-player.js';
 import { drawMap, drawCabinet } from './club-screens.js';
+import { drawDesignPoster } from './club-design-art.js';
 
 const $ = (id) => document.getElementById(id);
 const storage = {
@@ -168,6 +169,7 @@ function syncUI() {
   $('club-touch').hidden = !['explore', 'arcade', 'sketch'].includes(game.state) || Boolean(vr?.session);
   $('club-touch-use').textContent = game.state === 'arcade' ? 'FIRE' : 'USE';
   $('club-map-canvas').hidden = game.state !== 'map';
+  $('club-design-canvas').hidden = game.state !== 'device' || !game.selected?.studio;
   $('club-game-canvas').hidden = game.state !== 'arcade';
   $('club-game-stats').hidden = game.state !== 'arcade';
   if (panel && game.state !== 'entry') {
@@ -196,6 +198,7 @@ function syncUI() {
       if (focused === option.id && !changed && !vr?.session) button.focus({ preventScroll: true });
     }
     if (game.state === 'map') drawMap($('club-map-canvas').getContext('2d'), 0, 0, 600, 250, game.position);
+    if (!$('club-design-canvas').hidden) drawDesignPoster($('club-design-canvas').getContext('2d'), game.design, 768, 432, reducedMotion);
     if (changed && !vr?.session) $('club-panel-actions').querySelector('button')?.focus({ preventScroll: true });
   } else if (changed && game.state === 'explore' && !vr?.session) $('club-canvas').focus({ preventScroll: true });
 }
@@ -313,6 +316,7 @@ function animate(timestamp, xrFrame) {
   if (timestamp - lastUI > 100) {
     $('club-location').textContent = game.zone.name;
     $('club-hint').hidden = !scene.hint || game.state !== 'explore'; $('club-hint').textContent = `${scene.hint} · E`;
+    if (!$('club-design-canvas').hidden) drawDesignPoster($('club-design-canvas').getContext('2d'), game.design, 768, 432, reducedMotion);
     if (game.arcade && game.state === 'arcade') {
       drawCabinet($('club-game-canvas').getContext('2d'), game.arcade, 512, 384);
       $('club-game-score').textContent = String(game.arcade.score); $('club-game-best').textContent = String(game.best[game.arcade.kind]);

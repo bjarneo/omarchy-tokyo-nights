@@ -1,6 +1,7 @@
 import { CLUB_CREW, ZONES, STATIONS, FLOORS, WALLS } from './club-data.mjs';
 import { drawMalibuDisplay } from './club-malibu-screen.js';
 import { drawSecurityDisplay } from './club-security-screen.js';
+import { drawDesignPoster } from './club-design-art.js';
 
 const C = { ink: '#16161e', paper: '#c0caf5', cyan: '#7dcfff', gold: '#e0af68', pink: '#f7768e', purple: '#bb9af7', green: '#9ece6a', muted: '#9aa5ce' };
 const hash = (n) => { const value = Math.sin(n * 93.7) * 43758.54; return value - Math.floor(value); };
@@ -92,11 +93,16 @@ export function drawCabinet(ctx, game, width = 256, height = 192) {
   ctx.restore();
 }
 
-export function drawStation(ctx, station, state, game, jukebox) {
+export function drawStation(ctx, station, state, game, jukebox, design, reducedMotion = false) {
   ctx.imageSmoothingEnabled = false;
   if (station.kind === 'malibu') { drawMalibuDisplay(ctx, state); return; }
   ctx.fillStyle = '#0b1015'; ctx.fillRect(0, 0, 256, 192);
   if (!state.power) return;
+  if (station.software === 'design') {
+    ctx.save(); ctx.translate(0, 24); drawDesignPoster(ctx, design, 256, 144, reducedMotion); ctx.restore();
+    label(ctx, station.name.toUpperCase(), 10, 15, 10, C.gold);
+    label(ctx, 'SHARED STUDIO POSTER', 10, 185, 10, C.cyan); return;
+  }
   if (station.software === 'security') { drawSecurityDisplay(ctx, station, state); return; }
   const time = state.clock;
   if (station.software === 'jukebox') {
@@ -180,15 +186,17 @@ export function drawStation(ctx, station, state, game, jukebox) {
 export function drawMap(ctx, x, y, width, height, player) {
   ctx.save(); ctx.beginPath(); ctx.rect(x, y, width, height); ctx.clip();
   ctx.fillStyle = '#16161e'; ctx.fillRect(x, y, width, height);
-  const scale = Math.min((width - 24) / 36, (height - 16) / 42);
-  const left = x + (width - 36 * scale) / 2; const top = y + 8;
-  const px = (value) => left + (value + 18) * scale;
-  const pz = (value) => top + (value + 14) * scale;
+  const minX = Math.min(...FLOORS.map((floor) => floor.x - floor.width / 2)); const maxX = Math.max(...FLOORS.map((floor) => floor.x + floor.width / 2));
+  const minZ = Math.min(...FLOORS.map((floor) => floor.z - floor.depth / 2)); const maxZ = Math.max(...FLOORS.map((floor) => floor.z + floor.depth / 2));
+  const scale = Math.min((width - 24) / (maxX - minX), (height - 16) / (maxZ - minZ));
+  const left = x + (width - (maxX - minX) * scale) / 2; const top = y + 8;
+  const px = (value) => left + (value - minX) * scale;
+  const pz = (value) => top + (value - minZ) * scale;
   for (const floor of FLOORS) {
     ctx.fillStyle = '#24283b'; ctx.fillRect(px(floor.x - floor.width / 2), pz(floor.z - floor.depth / 2), floor.width * scale, floor.depth * scale);
   }
   for (const [i, zone] of ZONES.entries()) {
-    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b', '#304b53'][i];
+    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b', '#304b53', '#705e4f'][i];
     ctx.fillRect(px(zone.x - zone.width / 2), pz(zone.z - zone.depth / 2), zone.width * scale, zone.depth * scale);
   }
   ctx.fillStyle = '#9aa5ce';
@@ -197,6 +205,7 @@ export function drawMap(ctx, x, y, width, height, player) {
   STATIONS.forEach((station) => ctx.fillRect(px(station.x) - 2, pz(station.z) - 2, 4, 4));
   label(ctx, 'CLUB', px(0), pz(1), 12, C.paper, 'center');
   label(ctx, 'SECURITY', px(0), pz(21.5), 11, C.cyan, 'center');
+  label(ctx, 'DESIGN', px(18), pz(21.5), 11, C.gold, 'center');
   ctx.fillStyle = C.gold;
   ctx.beginPath(); ctx.arc(px(player.x), pz(player.z), 4, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.strokeRect(x, y, width, height);

@@ -45,6 +45,7 @@
 .club-panel-actions[data-layout="jukebox"][data-columns="3"] button[data-group="control"] { grid-column: span 2; }
 .club-panel-actions[data-layout="jukebox"][data-columns="3"] button[data-control-start="true"] { grid-column: 1 / span 2; }
 #club-map-canvas { width: 100%; height: auto; margin-bottom: 20px; }
+#club-design-canvas { display: block; width: 100%; height: auto; margin: 0 0 18px; image-rendering: pixelated; }
 #club-game-canvas { width: min(100%, 460px); height: auto; display: block; margin: 0 auto 16px; image-rendering: pixelated; }
 .club-page[data-state="arcade"] .club-panel { width: min(550px, calc(100% - 56px)); }
 .club-page[data-state="arcade"] .club-panel-actions { grid-template-columns: repeat(3, minmax(0, 1fr)); }

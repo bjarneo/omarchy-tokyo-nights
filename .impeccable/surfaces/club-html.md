@@ -2,7 +2,7 @@
 version: 1
 slug: "club-html"
 primary_target: "club.html"
-related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
+related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/club-design.mjs", "src/club-design-art.js", "src/club-design-room.js", "src/club-team-art.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
 ---
 
 # Retro clubhouse
@@ -42,6 +42,16 @@ The map adds a security destination. The doorway frames the command board, crew,
 The virus supports quarantine and release. Reduced motion stops its patrol and idle motion.
 
 ## Direction contract
+
+### Design studio extension
+
+The user approves a separate retro studio with five design team cameos, wall art, and live creative desks.
+An `18 × 14m` room extends southeast from the club through its own open doorway.
+Paper-colored furniture, cork flooring, sample sheets, and a central easel distinguish the studio within the established Tokyo Night world.
+The entrance frames a large live poster. Palette, typography, layout, icon, and motion controls update that poster and the desk screens.
+Five original voxel cameos use the official design team names, countries, and photo references from `https://omarchy.org/teams/`.
+The native and WebXR interfaces share the creative state. A ninth map destination provides direct access.
+This code-led extension inherits seed `6ddbd526` and the existing Experience contract.
 
 ### THESIS
 
@@ -407,6 +417,54 @@ The avatar factory turns them into articulated voxel figures. Club dialogue uses
 The wall images and command board use authored Canvas art. BYTE uses authored voxel geometry in `src/club-security-room.js`.
 `src/club-security-screen.js` draws the local exercise displays. The extension adds no shipped raster files or runtime photo requests.
 
+### Design studio
+
+- The separate `18 × 14m` studio occupies `x: [9, 27]`, `z: [14, 28]`, with solid exterior walls.
+- Its independent doorway centers at `x: 12.5`, `z: 14`, with `3.4m` width and `3.2m` clearance. Smooth walk and arc teleport cross it.
+- `DESIGN STUDIO` is the ninth map destination. The studio brings the current club totals to 32 stations and 19 human cameos.
+- Paper-colored desks, beige CRTs, cork-colored flooring, sample sheets, three framed studies, a team board, and the central live easel distinguish the room.
+- The `EDITORS & TERMINALS` gallery moves from the original south wall to the studio south wall at `[18, 2.65, 27.74]`.
+- That panel retains its `14 × 3.1m` size and 13 marks. All 65 original gallery marks still load.
+- `drawMap` in `src/club-screens.js` derives union bounds from `FLOORS`: `x: [-18, 27]`, `z: [-14, 28]`.
+- The spatial map fits ten actions in three columns within its `1024 × 640` texture: nine destinations and `CLOSE MAP`.
+- The panels reuse existing Tokyo Night UI tokens, Arcade headings, Courier New text, rectangular controls, gold selection, and cyan focus.
+
+Five creative desks share `ClubGame.design`, an in-memory poster state. Every desk CRT, native panel, spatial panel, and physical easel uses `drawDesignPoster`.
+
+| Desk field | Choices |
+| --- | --- |
+| `palette` | `NIGHT PRINT`, `PAPER PRINT`, `BLUE PRINT` |
+| `type` | `PIXEL DISPLAY`, `TERMINAL TYPE`, `MIXED TYPE` |
+| `layout` | `POSTER`, `SPLIT`, `GRID` |
+| `icon` | `CURSOR`, `PENCIL`, `WINDOW` |
+| `motion` | `STATIC`, `STEP`, `PULSE` |
+
+- Choices persist across desk changes, panel closure, and pause. A page reload restores defaults.
+- All three layouts retain `MIDNIGHT DESIGN CLUB` after the finish-review fix. Motion affects the icon while the words stay still.
+- Pause freezes the poster clock. Reduced motion keeps the icon static and retains the selected design.
+- Native `#club-design-canvas` uses `768 × 432` pixels above the shared two-column action grid.
+- The custom spatial design panel places a `470 × 264px` preview left and four `434 × 72px` actions right.
+- Those actions provide three desk choices and `BACK TO THE ROOM`. The easel uses a `1024 × 576` texture on a `3.8 × 2.1375m` plane.
+
+#### Design source provenance
+
+`DESIGN_CREW` in `src/club-design.mjs` records the official [design team roster](https://omarchy.org/teams/), country labels, and photo-reference URLs.
+
+| Cameo | Official country label | Official photo reference |
+| --- | --- | --- |
+| Barış Girişmen | Türkiye | [baris-girismen.webp](https://omarchy.org/assets/images/team/baris-girismen.webp) |
+| Christoffer Hallas | USA | [christoffer-hallas.webp](https://omarchy.org/assets/images/team/christoffer-hallas.webp) |
+| Daniel Schmier | Germany | [daniel-schmier.webp](https://omarchy.org/assets/images/team/daniel-schmier.webp) |
+| Andrés Villagrán | Chile | [andres-villagran.webp](https://omarchy.org/assets/images/team/andres-villagran.webp) |
+| Niklas Jul | Denmark | [niklas-jul.webp](https://omarchy.org/assets/images/team/niklas-jul.webp) |
+
+`src/club-team-art.js` extends the original `48 × 104` Canvas sprites for both teams. The avatar factory turns them into articulated voxel figures.
+`src/club-security-art.js` preserves security callers through reexports of `makeTeamCharacter` as `makeSecurityCharacter`, plus `securityPoster` and `commandBoard`.
+The shared art preserves Sebastian's glasses, spiked hair, green hoodie, and clean-shaven face, plus Erik's fox-fur hat and beard.
+
+The user-approved portraits, wall studies, team board, and live poster use original Canvas art and voxel geometry with source URLs.
+The extension adds no shipping rasters or runtime photo requests. Cameo conversations use fictional scripts.
+
 ## Verification evidence
 
 - The supplied current results report all 24 focused Node tests in `tests/club.test.mjs` and `tests/club-jukebox.test.mjs` as passed.
@@ -481,3 +539,35 @@ git diff --check
 | Security mobile panels | `club-security-mobile.png`, `club-security-lab-mobile.png` |
 | Security IWER stereo | `club-security-headset.png`, `club-security-lab-headset.png` |
 | Entry and map | `club-desktop.png`, `club-mobile.png`, `club-map.png` |
+
+### Design studio checks
+
+- The supplied full Node result passes all 101 tests. The supplied clubhouse browser result passes all 19 tests.
+- The three design browser tests pass again after the GRID copy fix.
+- Source and tests cover doorway travel, solid walls, teleport arcs, five distinct cameos, retained desk choices, easel updates, pause, and reduced motion.
+- Browser checks also cover all 65 gallery marks, mobile touch actions, spatial map bounds, and spatial poster controls.
+- `.impeccable/review/club-design-finish.md` requests one fix: preserve the poster message across layouts.
+- `.impeccable/review/club-design-verdict.md` scores that fix as resolved. Its `ship` disposition covers the layout-content fix only.
+- The verdict checks all seven recaptures at their original paths and reports no regressions from that fix.
+- The supplied detector runs once. It reports the inherited Courier New `new` false positive, stripe advisory, and existing `17px` landscape-type advisory.
+- Physical headset behavior remains unverified. Stereo evidence uses IWER emulation.
+- This documentation pass checks source, test definitions, capture paths, and both review records. It records the supplied test results.
+- The supplied build check and this documentation pass both pass `git diff --check`.
+
+Historical inventory figures describe earlier extensions. The studio totals above describe the current source.
+The inherited advisories do not become new design rules.
+
+To reproduce the supplied checks, run these commands from the repository root:
+
+```sh
+npm test
+PORT=3127 CI=1 npx playwright test tests/browser/club.spec.js
+PORT=3127 CI=1 npx playwright test tests/browser/club.spec.js --grep 'design studio'
+git diff --check
+```
+
+| Review area | Captures under `.impeccable/review/` |
+| --- | --- |
+| Studio and desktop panels | `club-design-desktop.png`, `club-design-cameo.png`, `club-design-poster.png` |
+| Mobile panels | `club-design-mobile.png`, `club-design-poster-mobile.png` |
+| IWER stereo | `club-design-headset.png`, `club-design-poster-headset.png` |

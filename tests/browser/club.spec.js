@@ -713,3 +713,101 @@ test('the headset enters the security room and uses its spatial lab and virus co
   await xrClick(page, 'virus:release'); expect(await page.evaluate(() => clubModel.virus.quarantined)).toBe(false);
   await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
 });
+
+test('the design studio connects to the club and its five cameos share a live creative poster', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.evaluate(() => Promise.all([clubView.room.design.fontReady, clubView.room.galleryReady]));
+  await page.locator('#club-explore').click();
+  await page.evaluate(() => { if (!clubView.teleport({ x: 12.5, z: 12 }, Math.PI)) throw new Error('The studio approach is blocked.'); });
+  await page.keyboard.down('KeyW');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.z), { timeout: 15000 }).toBeGreaterThan(15.2); }
+  finally { await page.keyboard.up('KeyW'); }
+  await expect(page.locator('#club-location')).toHaveText('DESIGN STUDIO');
+  await page.evaluate(() => { clubView.teleport({ x: 12.5, z: 15.4 }, -Math.PI * .75); }); await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-design-desktop.png', fullPage: true });
+  expect(await page.evaluate(() => clubView.room.galleryLoaded)).toBe(65);
+  expect(await page.evaluate(() => clubView.room.design.studies.length)).toBe(3);
+  const crew = await page.evaluate(() => clubModel.crew.filter((npc) => npc.team === 'design').map(({ id, name, country }) => ({ id, name, country })));
+  expect(crew).toHaveLength(5); const portraits = [];
+  for (const npc of crew) {
+    await approach(page, npc.id); await page.keyboard.press('KeyE');
+    await expect(page.locator('#club-panel-title')).toHaveText(npc.name.toUpperCase());
+    await expect(page.locator('#club-panel-subtitle')).toContainText(npc.country);
+    await page.locator('[data-action="topic:0"]').click(); await expect(page.locator('#club-panel-text')).toContainText(npc.name);
+    portraits.push(await page.locator('#club-portrait').evaluate((canvas) => canvas.toDataURL()));
+    if (npc.id === 'baris-girismen') await page.screenshot({ path: '.impeccable/review/club-design-cameo.png', fullPage: true });
+    await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+  }
+  expect(new Set(portraits).size).toBe(5);
+  for (const field of ['palette', 'type', 'layout', 'icon', 'motion']) {
+    await approach(page, `design-${field}`); await page.keyboard.press('KeyE');
+    await expect(page.locator('#club-design-canvas')).toBeVisible();
+    const before = await page.evaluate(() => clubView.room.design.preview.canvas.toDataURL());
+    await page.locator(`[data-action="design:${field}:1"]`).click();
+    await expect(page.locator(`[data-action="design:${field}:1"]`)).toHaveAttribute('data-primary', 'true');
+    if (field !== 'motion') await expect.poll(() => page.evaluate(() => clubView.room.design.preview.canvas.toDataURL())).not.toBe(before);
+    if (field === 'layout') await page.screenshot({ path: '.impeccable/review/club-design-poster.png', fullPage: true });
+    await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+    await expect(page.locator('#club-design-canvas')).toBeHidden();
+  }
+  expect(await page.evaluate(() => [clubModel.design.palette, clubModel.design.type, clubModel.design.layout, clubModel.design.icon, clubModel.design.motion])).toEqual([1, 1, 1, 1, 1]);
+  await page.emulateMedia({ reducedMotion: 'no-preference' }); await expect.poll(() => page.evaluate(() => clubModel.design.clock)).toBeGreaterThan(.3);
+  await page.keyboard.press('KeyP'); const clock = await page.evaluate(() => clubModel.design.clock); await page.waitForTimeout(220);
+  expect(await page.evaluate(() => clubModel.design.clock)).toBe(clock);
+  await page.keyboard.press('KeyP'); await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.waitForTimeout(150); const still = await page.evaluate(() => clubView.room.design.preview.canvas.toDataURL()); await page.waitForTimeout(220);
+  expect(await page.evaluate(() => clubView.room.design.preview.canvas.toDataURL())).toBe(still);
+  await page.locator('#club-map').click(); await page.getByRole('button', { name: 'DESIGN STUDIO', exact: true }).click();
+  await page.evaluate(() => { clubView.rig.rotation.y = Math.PI; }); await page.keyboard.down('KeyS');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.z), { timeout: 15000 }).toBeLessThan(13); }
+  finally { await page.keyboard.up('KeyS'); }
+  await expect(page.locator('#club-location')).toHaveText('NINTENDO & SEGA'); expect(errors).toEqual([]);
+});
+
+test('the design studio provides usable touch cameos and live palette controls', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+  const page = await context.newPage(); const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.locator('#club-explore').tap(); await page.locator('#club-touch-map').tap();
+  await page.getByRole('button', { name: 'DESIGN STUDIO', exact: true }).tap();
+  await expect(page.locator('#club-location')).toHaveText('DESIGN STUDIO');
+  await approach(page, 'christoffer-hallas'); await page.locator('#club-touch-use').tap();
+  await expect(page.locator('#club-panel-title')).toHaveText('CHRISTOFFER HALLAS');
+  await page.screenshot({ path: '.impeccable/review/club-design-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).tap();
+  await approach(page, 'design-palette'); await page.locator('#club-touch-use').tap();
+  await page.getByRole('button', { name: 'PAPER PRINT', exact: true }).tap();
+  await expect(page.locator('#club-panel-subtitle')).toContainText('PAPER PRINT');
+  await expect(page.locator('#club-design-canvas')).toBeVisible();
+  await page.screenshot({ path: '.impeccable/review/club-design-poster-mobile.png', fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]); await context.close();
+});
+
+test('the headset visits the design studio and changes its shared poster through spatial controls', async ({ page }) => {
+  test.setTimeout(80_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' }); await emulate(page);
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-enter-vr')).toBeEnabled(); await observe(page);
+  await page.locator('#club-enter-vr').click(); await xrClick(page, 'explore');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 1));
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'map');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 0));
+  expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
+  await xrClick(page, 'zone:design'); await expect(page.locator('#club-location')).toHaveText('DESIGN STUDIO');
+  await page.screenshot({ path: '.impeccable/review/club-design-headset.png', fullPage: true });
+  await approach(page, 'niklas-jul'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('NIKLAS JUL');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await xrClick(page, 'topic:1'); await expect(page.locator('#club-panel-text')).toContainText('motion pattern'); await xrClick(page, 'back');
+  await approach(page, 'design-layout'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('LAYOUT DESK');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await xrClick(page, 'design:layout:2'); expect(await page.evaluate(() => clubModel.design.layout)).toBe(2);
+  expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
+  await page.screenshot({ path: '.impeccable/review/club-design-poster-headset.png', fullPage: true });
+  await xrClick(page, 'back'); await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
+});

@@ -2,6 +2,7 @@ import { CLUB, ENTRY, FLOORS, OBSTACLES, STATIC_OBSTACLES, STATIONS, ZONES, zone
 import { CabinetGame } from './club-games.mjs';
 import { createClubCrew, updateClubCrew } from './club-motion.mjs';
 import { SECURITY_LABS, createLabState, chooseLab, labPanel, createVirus, updateVirus, quarantineVirus } from './club-security.mjs';
+import { createDesignState, selectDesign, designPanel } from './club-design.mjs';
 
 export function canStand(x, z, obstacles = OBSTACLES, radius = CLUB.radius) {
   if (!Number.isFinite(x) || !Number.isFinite(z)) return false;
@@ -73,6 +74,7 @@ export class ClubGame {
     this.clearSpaces = [...ZONES.map((zone) => zone.beacon), ...STATIONS.map((station) => station.stand)];
     this.dialogueSpace = null;
     this.virus = createVirus();
+    this.design = createDesignState();
   }
 
   changed() { if (this.state !== 'talk') this.dialogueSpace = null; this.revision++; this.onChange(this); }
@@ -110,6 +112,14 @@ export class ClubGame {
     if (id.startsWith('topic:') && this.state === 'talk') {
       const topic = this.selected.topics[Number(id.slice(6))];
       if (topic) { this.reply = topic[1]; this.changed(); this.onEvent({ type: 'speech', target: this.selected, text: this.reply }); }
+      return;
+    }
+    if (id.startsWith('design:') && this.state === 'device' && this.selected?.studio) {
+      const [, field, index] = id.split(':');
+      if (field === this.selected.studio && selectDesign(this.design, field, Number(index))) {
+        this.changed(); this.onEvent({ type: 'beep', target: this.selected });
+        this.onEvent({ type: 'speech', target: this.selected, text: this.panel().subtitle });
+      }
       return;
     }
     if (id.startsWith('security:') && this.state === 'device' && this.selected?.lab) {
@@ -177,6 +187,7 @@ export class ClubGame {
     });
     if (this.state === 'entry') return;
     updateVirus(this.virus, dt, input.reducedMotion || this.state === 'device' && this.selected?.id === this.virus.id);
+    if (this.design.motion && !input.reducedMotion) this.design.clock += Math.min(dt, .25);
     this.elapsed += Math.min(dt, .25);
     for (const device of Object.values(this.devices)) if (device.power) device.clock += Math.min(dt, .25);
     if (this.state === 'arcade' && this.arcade) {
@@ -202,6 +213,7 @@ export class ClubGame {
     if (this.state === 'talk') return { title: this.selected.name.toUpperCase(), subtitle: `${this.selected.role.toUpperCase()}${this.selected.country ? ` · ${this.selected.country} · CAMEO` : ''}`, text: this.reply, portrait: this.selected.id, options: [...this.selected.topics.map((topic, index) => option(`topic:${index}`, topic[0])), option('read', 'READ ALOUD'), option('back', 'BACK TO THE ROOM')] };
     if (this.state === 'device') {
       const station = this.selected;
+      if (station.software === 'design') return designPanel(station, this.design);
       if (station.software === 'security') return labPanel(station, this.devices[station.id]);
       if (station.software === 'virus') return { title: 'BYTE · LAB VIRUS', subtitle: this.virus.quarantined ? 'QUARANTINED' : 'PATROL ACTIVE', text: this.virus.quarantined ? 'BYTE stays inside the containment field. Release the simulated virus to resume its patrol through the security room.' : 'A pixel computer virus patrols the lab. Its body, eyes, and antennae are part of the room simulation. Quarantine BYTE to stop its patrol.', options: [option(this.virus.quarantined ? 'virus:release' : 'virus:quarantine', this.virus.quarantined ? 'RELEASE BYTE' : 'QUARANTINE BYTE'), option('back', 'BACK TO THE ROOM')] };
       if (station.software === 'jukebox' && this.jukebox) return this.jukebox.panel();

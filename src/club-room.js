@@ -5,6 +5,7 @@ import { CREW_GESTURES } from './club-motion.mjs';
 import { addOpenSourceWalls } from './club-logo-wall.js';
 import { MalibuCorner } from './club-malibu.js';
 import { ClubSecurityRoom } from './club-security-room.js';
+import { ClubDesignRoom } from './club-design-room.js';
 
 const C = { wood: '#80604b', darkWood: '#503d36', beige: '#b7b29a', edge: '#777b73', plastic: '#d5d1b9', ink: '#16161e', dark: '#24283b', cyan: '#7dcfff', pink: '#f7768e', gold: '#e0af68', green: '#9ece6a', paper: '#c0caf5' };
 
@@ -18,6 +19,7 @@ export class ClubRoom {
     this.frame = { x: 0, z: 0, yaw: 0 };
     this.buildRoom();
     this.security = new ClubSecurityRoom(this);
+    this.design = new ClubDesignRoom(this);
     STATIONS.forEach((station) => this.buildStation(station));
     FURNITURE.forEach((item) => this.buildFurniture(item));
     this.buildCharacters();
@@ -118,7 +120,7 @@ export class ClubRoom {
         continue;
       }
       const bottom = wall.bottom || 0;
-      this.box(wall.x, (wall.height + bottom) / 2, wall.z, wall.width, wall.height - bottom, wall.depth, wall.id.startsWith('security-') ? '#465463' : '#736f70');
+      this.box(wall.x, (wall.height + bottom) / 2, wall.z, wall.width, wall.height - bottom, wall.depth, wall.id.startsWith('design-') ? '#beb8a8' : wall.id.startsWith('security-') ? '#465463' : '#736f70');
       if (!bottom) this.box(wall.x, .55, wall.z, wall.width + .06, 1.1, wall.depth + .06, wall.id.startsWith('security-') ? C.dark : C.darkWood);
     }
     this.box(0, 4.63, 0, 36, .14, 28, '#49444a');
@@ -199,6 +201,7 @@ export class ClubRoom {
   }
 
   buildStation(station) {
+    if (station.kind === 'design') { this.design.bench(station); return; }
     if (station.kind === 'security') { this.security.bench(station); return; }
     if (station.kind === 'malibu') { this.malibu = new MalibuCorner(this, station); return; }
     this.at(station.x, station.z, station.yaw);
@@ -291,7 +294,7 @@ export class ClubRoom {
   }
 
   buildFurniture(item) {
-    if (item.kind === 'malibu-chair' || item.kind === 'security-rack') return;
+    if (item.kind === 'malibu-chair' || item.kind === 'security-rack' || item.kind === 'design-easel') return;
     this.at(item.x, item.z);
     if (item.kind === 'sofa') {
       this.box(0, .28, 0, item.width, .45, item.depth, item.color);

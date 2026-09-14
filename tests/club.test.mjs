@@ -6,6 +6,7 @@ import { ClubInput } from '../src/club-controls.mjs';
 import { CabinetGame } from '../src/club-games.mjs';
 import { gestureAt } from '../src/club-motion.mjs';
 import { SECURITY_LABS, SECURITY_CREW } from '../src/club-security.mjs';
+import { DESIGN_CREW, DESIGN_DESKS } from '../src/club-design.mjs';
 
 test('every character and machine has an accessible interaction point from the entrance', () => {
   const queue = [{ x: 0, z: 10.5 }]; const seen = new Set(['0,10.5']);
@@ -245,7 +246,7 @@ test('the security doorway supports continuous movement and teleportation while 
   assert.ok(Math.abs(inside.z - 16) < .001);
   assert.ok(Math.abs(moveWithinRoom(inside, 0, -4).z - 12) < .001);
   assert.ok(moveWithinRoom({ x: 3, z: 12 }, 0, 4).z < 14);
-  assert.equal(canStand(12, 20), false);
+  assert.equal(canStand(30, 20), false);
   assert.equal(canStand(0, 29), false);
   assert.equal(teleportArc({ x: 0, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, true);
   assert.equal(teleportArc({ x: 3, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, false);
@@ -300,4 +301,39 @@ test('BYTE patrols clear security floor and stops for pause, reduced motion, int
   assert.ok(game.interact(game.virus.id, { x: 0, z: 19.5 }));
   game.action('virus:release'); game.back(); game.update(.25);
   assert.equal(game.virus.quarantined, false); assert.ok(game.virus.x > -2);
+});
+
+test('the design studio has its own open doorway and solid exterior walls', () => {
+  const inside = moveWithinRoom({ x: 12.5, z: 12 }, 0, 4);
+  assert.ok(Math.abs(inside.z - 16) < .001);
+  assert.ok(Math.abs(moveWithinRoom(inside, 0, -4).z - 12) < .001);
+  assert.ok(moveWithinRoom({ x: 10, z: 12 }, 0, 4).z < 14);
+  assert.equal(canStand(28, 20), false); assert.equal(canStand(22, 12), false);
+  assert.equal(teleportArc({ x: 12.5, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, true);
+  assert.equal(teleportArc({ x: 10, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, false);
+  const game = new ClubGame(); game.action('zone:design');
+  assert.equal(game.zone.id, 'design'); assert.equal(DESIGN_CREW.length, 5);
+  assert.equal(new Set(game.crew.map((npc) => npc.id)).size, game.crew.length);
+});
+
+test('the creative desks retain one shared design and accept only their own valid controls', () => {
+  const game = new ClubGame(); game.enter();
+  for (const [field, desk] of Object.entries(DESIGN_DESKS)) {
+    const station = STATIONS.find((item) => item.studio === field);
+    assert.ok(game.interact(station.id, station.stand), station.id);
+    game.action(`design:${field}:99`); assert.equal(game.design[field], 0);
+    game.action(`design:${field}:-1`); assert.equal(game.design[field], 0);
+    game.action('design:__proto__:1');
+    for (let index = 0; index < desk.labels.length; index++) {
+      game.action(`design:${field}:${index}`); assert.equal(game.design[field], index);
+      assert.ok(game.panel().options.find((option) => option.id === `design:${field}:${index}`).primary);
+      assert.match(game.panel().subtitle, new RegExp(desk.labels[index]));
+    }
+    game.back(); game.action(`design:${field}:0`); assert.equal(game.design[field], 2);
+  }
+  assert.deepEqual([game.design.palette, game.design.type, game.design.layout, game.design.icon, game.design.motion], [2, 2, 2, 2, 2]);
+  game.update(.2); assert.ok(game.design.clock > 0);
+  game.pause(); const paused = { ...game.design }; game.update(1); assert.deepEqual(game.design, paused);
+  game.resume(); game.update(.2, { reducedMotion: true }); assert.deepEqual(game.design, paused);
+  game.update(.2); assert.ok(game.design.clock > paused.clock);
 });

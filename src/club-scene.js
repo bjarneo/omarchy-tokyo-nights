@@ -4,6 +4,7 @@ import { ClubRoom } from './club-room.js';
 import { CLUB, ENTRY, CLUB_CREW, STATIONS } from './club-data.mjs';
 import { canStand, moveWithinRoom, teleportArc } from './club-engine.mjs';
 import { drawStation, drawCabinet, drawMap, paragraph } from './club-screens.js';
+import { drawDesignPoster } from './club-design-art.js';
 
 function surface(width, height, worldWidth, worldHeight) {
   const canvas = document.createElement('canvas'); canvas.width = width; canvas.height = height;
@@ -257,14 +258,14 @@ export class ClubScene {
     panel.buttons.push({ ...action, x, y, width, height });
   }
 
-  drawPanel(game, immersive) {
+  drawPanel(game, immersive, reducedMotion = false) {
     const model = game.panel();
     this.panel.mesh.visible = immersive && Boolean(model) && game.state !== 'sketch';
     this.toolbar.mesh.visible = immersive && game.state === 'sketch';
     if (!model) { this.lastPanel = ''; this.panelIdentity = ''; return; }
     const identity = `${game.state}:${game.selected?.id || ''}`;
     if (identity !== this.panelIdentity) { this.placePanel(game.state === 'sketch' ? this.toolbar.mesh : this.panel.mesh, game.state); this.panelIdentity = identity; }
-    const signature = `${game.revision}:${this.hover}:${game.arcade?.elapsed.toFixed(1) || ''}:${immersive}`;
+    const signature = `${game.revision}:${this.hover}:${game.arcade?.elapsed.toFixed(1) || ''}:${immersive}:${model.layout === 'design' ? game.design.clock.toFixed(1) : ''}:${reducedMotion}`;
     if (signature === this.lastPanel) return;
     this.lastPanel = signature;
     if (game.state === 'sketch') {
@@ -277,6 +278,12 @@ export class ClubScene {
     ctx.fillStyle = '#16161e'; ctx.fillRect(0, 0, 1024, 640); ctx.strokeStyle = '#565f89'; ctx.lineWidth = 4; ctx.strokeRect(2, 2, 1020, 636);
     ctx.fillStyle = '#f7768e'; ctx.font = `${model.title.length > 23 ? 24 : 32}px Arcade, monospace`; ctx.fillText(model.title, 40, 65);
     if (model.subtitle) { ctx.fillStyle = '#e0af68'; ctx.font = '23px "Courier New", monospace'; ctx.fillText(model.subtitle, 40, 105, 940); }
+    if (model.layout === 'design') {
+      ctx.save(); ctx.translate(40, 157); drawDesignPoster(ctx, game.design, 470, 264, reducedMotion); ctx.restore();
+      paragraph(ctx, model.text, 40, 474, 465, 24);
+      model.options.forEach((action, i) => this.drawButton(p, action, 550, 155 + i * 98, 434, 72, Boolean(action.primary)));
+      p.texture.needsUpdate = true; return;
+    }
     let startY = model.layout === 'security' ? 430 : 320;
     if (game.state === 'arcade') {
       ctx.fillStyle = '#16161e'; ctx.fillRect(0, 0, 1024, 640);
@@ -347,7 +354,7 @@ export class ClubScene {
       for (const station of STATIONS) {
         const screen = this.room.screens.get(station.id);
         if (Math.hypot(station.x - this.head.x, station.z - this.head.z) > 22 && this.lastScreenRevision === game.revision) continue;
-        drawStation(screen.ctx, station, game.devices[station.id], game.selected?.id === station.id ? game.arcade : null, game.jukebox); screen.texture.needsUpdate = true;
+        drawStation(screen.ctx, station, game.devices[station.id], game.selected?.id === station.id ? game.arcade : null, game.jukebox, game.design, reducedMotion); screen.texture.needsUpdate = true;
       }
       this.lastScreens = game.elapsed; this.lastScreenRevision = game.revision;
     }
@@ -359,6 +366,7 @@ export class ClubScene {
     });
     this.room.malibu.update(game.elapsed, reducedMotion);
     this.room.security.update(game.virus, reducedMotion, this.head, game.state === 'device' && game.selected?.id === game.virus.id);
+    this.room.design.update(game.design, reducedMotion);
     this.hover = null;
     let aimed = null;
     for (const { ray, line } of this.controllers) {
@@ -369,7 +377,7 @@ export class ClubScene {
     const gaze = this.gazeHit();
     if (!aimed) aimed = gaze;
     this.cursor.visible = !immersive || !this.controllers.some(({ ray }) => ray.visible);
-    this.drawPanel(game, immersive); this.updateTeleport(); this.headPose(); this.drawTooltip(aimed, immersive);
+    this.drawPanel(game, immersive, reducedMotion); this.updateTeleport(); this.headPose(); this.drawTooltip(aimed, immersive);
     this.fadeTime = Math.max(0, this.fadeTime - dt); this.fade.visible = this.fadeTime > 0;
     this.fade.material.uniforms.opacity.value = Math.min(1, this.fadeTime / .1);
     this.noticeTime = Math.max(0, this.noticeTime - dt); this.notice.mesh.visible = immersive && this.noticeTime > 0;
