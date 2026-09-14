@@ -590,7 +590,7 @@ test('the headset reaches the Malibu corner and operates its monitor through spa
 });
 
 test('the security room has a walk-through doorway, five cameos, lab exercises, and a roaming virus', async ({ page }) => {
-  test.setTimeout(90_000);
+  test.setTimeout(120_000);
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
   const errors = []; const requests = [];
   page.on('pageerror', (error) => errors.push(error.message));
@@ -810,4 +810,114 @@ test('the headset visits the design studio and changes its shared poster through
   expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
   await page.screenshot({ path: '.impeccable/review/club-design-poster-headset.png', fullPage: true });
   await xrClick(page, 'back'); await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
+});
+
+test('the Mac room connects through the studio and includes all 15 M-team cameos and the original logo', async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.evaluate(() => Promise.all([clubView.room.mac.logoReady, document.fonts.ready])); await page.locator('#club-explore').click();
+  await page.evaluate(() => { if (!clubView.teleport({ x: 25.5, z: 25.5 }, -Math.PI / 2)) throw new Error('The Mac doorway approach is blocked.'); });
+  await page.keyboard.down('KeyW');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.x), { timeout: 15000 }).toBeGreaterThan(28.2); }
+  finally { await page.keyboard.up('KeyW'); }
+  await expect(page.locator('#club-location')).toHaveText('MAC ROOM · TEAM M');
+  expect(await page.evaluate(() => clubView.room.mac.logoWall.userData.originalLogo)).toBe(true);
+  expect(await page.evaluate(() => clubView.room.mac.teamBoards.length)).toBe(3);
+  await page.evaluate(() => { clubView.teleport({ x: 29, z: 28.8 }, -1.12); }); await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-mac-desktop.png', fullPage: true });
+  const crew = await page.evaluate(() => clubModel.crew.filter((npc) => npc.team === 'mac').map(({ id, name, country }) => ({ id, name, country })));
+  expect(crew).toHaveLength(15); const portraits = [];
+  for (const npc of crew) {
+    await approach(page, npc.id); await page.keyboard.press('KeyE');
+    await expect(page.locator('#club-panel-title')).toHaveText(npc.name.toUpperCase());
+    await expect(page.locator('#club-panel-subtitle')).toContainText(npc.country);
+    await page.locator('[data-action="topic:0"]').click(); await expect(page.locator('#club-panel-text')).toContainText(npc.name);
+    portraits.push(await page.locator('#club-portrait').evaluate((canvas) => canvas.toDataURL()));
+    if (npc.id === 'marcelo-alcantara') await page.screenshot({ path: '.impeccable/review/club-mac-cameo.png', fullPage: true });
+    await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+  }
+  expect(new Set(portraits).size).toBe(15);
+  await page.evaluate(() => {
+    const canvas = document.createElement('canvas'); canvas.id = 'mac-cameo-atlas'; canvas.width = 1000; canvas.height = 642;
+    canvas.style.cssText = 'position:fixed;top:0;left:0;width:1000px;height:642px;z-index:9999';
+    const ctx = canvas.getContext('2d'); ctx.fillStyle = '#16161e'; ctx.fillRect(0, 0, 1000, 642); ctx.imageSmoothingEnabled = false;
+    clubModel.crew.filter((npc) => npc.team === 'mac').forEach((npc, i) => {
+      const x = i % 5 * 200; const y = Math.floor(i / 5) * 214;
+      ctx.drawImage(clubView.room.avatarFactory.portrait(npc.id), x + 64, y + 8, 72, 156);
+      ctx.textAlign = 'center'; ctx.font = '13px "Courier New", monospace'; ctx.fillStyle = '#c0caf5'; ctx.fillText(npc.name, x + 100, y + 185);
+      ctx.fillStyle = '#e0af68'; ctx.fillText(npc.country, x + 100, y + 205);
+    }); document.body.append(canvas);
+  });
+  await page.locator('#mac-cameo-atlas').screenshot({ path: '.impeccable/review/club-mac-crew.png' });
+  await page.evaluate(() => document.querySelector('#mac-cameo-atlas').remove());
+  await page.locator('#club-map').click(); await page.getByRole('button', { name: 'MAC ROOM · TEAM M', exact: true }).click();
+  await page.keyboard.down('KeyS');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.x), { timeout: 15000 }).toBeLessThan(26); }
+  finally { await page.keyboard.up('KeyS'); }
+  await expect(page.locator('#club-location')).toHaveText('DESIGN STUDIO'); expect(errors).toEqual([]);
+});
+
+test('the Mac room hardware uses live model cards, terminal demos, and desktop logos', async ({ page }) => {
+  test.setTimeout(120_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page); await page.locator('#club-explore').click();
+  const models = await page.evaluate(async () => (await import('/src/club-mac.mjs')).MAC_MODELS);
+  expect(models).toHaveLength(7);
+  for (const model of models) {
+    await approach(page, model.id); await page.keyboard.press('KeyE');
+    await expect(page.locator('#club-panel-title')).toHaveText(model.name.toUpperCase());
+    const before = await page.evaluate((id) => clubView.room.screens.get(id).canvas.toDataURL(), model.id);
+    await page.getByRole('button', { name: 'HARDWARE CARD', exact: true }).click();
+    await expect.poll(() => page.evaluate((id) => clubModel.devices[id].mode, model.id)).toBe('mac-hardware');
+    await expect.poll(() => page.evaluate((id) => clubView.room.screens.get(id).canvas.toDataURL(), model.id)).not.toBe(before);
+    if (model.id === 'mac-imac-g3') await page.screenshot({ path: '.impeccable/review/club-mac-imac.png', fullPage: true });
+  }
+  await approach(page, 'mac-air'); await page.keyboard.press('KeyE'); await page.getByRole('button', { name: 'LOCAL TERMINAL', exact: true }).click();
+  await page.keyboard.press('KeyE'); await page.getByRole('button', { name: 'POWER OFF', exact: true }).click();
+  expect(await page.evaluate(() => clubModel.devices['mac-air'].power)).toBe(false);
+  await page.getByRole('button', { name: 'OMARCHY DESKTOP', exact: true }).click();
+  expect(await page.evaluate(() => clubModel.devices['mac-air'].power)).toBe(true);
+  await page.screenshot({ path: '.impeccable/review/club-mac-air.png', fullPage: true }); expect(errors).toEqual([]);
+});
+
+test('the Mac room supports touch navigation, M-team conversations, and Mac controls', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+  const page = await context.newPage(); const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.locator('#club-explore').tap(); await page.locator('#club-touch-map').tap();
+  await page.getByRole('button', { name: 'MAC ROOM · TEAM M', exact: true }).tap();
+  await expect(page.locator('#club-location')).toHaveText('MAC ROOM · TEAM M');
+  await approach(page, 'shawn-yeager'); await page.locator('#club-touch-use').tap();
+  await expect(page.locator('#club-panel-title')).toHaveText('SHAWN YEAGER');
+  await page.screenshot({ path: '.impeccable/review/club-mac-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).tap();
+  await approach(page, 'mac-mini'); await page.locator('#club-touch-use').tap();
+  await page.screenshot({ path: '.impeccable/review/club-mac-device-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'OMARCHY DESKTOP', exact: true }).tap();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]); await context.close();
+});
+
+test('the headset reaches the Mac room, meets an M-team cameo, and operates a Mac', async ({ page }) => {
+  test.setTimeout(80_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' }); await emulate(page);
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-enter-vr')).toBeEnabled(); await observe(page);
+  await page.locator('#club-enter-vr').click(); await xrClick(page, 'explore');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 1));
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'map'); await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 0));
+  expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
+  await xrClick(page, 'zone:mac-room'); await expect(page.locator('#club-location')).toHaveText('MAC ROOM · TEAM M');
+  await page.screenshot({ path: '.impeccable/review/club-mac-headset.png', fullPage: true });
+  await approach(page, 'shun-li'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('SHUN LI'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await xrClick(page, 'topic:1'); await expect(page.locator('#club-panel-text')).toContainText('Keyboards'); await xrClick(page, 'back');
+  await approach(page, 'mac-studio'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('MAC STUDIO'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await page.screenshot({ path: '.impeccable/review/club-mac-device-headset.png', fullPage: true });
+  await xrClick(page, 'mac:terminal'); expect(await page.evaluate(() => clubModel.devices['mac-studio'].mode)).toBe('mac-terminal');
+  await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
 });

@@ -36,6 +36,10 @@ export function makeTeamCharacter(npc, facing = 'smile') {
     if (p.style === 'coat' || p.style === 'hoodie') { rect(ctx, 19, 39, 1, 14, C.paper); rect(ctx, 29, 39, 1, 14, C.paper); }
   }
   if (p.style === 'jersey') for (const side of [0, 1]) for (let i = 0; i < 3; i++) rect(ctx, side ? 33 + i * 3 : 15 - i * 3, 33 + i * 2, 2, 13, p.trim);
+  if (p.style === 'varsity') {
+    rect(ctx, 7, 36, 7, 19, p.trim); rect(ctx, 36, 36, 7, 19, p.trim); rect(ctx, 23, 35, 2, 32, p.trim);
+    for (let y = 42; y < 64; y += 6) rect(ctx, 26, y, 1, 1, C.paper);
+  }
   rect(ctx, 29, 47, 4, 6, C.paper); rect(ctx, 30, 48, 2, 3, '#343b58');
   if (p.lanyard) {
     rect(ctx, 17, 34, 2, 17, C.cyan); rect(ctx, 30, 34, 2, 17, C.cyan);
@@ -52,6 +56,11 @@ export function makeTeamCharacter(npc, facing = 'smile') {
   if (p.quiff) { rect(ctx, 13, 2, 9, 5, p.hair); rect(ctx, 17, 1, 12, 3, p.hair); rect(ctx, 15, 4, 11, 2, p.hairHighlight || '#414044'); }
   if (p.wavy) for (const [x, y] of [[12, 4], [17, 2], [23, 3], [30, 4], [34, 7]]) { rect(ctx, x, y, 4, 4, p.hair); rect(ctx, x + 1, y, 2, 1, '#45434a'); }
   if (p.parted) { rect(ctx, 12, 6, 4, 19, p.hair); rect(ctx, 33, 6, 4, 19, p.hair); rect(ctx, 23, 5, 2, 6, p.skin); }
+  if (p.cropped) { rect(ctx, 14, 6, 21, 7, p.skin); rect(ctx, 16, 4, 18, 2, p.hair); rect(ctx, 13, 9, 2, 7, p.hair); }
+  if (p.bald) {
+    ctx.clearRect(8, 0, 32, 16); rect(ctx, 13, 6, 23, 10, p.shade); rect(ctx, 15, 3, 19, 13, p.skin); rect(ctx, 18, 2, 13, 4, p.skin);
+  }
+  if (p.cap) { rect(ctx, 12, 5, 25, 10, '#343b58'); rect(ctx, 16, 3, 17, 5, '#343b58'); rect(ctx, 11, 13, 28, 3, '#565f89'); }
   if (p.beanie) {
     rect(ctx, 11, 4, 27, 11, '#343b58'); rect(ctx, 14, 2, 21, 5, '#343b58');
     rect(ctx, 10, 12, 29, 4, '#565f89');
@@ -59,8 +68,9 @@ export function makeTeamCharacter(npc, facing = 'smile') {
     rect(ctx, 21, 7, 7, 3, C.gold);
   }
   if (facing === 'back') {
-    rect(ctx, 13, 13, 23, 16, p.hair); rect(ctx, 17, 26, 15, 5, p.hair);
+    rect(ctx, 13, 13, 23, 16, p.bald ? p.shade : p.hair); rect(ctx, 17, 26, 15, 5, p.bald ? p.shade : p.hair);
     if (p.hat === 'fox-fur') foxFurHat(ctx);
+    if (p.avatar) profileBadge(ctx, p.avatar);
     return canvas;
   }
   if (p.beard) {
@@ -86,7 +96,26 @@ export function makeTeamCharacter(npc, facing = 'smile') {
     rect(ctx, 35, 20, 3, 3, p.skin); rect(ctx, 25, 27, 7, 2, '#e5ddc8');
   }
   if (p.hat === 'fox-fur') foxFurHat(ctx);
+  if (p.pixelFace) {
+    rect(ctx, 12, 3, 25, 12, p.hair); rect(ctx, 12, 15, 25, 14, p.skin);
+    rect(ctx, 14, 16, 8, 9, '#e5e9ff'); rect(ctx, 18, 16, 4, 9, '#315a78');
+    rect(ctx, 26, 16, 8, 9, '#e5e9ff'); rect(ctx, 26, 16, 4, 9, '#315a78');
+  }
+  if (p.avatar) profileBadge(ctx, p.avatar);
   return canvas;
+}
+
+function profileBadge(ctx, kind) {
+  rect(ctx, 8, 2, 32, 30, '#24283b'); rect(ctx, 10, 4, 28, 26, kind === 'hill' ? '#7aa2f7' : '#131b2c');
+  if (kind === 'hill') {
+    rect(ctx, 13, 8, 7, 2, '#e5e9ff'); rect(ctx, 15, 6, 3, 2, '#e5e9ff'); rect(ctx, 29, 11, 7, 2, '#e5e9ff');
+    for (let x = 0; x < 28; x++) { const y = 20 + Math.round(Math.sin(x / 8) * 3); rect(ctx, 10 + x, y, 1, 30 - y, '#9ece6a'); }
+  } else {
+    rect(ctx, 10, 19, 28, 11, '#233d57');
+    for (const x of [13, 24, 35]) { rect(ctx, x, 10, 1, 10, '#9ece6a'); rect(ctx, x, 22, 2, 5, '#6a8c58'); }
+    for (let x = 0; x < 22; x++) rect(ctx, 13 + x, 10 + Math.round(Math.sin(x % 11 / 11 * Math.PI) * 5), 1, 1, '#9ece6a');
+    rect(ctx, 10, 18, 28, 2, '#f7768e'); rect(ctx, 16, 23, 4, 2, '#f7768e'); rect(ctx, 27, 27, 6, 1, '#f7768e');
+  }
 }
 
 function trace(ctx, points, color, width = 5) {

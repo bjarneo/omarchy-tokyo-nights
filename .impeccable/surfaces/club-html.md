@@ -2,7 +2,7 @@
 version: 1
 slug: "club-html"
 primary_target: "club.html"
-related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/club-design.mjs", "src/club-design-art.js", "src/club-design-room.js", "src/club-team-art.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
+related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/club-design.mjs", "src/club-design-art.js", "src/club-design-room.js", "src/club-mac.mjs", "src/club-mac-room.js", "src/club-mac-screen.js", "src/club-team-art.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
 ---
 
 # Retro clubhouse
@@ -52,6 +52,16 @@ The entrance frames a large live poster. Palette, typography, layout, icon, and 
 Five original voxel cameos use the official design team names, countries, and photo references from `https://omarchy.org/teams/`.
 The native and WebXR interfaces share the creative state. A ninth map destination provides direct access.
 This code-led extension inherits seed `6ddbd526` and the existing Experience contract.
+
+### Mac room extension
+
+The user approves a Mac hardware lab with all 15 M-team cameos and the original Omarchy logo.
+The `24 × 18m` room connects through the design studio’s east wall and adds a tenth map destination.
+Aluminum workstations, colorful iMac cases, and classic beige Macs face broad open aisles.
+A large original Omarchy block logo anchors the east wall. Three team boards show all 15 public names and countries.
+Seven Mac models offer local desktop, terminal, and hardware-card demos through the existing native and spatial controls.
+Original voxel cameos follow the official profile references. Landscape profile images become illustrated avatar heads.
+This code-led Experience extension inherits seed `6ddbd526`, the shared movement model, and the Tokyo Night interface.
 
 ### THESIS
 
@@ -465,6 +475,51 @@ The shared art preserves Sebastian's glasses, spiked hair, green hoodie, and cle
 The user-approved portraits, wall studies, team board, and live poster use original Canvas art and voxel geometry with source URLs.
 The extension adds no shipping rasters or runtime photo requests. Cameo conversations use fictional scripts.
 
+### Mac room
+
+- The separate `24 × 18m` room occupies `x: [27, 51]`, `z: [14, 32]`, with solid exterior walls.
+- Its own doorway crosses the studio east wall at `x: 27`, `z: 25.5`, with `3.2m` width and `3.2m` clearance.
+- Smooth walk and arc teleport cross that doorway. `MAC ROOM · TEAM M` is the tenth map destination.
+- The Mac extension brings the current club totals to 39 stations and 34 human cameos.
+- A cool gridded floor, aluminum-colored workstations, beige classic cases, and colorful iMac hardware frame open aisles.
+- `ClubMacRoom` in `src/club-mac-room.js` places the original cached Omarchy block logo on an `11.5 × 3.45m` east-wall plane.
+- The logo plane sits at `[50.76, 2.65, 23]`. `drawMacDisplay` in `src/club-mac-screen.js` reuses that original logo on every Mac desktop texture.
+- Three team boards each show five cameos with their official names and country labels.
+- Native and spatial panels reuse the existing Tokyo Night UI, Arcade headings, Courier New text, rectangular controls, gold selection, and cyan focus.
+
+`MAC_MODELS` in `src/club-mac.mjs` defines seven distinct local hardware models:
+
+| Model | Year | Processor |
+| --- | --- | --- |
+| Macintosh 128K | 1984 | Motorola 68000 |
+| iMac G3 | 1998 | PowerPC G3 |
+| iMac G4 | 2002 | PowerPC G4 |
+| Power Mac G5 | 2003 | PowerPC G5 |
+| MacBook Air M1 | 2020 | Apple M1 |
+| Mac mini M1 | 2020 | Apple M1 |
+| Mac Studio | 2022 | Apple M1 Max |
+
+Every model exposes `OMARCHY DESKTOP`, `LOCAL TERMINAL`, `HARDWARE CARD`, `POWER OFF` or `POWER ON`, and `BACK TO THE ROOM`.
+A demo selection powers the station, updates its live `256 × 192` screen texture, and returns to exploration.
+The terminal displays fixed local examples. These are club display demos, with no native OS boot or hardware emulation.
+
+Keyboard, pointer, touch, gamepad, and XR controller inputs use the existing club controls.
+Mac cameos reuse the existing crew motion. Pause freezes their clock, and reduced motion stops autonomous walks and gestures.
+
+#### Mac source provenance
+
+The verified `MAC_CREW` in `src/club-mac.mjs` matches all 15 names and country labels on the official [M team roster](https://omarchy.org/teams/).
+Each entry stores the roster URL as `source` and its official photo URL as `imageSource`.
+Those photo URLs follow `https://omarchy.org/assets/images/team/<id>.webp` and match the official page.
+
+Ryan Murray's [bridge](https://omarchy.org/assets/images/team/ryan-murray.webp) and Eryk Wieliczko's [hill](https://omarchy.org/assets/images/team/eryk-wieliczko.webp) are public landscape images.
+Their cameos use original illustrated avatar heads.
+The artwork retains [Liam's pixel face](https://omarchy.org/assets/images/team/liam.webp) and [Shun Li's Mii-style reference](https://omarchy.org/assets/images/team/shun-li.webp).
+
+`src/club-team-art.js` adds `cropped`, `bald`, `cap`, `style: 'varsity'`, and illustrated `profileBadge` heads to the shared artwork.
+Original `48 × 104` Canvas sprites supply the shared voxel avatar factory. Cameo dialogue uses fictional club scripts.
+Source graphics use procedural Canvas, voxels, and local geometry. The extension adds no shipping rasters or runtime photo requests.
+
 ## Verification evidence
 
 - The supplied current results report all 24 focused Node tests in `tests/club.test.mjs` and `tests/club-jukebox.test.mjs` as passed.
@@ -571,3 +626,33 @@ git diff --check
 | Studio and desktop panels | `club-design-desktop.png`, `club-design-cameo.png`, `club-design-poster.png` |
 | Mobile panels | `club-design-mobile.png`, `club-design-poster-mobile.png` |
 | IWER stereo | `club-design-headset.png`, `club-design-poster-headset.png` |
+
+### Mac room checks
+
+- `.impeccable/review/club-mac-finish.md` records `ship` for the supplied desktop, mobile, and IWER stereo scope. It requests no material fixes.
+- The supplied `npm test` result passes all 103 Node tests. The four new Mac browser cases pass.
+- Of the 19 existing browser cases, 18 pass initially. The existing security case times out at `90s` near its final map action.
+- That case's overall test budget increases to `120s` with the same assertions, and its rerun passes.
+- These runs establish 23 passed browser cases in aggregate. They do not constitute one complete 23-case run.
+- `tests/club.test.mjs` and `tests/browser/club.spec.js` cover doorway travel, walls, teleport arcs, all 15 cameos, seven models, and shared controls.
+- Browser evidence also covers the original logo, distinct portraits, live screen changes, mobile touch actions, spatial map bounds, and IWER device actions.
+- The supplied detector runs once. It reports the inherited Courier New `new` false positive and stripe advisory.
+- Its `#408d96` advisory describes the iMac G3 case material. This local material does not become a global token.
+- This documentation pass checks source, test definitions, the official roster, the finish record, all nine capture paths, and four representative captures.
+- This pass records the supplied test results. The supplied build check and this documentation pass both pass `git diff --check`.
+- Physical headset behavior remains unverified.
+
+To reproduce the checks, run these commands from the repository root:
+
+```sh
+npm test
+PORT=3127 CI=1 npx playwright test tests/browser/club.spec.js
+git diff --check
+```
+
+| Review area | Captures under `.impeccable/review/` |
+| --- | --- |
+| Desktop room and cameos | `club-mac-desktop.png`, `club-mac-cameo.png`, `club-mac-crew.png` |
+| Desktop hardware | `club-mac-imac.png`, `club-mac-air.png` |
+| Mobile panels | `club-mac-mobile.png`, `club-mac-device-mobile.png` |
+| IWER stereo | `club-mac-headset.png`, `club-mac-device-headset.png` |

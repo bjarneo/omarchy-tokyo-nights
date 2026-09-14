@@ -7,6 +7,7 @@ import { CabinetGame } from '../src/club-games.mjs';
 import { gestureAt } from '../src/club-motion.mjs';
 import { SECURITY_LABS, SECURITY_CREW } from '../src/club-security.mjs';
 import { DESIGN_CREW, DESIGN_DESKS } from '../src/club-design.mjs';
+import { MAC_CREW, MAC_MODELS } from '../src/club-mac.mjs';
 
 test('every character and machine has an accessible interaction point from the entrance', () => {
   const queue = [{ x: 0, z: 10.5 }]; const seen = new Set(['0,10.5']);
@@ -246,7 +247,7 @@ test('the security doorway supports continuous movement and teleportation while 
   assert.ok(Math.abs(inside.z - 16) < .001);
   assert.ok(Math.abs(moveWithinRoom(inside, 0, -4).z - 12) < .001);
   assert.ok(moveWithinRoom({ x: 3, z: 12 }, 0, 4).z < 14);
-  assert.equal(canStand(30, 20), false);
+  assert.equal(canStand(56, 20), false);
   assert.equal(canStand(0, 29), false);
   assert.equal(teleportArc({ x: 0, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, true);
   assert.equal(teleportArc({ x: 3, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, false);
@@ -308,7 +309,7 @@ test('the design studio has its own open doorway and solid exterior walls', () =
   assert.ok(Math.abs(inside.z - 16) < .001);
   assert.ok(Math.abs(moveWithinRoom(inside, 0, -4).z - 12) < .001);
   assert.ok(moveWithinRoom({ x: 10, z: 12 }, 0, 4).z < 14);
-  assert.equal(canStand(28, 20), false); assert.equal(canStand(22, 12), false);
+  assert.equal(canStand(56, 20), false); assert.equal(canStand(22, 12), false);
   assert.equal(teleportArc({ x: 12.5, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, true);
   assert.equal(teleportArc({ x: 10, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, false);
   const game = new ClubGame(); game.action('zone:design');
@@ -336,4 +337,31 @@ test('the creative desks retain one shared design and accept only their own vali
   game.pause(); const paused = { ...game.design }; game.update(1); assert.deepEqual(game.design, paused);
   game.resume(); game.update(.2, { reducedMotion: true }); assert.deepEqual(game.design, paused);
   game.update(.2); assert.ok(game.design.clock > paused.clock);
+});
+
+test('the Mac room supports both directions through its doorway and keeps the exterior solid', () => {
+  const inside = moveWithinRoom({ x: 25.5, z: 25.5 }, 3, 0);
+  assert.ok(Math.abs(inside.x - 28.5) < .001);
+  assert.ok(Math.abs(moveWithinRoom(inside, -3, 0).x - 25.5) < .001);
+  assert.ok(moveWithinRoom({ x: 25.5, z: 22 }, 3, 0).x < 27);
+  assert.equal(teleportArc({ x: 26, y: 1.4, z: 25.5 }, { x: 1, y: -.1, z: 0 }).valid, true);
+  assert.equal(teleportArc({ x: 26, y: 1.4, z: 22 }, { x: 1, y: -.1, z: 0 }).valid, false);
+  assert.equal(canStand(52, 23), false); assert.equal(canStand(39, 33), false);
+  const game = new ClubGame(); game.action('zone:mac-room'); assert.equal(game.zone.id, 'mac-room');
+  assert.equal(MAC_CREW.length, 15); assert.equal(game.crew.filter((npc) => npc.team === 'mac').length, 15);
+});
+
+test('all seven Mac models expose working desktop, terminal, hardware, and power controls', () => {
+  const game = new ClubGame(); game.enter();
+  assert.equal(MAC_MODELS.length, 7);
+  for (const station of STATIONS.filter((item) => item.mac)) {
+    assert.ok(game.interact(station.id, station.stand), station.id);
+    game.action('mac:invalid'); assert.equal(game.state, 'device');
+    game.action('power'); assert.equal(game.devices[station.id].power, false);
+    for (const mode of ['desktop', 'terminal', 'hardware']) {
+      if (game.state === 'explore') assert.ok(game.interact(station.id, station.stand));
+      game.action(`mac:${mode}`); assert.equal(game.devices[station.id].mode, `mac-${mode}`);
+      assert.equal(game.devices[station.id].power, true); assert.equal(game.state, 'explore');
+    }
+  }
 });

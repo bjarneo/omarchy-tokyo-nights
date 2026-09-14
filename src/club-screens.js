@@ -2,6 +2,7 @@ import { CLUB_CREW, ZONES, STATIONS, FLOORS, WALLS } from './club-data.mjs';
 import { drawMalibuDisplay } from './club-malibu-screen.js';
 import { drawSecurityDisplay } from './club-security-screen.js';
 import { drawDesignPoster } from './club-design-art.js';
+import { drawMacDisplay } from './club-mac-screen.js';
 
 const C = { ink: '#16161e', paper: '#c0caf5', cyan: '#7dcfff', gold: '#e0af68', pink: '#f7768e', purple: '#bb9af7', green: '#9ece6a', muted: '#9aa5ce' };
 const hash = (n) => { const value = Math.sin(n * 93.7) * 43758.54; return value - Math.floor(value); };
@@ -93,11 +94,12 @@ export function drawCabinet(ctx, game, width = 256, height = 192) {
   ctx.restore();
 }
 
-export function drawStation(ctx, station, state, game, jukebox, design, reducedMotion = false) {
+export function drawStation(ctx, station, state, game, jukebox, design, reducedMotion = false, logo) {
   ctx.imageSmoothingEnabled = false;
   if (station.kind === 'malibu') { drawMalibuDisplay(ctx, state); return; }
   ctx.fillStyle = '#0b1015'; ctx.fillRect(0, 0, 256, 192);
   if (!state.power) return;
+  if (station.software === 'maclab') { drawMacDisplay(ctx, station, state, logo); return; }
   if (station.software === 'design') {
     ctx.save(); ctx.translate(0, 24); drawDesignPoster(ctx, design, 256, 144, reducedMotion); ctx.restore();
     label(ctx, station.name.toUpperCase(), 10, 15, 10, C.gold);
@@ -196,7 +198,7 @@ export function drawMap(ctx, x, y, width, height, player) {
     ctx.fillStyle = '#24283b'; ctx.fillRect(px(floor.x - floor.width / 2), pz(floor.z - floor.depth / 2), floor.width * scale, floor.depth * scale);
   }
   for (const [i, zone] of ZONES.entries()) {
-    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b', '#304b53', '#705e4f'][i];
+    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b', '#304b53', '#705e4f', '#4b586a'][i];
     ctx.fillRect(px(zone.x - zone.width / 2), pz(zone.z - zone.depth / 2), zone.width * scale, zone.depth * scale);
   }
   ctx.fillStyle = '#9aa5ce';
@@ -206,6 +208,7 @@ export function drawMap(ctx, x, y, width, height, player) {
   label(ctx, 'CLUB', px(0), pz(1), 12, C.paper, 'center');
   label(ctx, 'SECURITY', px(0), pz(21.5), 11, C.cyan, 'center');
   label(ctx, 'DESIGN', px(18), pz(21.5), 11, C.gold, 'center');
+  label(ctx, 'MAC · M', px(39), pz(23), 11, C.paper, 'center');
   ctx.fillStyle = C.gold;
   ctx.beginPath(); ctx.arc(px(player.x), pz(player.z), 4, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.strokeRect(x, y, width, height);

@@ -3,6 +3,7 @@ import { CabinetGame } from './club-games.mjs';
 import { createClubCrew, updateClubCrew } from './club-motion.mjs';
 import { SECURITY_LABS, createLabState, chooseLab, labPanel, createVirus, updateVirus, quarantineVirus } from './club-security.mjs';
 import { createDesignState, selectDesign, designPanel } from './club-design.mjs';
+import { MAC_MODES } from './club-mac.mjs';
 
 export function canStand(x, z, obstacles = OBSTACLES, radius = CLUB.radius) {
   if (!Number.isFinite(x) || !Number.isFinite(z)) return false;
@@ -112,6 +113,14 @@ export class ClubGame {
     if (id.startsWith('topic:') && this.state === 'talk') {
       const topic = this.selected.topics[Number(id.slice(6))];
       if (topic) { this.reply = topic[1]; this.changed(); this.onEvent({ type: 'speech', target: this.selected, text: this.reply }); }
+      return;
+    }
+    if (id.startsWith('mac:') && this.state === 'device' && this.selected?.mac) {
+      const mode = `mac-${id.slice(4)}`;
+      if (MAC_MODES.includes(mode)) {
+        const device = this.devices[this.selected.id]; device.mode = mode; device.power = true; device.clock = 0;
+        this.state = 'explore'; this.changed();
+      }
       return;
     }
     if (id.startsWith('design:') && this.state === 'device' && this.selected?.studio) {
@@ -230,6 +239,7 @@ export class ClubGame {
       else if (station.software === 'music') controls = [option('song', songLabel)];
       else if (station.software === 'video') controls = [option('video', 'WATCH OMACON 2026')];
       else if (station.software === 'coastal') controls = [option('mode:coastal-desktop', 'DESKTOP DEMO'), option('mode:coastal-view', 'COASTAL WALLPAPER')];
+      else if (station.software === 'maclab') controls = [option('mac:desktop', 'OMARCHY DESKTOP'), option('mac:terminal', 'LOCAL TERMINAL'), option('mac:hardware', 'HARDWARE CARD')];
       else controls = [option(`game:${station.id === 'brick-break' || station.id === 'atari2600' ? 'brick' : 'star'}`, 'PLAY THE CLUB GAME'), option('mode:console', 'COLOR & SPRITE TEST')];
       return { title: station.name.toUpperCase(), subtitle: `${station.year ? `${station.year} · ` : ''}${device.power ? 'POWER ON' : 'POWER OFF'}`, text: station.detail, options: [...controls, option('power', device.power ? 'POWER OFF' : 'POWER ON'), option('back', 'BACK TO THE ROOM')] };
     }

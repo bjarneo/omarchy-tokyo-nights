@@ -354,7 +354,7 @@ export class ClubScene {
       for (const station of STATIONS) {
         const screen = this.room.screens.get(station.id);
         if (Math.hypot(station.x - this.head.x, station.z - this.head.z) > 22 && this.lastScreenRevision === game.revision) continue;
-        drawStation(screen.ctx, station, game.devices[station.id], game.selected?.id === station.id ? game.arcade : null, game.jukebox, game.design, reducedMotion); screen.texture.needsUpdate = true;
+        drawStation(screen.ctx, station, game.devices[station.id], game.selected?.id === station.id ? game.arcade : null, game.jukebox, game.design, reducedMotion, this.art.renderer.logo); screen.texture.needsUpdate = true;
       }
       this.lastScreens = game.elapsed; this.lastScreenRevision = game.revision;
     }
