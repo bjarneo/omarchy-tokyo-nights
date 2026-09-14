@@ -26,13 +26,13 @@ async function observe(page) {
 
 async function approach(page, id) {
   await page.evaluate(async (id) => {
-    const { STATIONS, CLUB } = await import('/src/club-data.mjs');
+    const { STATIONS, CLUB, CLUB_OBJECTS } = await import('/src/club-data.mjs');
     const { canStand, segmentHitsBox } = await import('/src/club-engine.mjs');
-    const target = STATIONS.find((item) => item.id === id) || clubModel.crew.find((item) => item.id === id) || (id === clubModel.virus.id ? clubModel.virus : null);
-    const point = target.stand || Array.from({ length: 16 }, (_, index) => {
+    const target = STATIONS.find((item) => item.id === id) || clubModel.crew.find((item) => item.id === id) || CLUB_OBJECTS.find((item) => item.id === id) || (id === clubModel.virus.id ? clubModel.virus : null);
+    const point = target.stand || (target.seated ? { x: target.x, z: target.z - 2.8, yaw: Math.PI } : Array.from({ length: 16 }, (_, index) => {
       const yaw = index * Math.PI / 8;
       return { x: target.x + Math.sin(yaw) * 2, z: target.z + Math.cos(yaw) * 2, yaw };
-    }).find((candidate) => canStand(candidate.x, candidate.z, clubModel.obstacles) && !clubModel.obstacles.some((box) => box.id !== id && segmentHitsBox({ ...candidate, y: CLUB.eyeHeight }, { x: target.x, y: target.eyeHeight || target.height, z: target.z }, box)));
+    }).find((candidate) => canStand(candidate.x, candidate.z, clubModel.obstacles) && !clubModel.obstacles.some((box) => box.id !== id && segmentHitsBox({ ...candidate, y: CLUB.eyeHeight }, { x: target.x, y: target.eyeHeight || target.height, z: target.z }, box))));
     if (!point) throw new Error('No clear approach point.');
     if (!clubView.teleport(point, point.yaw)) throw new Error('The approach point is blocked.');
     clubView.resetCamera(); clubView.scene.updateMatrixWorld(true); clubView.camera.getWorldPosition(clubView.head);
@@ -327,13 +327,13 @@ test('club characters match the player scale and use a complete coffee gesture',
       avatar.updateWorldMatrix(true, true);
       const bounds = new Box3();
       avatar.model.traverse((object) => { if (object.isInstancedMesh && object.visible) bounds.union(new Box3().setFromObject(object)); });
-      return { id: avatar.userData.characterId, feet: bounds.min.y, height: bounds.max.y - bounds.min.y, eyes: avatar.eye.getWorldPosition(new Vector3()).y };
+      return { id: avatar.userData.characterId, seated: avatar.userData.seated, feet: bounds.min.y, height: bounds.max.y - bounds.min.y, eyes: avatar.eye.getWorldPosition(new Vector3()).y };
     });
   });
   for (const avatar of heights) {
-    expect(Math.abs(avatar.height - 1.95), avatar.id).toBeLessThan(.04);
+    expect(Math.abs(avatar.height - (avatar.seated ? 1.6 : 1.95)), avatar.id).toBeLessThan(.04);
     expect(Math.abs(avatar.feet), avatar.id).toBeLessThan(.025);
-    expect(Math.abs(avatar.eyes - 1.65), avatar.id).toBeLessThan(.045);
+    expect(Math.abs(avatar.eyes - (avatar.seated ? 1.3 : 1.65)), avatar.id).toBeLessThan(.045);
   }
   await page.locator('#club-explore').click();
   await approach(page, 'bjarne');
@@ -919,5 +919,107 @@ test('the headset reaches the Mac room, meets an M-team cameo, and operates a Ma
   await expect(page.locator('#club-panel-title')).toHaveText('MAC STUDIO'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
   await page.screenshot({ path: '.impeccable/review/club-mac-device-headset.png', fullPage: true });
   await xrClick(page, 'mac:terminal'); expect(await page.evaluate(() => clubModel.devices['mac-studio'].mode)).toBe('mac-terminal');
+  await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
+});
+
+test('the Rangers front desk has seated guides, useful help, and an open elevator', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.evaluate(() => Promise.all([clubView.room.galleryReady, document.fonts.ready]));
+  await page.locator('#club-explore').click(); await page.locator('#club-map').click();
+  await page.getByRole('button', { name: 'RANGERS FRONT DESK', exact: true }).click();
+  await expect(page.locator('#club-location')).toHaveText('RANGERS FRONT DESK');
+  await page.evaluate(() => { clubView.teleport({ x: -10.3, z: 6.7 }, Math.PI - .22); clubView.pitch = -.04; }); await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-rangers-desktop.png', fullPage: true });
+  const seats = await page.evaluate(() => clubView.room.characters.filter((avatar) => avatar.userData.seated).map((avatar) => ({ id: avatar.userData.characterId, chair: Boolean(avatar.chair), thigh: avatar.legs[0].rotation.x, shin: avatar.legs[0].shin.rotation.x, offset: avatar.model.position.y })));
+  expect(seats).toHaveLength(3);
+  for (const seat of seats) { expect(seat.chair).toBe(true); expect(seat.thigh).toBeCloseTo(-Math.PI / 2); expect(seat.shin).toBeCloseTo(Math.PI / 2); expect(seat.offset).toBeCloseTo(-.35); }
+  await page.evaluate(() => { clubView.teleport({ x: -4.7, z: 12.9 }, 1.2); clubView.pitch = -.22; }); await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-rangers-seated.png', fullPage: true });
+  for (const [id, name] of [['mihai', 'MIHAI'], ['mateo-vaz', 'MATEO VAZ'], ['nira', 'NIRA']]) {
+    await approach(page, id); await page.keyboard.press('KeyE'); await expect(page.locator('#club-panel-title')).toHaveText(name);
+    await page.getByRole('button', { name: 'MOVEMENT HELP', exact: true }).click(); await expect(page.locator('#club-panel-text')).toContainText('WASD');
+    if (id === 'mateo-vaz') await page.screenshot({ path: '.impeccable/review/club-rangers-help.png', fullPage: true });
+    await page.getByRole('button', { name: 'ROOM DIRECTORY', exact: true }).click();
+    await page.getByRole('button', { name: 'RANGERS FRONT DESK', exact: true }).click();
+  }
+  const before = await page.evaluate(() => clubModel.crew.filter((npc) => npc.seated).map(({ x, z }) => ({ x, z })));
+  await page.emulateMedia({ reducedMotion: 'no-preference' }); await page.waitForTimeout(350);
+  expect(await page.evaluate(() => clubModel.crew.filter((npc) => npc.seated).map(({ x, z }) => ({ x, z })))).toEqual(before);
+  await approach(page, 'club-elevator'); await page.keyboard.press('KeyE'); await expect(page.locator('#club-panel-title')).toHaveText('THE CLUB ELEVATOR');
+  await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+  await page.evaluate(() => { clubView.teleport({ x: -15.5, z: 10 }, Math.PI); }); await page.keyboard.down('KeyW');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.z), { timeout: 15000 }).toBeGreaterThan(11.8); }
+  finally { await page.keyboard.up('KeyW'); }
+  await page.screenshot({ path: '.impeccable/review/club-elevator-cabin.png', fullPage: true });
+  await page.keyboard.press('KeyE'); await expect(page.locator('#club-panel-title')).toHaveText('THE CLUB ELEVATOR');
+  await page.getByRole('button', { name: 'CHOOSE A ROOM', exact: true }).click();
+  await page.getByRole('button', { name: 'MAC ROOM · TEAM M', exact: true }).click();
+  await expect(page.locator('#club-location')).toHaveText('MAC ROOM · TEAM M'); expect(errors).toEqual([]);
+});
+
+test('the Rangers provide usable front-desk help on a narrow touch display', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+  const page = await context.newPage(); const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.locator('#club-explore').tap(); await page.locator('#club-touch-map').tap();
+  await page.getByRole('button', { name: 'RANGERS FRONT DESK', exact: true }).tap();
+  await approach(page, 'mihai'); await page.locator('#club-touch-use').tap();
+  await expect(page.locator('#club-panel-title')).toHaveText('MIHAI');
+  await page.getByRole('button', { name: 'MOVEMENT HELP', exact: true }).tap();
+  await expect(page.locator('#club-panel-text')).toContainText('UP, DOWN, LEFT, RIGHT');
+  await expect(page.locator('#club-panel-text')).toContainText('USE interacts, MAP opens rooms');
+  await page.screenshot({ path: '.impeccable/review/club-rangers-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'ROOM DIRECTORY', exact: true }).tap();
+  await page.getByRole('button', { name: 'SECURITY ROOM', exact: true }).tap();
+  await expect(page.locator('#club-location')).toHaveText('SECURITY ROOM');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]); await context.close();
+});
+
+test('the Rangers and elevator work through stereo headset controls', async ({ page }) => {
+  test.setTimeout(80_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' }); await emulate(page);
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-enter-vr')).toBeEnabled(); await observe(page);
+  await page.locator('#club-enter-vr').click(); await xrClick(page, 'explore');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 1));
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'map'); await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 0));
+  await xrClick(page, 'zone:rangers'); await approach(page, 'mateo-vaz');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('MATEO VAZ'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await xrClick(page, 'guide:controls'); await expect(page.locator('#club-panel-text')).toContainText('WASD');
+  expect(await page.evaluate(() => clubView.panel.mesh.material.depthTest)).toBe(false);
+  expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
+  expect(await page.evaluate(async () => {
+    const { Plane, Ray, Vector3 } = await import('/assets/three.module.js');
+    const panel = clubView.panel.mesh; panel.updateWorldMatrix(true, false);
+    const plane = new Plane().setFromNormalAndCoplanarPoint(panel.getWorldDirection(new Vector3()), panel.position);
+    return clubView.room.characters.filter((avatar) => avatar.userData.seated).every((avatar) => {
+      const eye = avatar.eye.getWorldPosition(new Vector3());
+      const point = new Ray(clubView.head.clone(), eye.clone().sub(clubView.head).normalize()).intersectPlane(plane, new Vector3());
+      if (!point || point.distanceTo(clubView.head) >= eye.distanceTo(clubView.head)) return true;
+      const local = panel.worldToLocal(point); return Math.abs(local.x) > .85 || Math.abs(local.y) > .53125;
+    });
+  })).toBe(true);
+  await page.evaluate(async () => {
+    const { Vector3, Quaternion, Euler } = await import('/assets/three.module.js');
+    const npc = clubModel.selected;
+    const target = clubView.panel.mesh.position.clone().multiplyScalar(.7).add(new Vector3(npc.x, npc.eyeHeight, npc.z).multiplyScalar(.3));
+    const direction = target.sub(clubView.head).applyQuaternion(clubView.rig.getWorldQuaternion(new Quaternion()).invert()).normalize();
+    const head = new Quaternion().setFromEuler(new Euler(Math.atan2(direction.y, Math.hypot(direction.x, direction.z)), Math.atan2(-direction.x, -direction.z), 0, 'YXZ'));
+    xrDevice.quaternion.set(head.x, head.y, head.z, head.w);
+  });
+  await page.waitForTimeout(200);
+  await page.screenshot({ path: '.impeccable/review/club-rangers-headset.png', fullPage: true });
+  await xrClick(page, 'map'); await xrClick(page, 'zone:rangers');
+  await page.evaluate(() => xrDevice.quaternion.set(0, 0, 0, 1)); await approach(page, 'elevator-directory');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('THE CLUB ELEVATOR'); await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await page.screenshot({ path: '.impeccable/review/club-elevator-headset.png', fullPage: true });
+  await xrClick(page, 'map'); expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
+  await xrClick(page, 'zone:design'); await expect(page.locator('#club-location')).toHaveText('DESIGN STUDIO');
   await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
 });

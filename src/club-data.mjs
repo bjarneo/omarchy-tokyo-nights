@@ -2,9 +2,11 @@ import { CHARACTERS } from './characters.mjs';
 import { SECURITY, SECURITY_CREW, SECURITY_LABS } from './club-security.mjs';
 import { DESIGN_STUDIO, DESIGN_CREW, DESIGN_DESKS } from './club-design.mjs';
 import { MAC_ROOM, MAC_CREW, MAC_MODELS } from './club-mac.mjs';
+import { RANGERS, RANGERS_AREA, RANGERS_FURNITURE, ELEVATOR, ELEVATOR_CABIN } from './club-rangers.mjs';
 
 export const CLUB = Object.freeze({ width: 36, depth: 28, height: 4.6, eyeHeight: 1.65, playerHeight: 1.95, radius: .3, speed: 4.2, crewRadius: .36 });
 export const ENTRY = Object.freeze({ x: 0, z: 10.8, yaw: 0 });
+export const CLUB_OBJECTS = Object.freeze([ELEVATOR, ELEVATOR_CABIN]);
 export const FLOORS = Object.freeze([{ x: 0, z: 0, width: CLUB.width, depth: CLUB.depth }, SECURITY, DESIGN_STUDIO, MAC_ROOM]);
 export const MALIBU = Object.freeze({ x: 15.65, z: -11.65, yaw: -Math.PI / 8, northStart: 13.3, eastEnd: -9.25, sill: .16, lintel: 4.18, chairX: .42, chairZ: 1.03, approach: Object.freeze({ x: 14.6, z: -10.1, yaw: Math.atan2(-1.05, 1.55) }) });
 
@@ -13,12 +15,13 @@ export const ZONES = Object.freeze([
   { id: 'amiga', name: 'AMIGA & 8-BIT LAB', x: 11.7, z: -8, width: 12.4, depth: 12, beacon: { x: 10, z: -8.4, yaw: 0 } },
   { id: 'bbs', name: 'THE BBS CORNER', x: -11.7, z: -8, width: 12.4, depth: 12, beacon: { x: -11, z: -8, yaw: 0 } },
   { id: 'console', name: 'NINTENDO & SEGA', x: 11.7, z: 6, width: 12.4, depth: 16, beacon: { x: 8, z: 9.8, yaw: 0 } },
-  { id: 'arcade', name: 'THE ARCADE ROW', x: -11.7, z: 6, width: 12.4, depth: 16, beacon: { x: -10.5, z: 9.7, yaw: Math.PI / 2 } },
+  { id: 'arcade', name: 'THE ARCADE ROW', x: -11.7, z: 6, width: 12.4, depth: 16, beacon: { x: -10.5, z: 8.2, yaw: Math.PI / 2 } },
   { id: 'workshop', name: 'REPAIR & DEMO STAGE', x: 0, z: -7, width: 11, depth: 14, beacon: { x: 2.7, z: -5.8, yaw: 0 } },
   { id: 'malibu', name: 'MALIBU CORNER', x: 15.65, z: -11.625, width: 4.7, depth: 4.75, beacon: { ...MALIBU.approach } },
   { id: 'security', name: 'SECURITY ROOM', ...SECURITY, beacon: { x: 0, z: 16, yaw: Math.PI } },
   { id: 'design', name: 'DESIGN STUDIO', ...DESIGN_STUDIO, beacon: { x: 12.5, z: 16, yaw: -Math.PI * .75 } },
   { id: 'mac-room', name: 'MAC ROOM · TEAM M', ...MAC_ROOM, beacon: { x: 28.8, z: 25.5, yaw: -Math.PI / 2 } },
+  RANGERS_AREA,
 ]);
 
 const hardware = [
@@ -108,7 +111,7 @@ const conversations = [
   ] },
 ];
 
-export const CLUB_CREW = Object.freeze([...CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })), ...SECURITY_CREW, ...DESIGN_CREW, ...MAC_CREW]);
+export const CLUB_CREW = Object.freeze([...CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })), ...SECURITY_CREW, ...DESIGN_CREW, ...MAC_CREW, ...RANGERS]);
 
 export const FURNITURE = Object.freeze([
   { id: 'sofa-main', kind: 'sofa', x: 10, z: 7.4, width: 3.2, depth: 1.15, height: .9, color: '#59465a' },
@@ -122,6 +125,7 @@ export const FURNITURE = Object.freeze([
   { id: 'malibu-chair', kind: 'malibu-chair', x: MALIBU.x + MALIBU.chairX * Math.cos(MALIBU.yaw) + MALIBU.chairZ * Math.sin(MALIBU.yaw), z: MALIBU.z + MALIBU.chairZ * Math.cos(MALIBU.yaw) - MALIBU.chairX * Math.sin(MALIBU.yaw), width: .92, depth: .92, height: 1.4 },
   ...[-7.3, 7.3].map((x) => ({ id: `security-rack-${x}`, kind: 'security-rack', x, z: 26.4, width: 1.5, depth: 1, height: 2.8 })),
   { id: 'design-easel', kind: 'design-easel', x: 18, z: 21, width: 3.4, depth: 3.4, height: 3.2 },
+  ...RANGERS_FURNITURE,
 ]);
 
 export const WALLS = Object.freeze([
@@ -159,10 +163,11 @@ export const STATIC_OBSTACLES = Object.freeze([
 
 export const OBSTACLES = Object.freeze([
   ...STATIC_OBSTACLES,
-  ...CLUB_CREW.map((npc) => ({ id: npc.id, x: npc.x, z: npc.z, width: .7, depth: .52, height: CLUB.playerHeight })),
+  ...CLUB_CREW.map((npc) => ({ id: npc.id, x: npc.x, z: npc.z, width: .7, depth: .52, height: npc.height || CLUB.playerHeight })),
 ]);
 
 export function zoneAt(x, z) {
+  if (x >= -17.5 && x <= -5.5 && z >= 9.2 && z <= 14) return RANGERS_AREA;
   if (x > MAC_ROOM.doorX && x <= 51 && z >= 14 && z <= 32) return ZONES.find((zone) => zone.id === 'mac-room');
   if (z > DESIGN_STUDIO.doorZ && z <= 28 && x >= 9 && x <= 27) return ZONES.find((zone) => zone.id === 'design');
   if (z > SECURITY.doorZ && Math.abs(x) <= SECURITY.width / 2 && z <= SECURITY.z + SECURITY.depth / 2) return ZONES.find((zone) => zone.id === 'security');

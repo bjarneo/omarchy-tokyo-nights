@@ -1,7 +1,7 @@
 import * as THREE from '../assets/three.module.js';
 import { VRArt } from './vr-art.js';
 import { ClubRoom } from './club-room.js';
-import { CLUB, ENTRY, CLUB_CREW, STATIONS } from './club-data.mjs';
+import { CLUB, ENTRY, CLUB_CREW, STATIONS, CLUB_OBJECTS } from './club-data.mjs';
 import { canStand, moveWithinRoom, teleportArc } from './club-engine.mjs';
 import { drawStation, drawCabinet, drawMap, paragraph } from './club-screens.js';
 import { drawDesignPoster } from './club-design-art.js';
@@ -192,7 +192,7 @@ export class ClubScene {
     const hit = this.gazeHit();
     if (this.select(hit)) return;
     this.headPose();
-    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS, ...(this.game ? [this.game.virus] : [])].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= 3).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
+    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS, ...CLUB_OBJECTS, ...(this.game ? [this.game.virus] : [])].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= 3).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
     if (target) this.onTarget(target.id);
   }
 
@@ -201,15 +201,19 @@ export class ClubScene {
     const forward = this.forward.clone(); forward.y = 0; forward.normalize();
     let distance = 1.85;
     if (state === 'talk' && this.game.selected) forward.set(this.game.selected.x - this.head.x, 0, this.game.selected.z - this.head.z).normalize();
+    if (state === 'talk' && this.game.selected?.seated) distance = Math.min(1.65, Math.max(.75, Math.hypot(this.game.selected.x - this.head.x, this.game.selected.z - this.head.z) - 1.35));
     if (['device', 'arcade'].includes(state) && this.game.selected) distance = Math.min(1.85, Math.max(.65, Math.hypot(this.game.selected.x - this.head.x, this.game.selected.z - this.head.z) - .8));
     const scale = distance / 1.85;
     mesh.scale.setScalar(scale);
     mesh.position.set(this.head.x + forward.x * distance, this.head.y - (state === 'talk' ? .72 : state === 'arcade' ? .2 : .45) * scale, this.head.z + forward.z * distance);
-    if (state === 'talk') this.clearCharacter(mesh, forward);
+    if (state === 'talk') {
+      if (this.game.selected?.seated) mesh.position.y = Math.max(.55, this.game.selected.eyeHeight - .2 - .53125 * scale);
+      else this.clearCharacter(mesh, forward);
+    }
     mesh.rotation.set(0, Math.atan2(this.head.x - mesh.position.x, this.head.z - mesh.position.z), 0);
-    if (state === 'talk') this.game.dialogueSpace = { x: mesh.position.x, z: mesh.position.z, width: Math.abs(Math.cos(mesh.rotation.y)) * 1.7 + .2, depth: Math.abs(Math.sin(mesh.rotation.y)) * 1.7 + .2 };
+    if (state === 'talk') this.game.dialogueSpace = { x: mesh.position.x, z: mesh.position.z, width: Math.abs(Math.cos(mesh.rotation.y)) * 1.7 * scale + .2, depth: Math.abs(Math.sin(mesh.rotation.y)) * 1.7 * scale + .2 };
     if (state === 'sketch') mesh.position.y = this.head.y - .96;
-    const overlay = ['entry', 'paused', 'map', 'sketch', 'device', 'arcade'].includes(state);
+    const overlay = ['entry', 'paused', 'map', 'sketch', 'device', 'arcade'].includes(state) || state === 'talk' && this.game.selected?.seated;
     mesh.material.depthTest = !overlay;
     mesh.material.depthWrite = !overlay;
     mesh.renderOrder = overlay ? 200 : 0;
@@ -222,17 +226,18 @@ export class ClubScene {
     const bounds = new THREE.Box3();
     avatar.traverse((part) => { if (part.isInstancedMesh && part.visible) bounds.union(new THREE.Box3().setFromObject(part)); });
     const right = new THREE.Vector3(-forward.z, 0, forward.x);
+    const scale = mesh.scale.x; const halfWidth = .85 * scale;
     let minimum = Infinity; let maximum = -Infinity;
     for (const x of [bounds.min.x, bounds.max.x]) for (const z of [bounds.min.z, bounds.max.z]) {
       const delta = new THREE.Vector3(x - this.head.x, 0, z - this.head.z);
-      const projected = delta.dot(right) / Math.max(.2, delta.dot(forward)) * 1.85;
+      const projected = delta.dot(right) / Math.max(.2, delta.dot(forward)) * 1.85 * scale;
       minimum = Math.min(minimum, projected); maximum = Math.max(maximum, projected);
     }
-    const candidates = [maximum + .24 + .85, minimum - .24 - .85].map((offset) => {
+    const candidates = [maximum + .24 * scale + halfWidth, minimum - .24 * scale - halfWidth].map((offset) => {
       const position = mesh.position.clone().addScaledVector(right, offset);
       const yaw = Math.atan2(this.head.x - position.x, this.head.z - position.z);
-      const halfX = Math.abs(Math.cos(yaw)) * .85 + .03; const halfZ = Math.abs(Math.sin(yaw)) * .85 + .03;
-      const overlaps = this.game.obstacles.filter((box) => box.id !== this.game.selected.id && box.height > position.y - .53125 && Math.abs(position.x - box.x) < halfX + box.width / 2 && Math.abs(position.z - box.z) < halfZ + box.depth / 2).length;
+      const halfX = Math.abs(Math.cos(yaw)) * halfWidth + .03; const halfZ = Math.abs(Math.sin(yaw)) * halfWidth + .03;
+      const overlaps = this.game.obstacles.filter((box) => box.id !== this.game.selected.id && box.height > position.y - .53125 * scale && Math.abs(position.x - box.x) < halfX + box.width / 2 && Math.abs(position.z - box.z) < halfZ + box.depth / 2).length;
       return { position, score: overlaps * 100 + Math.abs(offset) };
     });
     candidates.sort((a, b) => a.score - b.score);
@@ -284,7 +289,7 @@ export class ClubScene {
       model.options.forEach((action, i) => this.drawButton(p, action, 550, 155 + i * 98, 434, 72, Boolean(action.primary)));
       p.texture.needsUpdate = true; return;
     }
-    let startY = model.layout === 'security' ? 430 : 320;
+    let startY = model.layout === 'security' ? 430 : model.layout === 'guide' ? 344 : 320;
     if (game.state === 'arcade') {
       ctx.fillStyle = '#16161e'; ctx.fillRect(0, 0, 1024, 640);
       ctx.save(); ctx.translate(205, 38); drawCabinet(ctx, game.arcade, 614, 460); ctx.restore();
@@ -294,7 +299,7 @@ export class ClubScene {
       paragraph(ctx, model.text, 40, 146, 418, 27);
       drawMap(ctx, 505, 104, 465, 205, game.position); startY = 333;
     } else {
-      paragraph(ctx, model.text, 40, model.subtitle ? 148 : 130, model.portrait ? 790 : 940, 28);
+      paragraph(ctx, model.text, 40, model.subtitle ? 148 : 130, model.portrait ? 790 : 940, model.layout === 'guide' ? 26 : 28);
       if (model.portrait) { ctx.imageSmoothingEnabled = false; ctx.drawImage(this.room.avatarFactory.portrait(model.portrait), 874, 123, 88, 190); }
       if (game.state === 'entry') paragraph(ctx, 'LEFT STICK: WALK · RIGHT STICK: SNAP TURN. Hold the left trigger and aim at the floor to teleport.', 40, 245, 940, 26, '#7dcfff');
     }
@@ -334,7 +339,7 @@ export class ClubScene {
   drawTooltip(hit, immersive) {
     let text = '';
     if (hit?.object.userData.id && this.game.state === 'explore') {
-      const target = [...this.game.crew, ...STATIONS, this.game.virus].find((item) => item.id === hit.object.userData.id);
+      const target = [...this.game.crew, ...STATIONS, ...CLUB_OBJECTS, this.game.virus].find((item) => item.id === hit.object.userData.id);
       if (target) { const distance = Math.hypot(target.x - this.head.x, target.z - this.head.z); text = distance <= 3 ? `${target.topics ? 'TALK TO' : 'USE'} ${target.name.toUpperCase()}` : distance <= 5 ? 'MOVE CLOSER' : ''; }
     }
     this.hint = text;

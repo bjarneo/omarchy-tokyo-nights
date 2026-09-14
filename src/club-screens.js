@@ -198,7 +198,7 @@ export function drawMap(ctx, x, y, width, height, player) {
     ctx.fillStyle = '#24283b'; ctx.fillRect(px(floor.x - floor.width / 2), pz(floor.z - floor.depth / 2), floor.width * scale, floor.depth * scale);
   }
   for (const [i, zone] of ZONES.entries()) {
-    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b', '#304b53', '#705e4f', '#4b586a'][i];
+    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b', '#304b53', '#705e4f', '#4b586a', '#59634d'][i];
     ctx.fillRect(px(zone.x - zone.width / 2), pz(zone.z - zone.depth / 2), zone.width * scale, zone.depth * scale);
   }
   ctx.fillStyle = '#9aa5ce';

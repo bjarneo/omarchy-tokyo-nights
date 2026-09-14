@@ -2,7 +2,7 @@
 version: 1
 slug: "club-html"
 primary_target: "club.html"
-related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/club-design.mjs", "src/club-design-art.js", "src/club-design-room.js", "src/club-mac.mjs", "src/club-mac-room.js", "src/club-mac-screen.js", "src/club-team-art.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
+related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/club-design.mjs", "src/club-design-art.js", "src/club-design-room.js", "src/club-mac.mjs", "src/club-mac-room.js", "src/club-mac-screen.js", "src/club-rangers.mjs", "src/club-rangers-room.js", "src/club-team-art.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
 ---
 
 # Retro clubhouse
@@ -62,6 +62,16 @@ A large original Omarchy block logo anchors the east wall. Three team boards sho
 Seven Mac models offer local desktop, terminal, and hardware-card demos through the existing native and spatial controls.
 Original voxel cameos follow the official profile references. Landscape profile images become illustrated avatar heads.
 This code-led Experience extension inherits seed `6ddbd526`, the shared movement model, and the Tokyo Night interface.
+
+### Rangers welcome desk
+
+The user approves three seated Rangers beside a new open elevator in the southwest entrance area.
+A shield-marked wood counter, low chairs, clear name tags, and the original desktop-logo gallery create a recognizable front desk.
+Mihai, Mateo Vaz, and Nira offer room directions, movement help, and direct access to the room directory.
+The elevator has a walk-in cabin and a usable directory control. Existing room shortcuts provide travel.
+Seated models use bent knees, desk-height hands, and fixed chair positions. Their help panels stay below the guides' faces.
+The user also requests natural Mac-team groups near the workstations, with an open center aisle.
+This local code-led extension preserves the existing Tokyo Night Experience world and seed `6ddbd526`.
 
 ### THESIS
 
@@ -520,6 +530,38 @@ The artwork retains [Liam's pixel face](https://omarchy.org/assets/images/team/l
 Original `48 × 104` Canvas sprites supply the shared voxel avatar factory. Cameo dialogue uses fictional club scripts.
 Source graphics use procedural Canvas, voxels, and local geometry. The extension adds no shipping rasters or runtime photo requests.
 
+### Rangers front desk, elevator, and revised Mac groups
+
+- The current club has 39 stations, 37 human cameos, and two additional directory controls.
+- `RANGERS` in `src/club-rangers.mjs` records three authorized guides from the official [teams roster](https://omarchy.org/teams/).
+- Each entry stores the roster URL in `source` and its official profile URL in `imageSource`.
+
+| Guide | Official country label | Official profile reference |
+| --- | --- | --- |
+| Mihai | Romania | [mihai.webp](https://omarchy.org/assets/images/team/mihai.webp) |
+| Mateo Vaz | Uruguay | [mateo-vaz.webp](https://omarchy.org/assets/images/team/mateo-vaz.webp) |
+| Nira | Nepal | [nira.webp](https://omarchy.org/assets/images/team/nira.webp) |
+
+`src/club-team-art.js` draws original `48 × 104` Canvas portraits for the shared voxel factory. Cameo dialogue uses fictional scripts.
+The Rangers extension adds no shipping rasters or runtime profile-image requests. Mac roster and art provenance follow the source record above.
+
+- `src/club-avatars.js` uses `1.6m` seated height, `1.3m` eyes, and a `-0.35m` model offset.
+- Separate thighs and shins form bent knees. Shin scale grounds the feet, and low chairs support the seated bodies.
+- Rangers stay at `x: [-11.2, -9, -6.8]`, `z: 12.15`, with home yaw `π`. Viewer-facing yaw clamps to `±0.4` radians.
+- The shield-front counter sits at `x: -9`, `z: 11.2`. Its width, depth, and height are `6.6m`, `0.9m`, and `0.82m`.
+- `src/club-logo-wall.js` places the `6.8 × 2.3m` foundation gallery at `[-9, 2.95, 13.74]` to clear the elevator shaft.
+- `src/club-rangers-room.js` builds the open cabin. Its left and right walls sit at `x: -17.1` and `x: -13.9`.
+- The cabin back sits at `z: 13.6`. Its roof spans `y: 3.2–3.3`.
+- `CLUB_OBJECTS` connects the outside `club-elevator` and inside `elevator-directory` controls to shared interaction and existing map teleports.
+- `RANGERS FRONT DESK` is the eleventh map destination. Guides provide `ROOM DIRECTORY` and `MOVEMENT HELP`.
+- Help covers desktop `WASD` and `E`, touch `UP`, `DOWN`, `LEFT`, `RIGHT`, `USE`, and `MAP`, drag-look, and VR controls.
+- Seated help panels center low over the counter, below the guides. Overlay depth disables depth tests and writes at `renderOrder = 200`.
+- Panel distance uses `clamp(targetDistance - 1.35, 0.75, 1.65)` meters. Size scales by `distance / 1.85`.
+- The guide canvas uses `26px` body text and buttons from `y: 344`. All seven actions fit its `1024 × 640` texture.
+- Standing conversations retain their side placement in `src/club-scene.js`.
+- `placements` in `src/club-mac.mjs` hand-places all 15 Mac members in irregular workstation groups with varied yaw. The center aisle stays clear.
+- All 15 members remain reachable. Their existing short walks retain collision checks, pause, and reduced-motion behavior.
+
 ## Verification evidence
 
 - The supplied current results report all 24 focused Node tests in `tests/club.test.mjs` and `tests/club-jukebox.test.mjs` as passed.
@@ -609,7 +651,7 @@ git diff --check
 - This documentation pass checks source, test definitions, capture paths, and both review records. It records the supplied test results.
 - The supplied build check and this documentation pass both pass `git diff --check`.
 
-Historical inventory figures describe earlier extensions. The studio totals above describe the current source.
+Historical inventory figures describe earlier extensions. The Rangers totals describe the current source.
 The inherited advisories do not become new design rules.
 
 To reproduce the supplied checks, run these commands from the repository root:
@@ -656,3 +698,32 @@ git diff --check
 | Desktop hardware | `club-mac-imac.png`, `club-mac-air.png` |
 | Mobile panels | `club-mac-mobile.png`, `club-mac-device-mobile.png` |
 | IWER stereo | `club-mac-headset.png`, `club-mac-device-headset.png` |
+
+### Rangers and revised Mac placement checks
+
+- The supplied initial Node run passes all 105 tests. Eight distinct targeted browser cases pass across the supplied runs.
+- Those cases cover three Rangers scenarios, all 15 Mac members at their revised positions, all 37 avatar heights, and the coffee gesture.
+- They also cover old hardware games, full WebXR navigation and recovery, all 65 gallery marks, and the jukebox.
+- After the final fixes, all 105 Node tests and the three Rangers browser cases pass again.
+- These targeted results do not establish a complete 26-case clubhouse browser rerun.
+- `.impeccable/review/club-rangers-finish.md` records `ship` for Mac placement and requests two Rangers fixes: adjacent-guide clearance and touch movement help.
+- `.impeccable/review/club-rangers-verdict.md` scores both fixes as resolved. Its `ship` disposition covers only those two fixes across desktop, touch, and IWER stereo.
+- The supplied detector runs once. It reports only the inherited Courier New `new` false positive and stripe advisory.
+- This documentation pass checks source, test definitions, roster URLs, capture paths, both review records, and three representative captures. Test counts use supplied results.
+- The supplied build check and this documentation pass both pass `git diff --check`. Physical headset behavior remains unverified.
+
+To reproduce the supplied check groups, run these commands from the repository root:
+
+```sh
+npm test
+PORT=3127 CI=1 npx playwright test tests/browser/club.spec.js --grep 'Rangers|Mac room connects|club characters match|old hardware|WebXR supports|gallery loads'
+PORT=3127 CI=1 npx playwright test tests/browser/club.spec.js --grep Rangers
+git diff --check
+```
+
+| Review area | Captures under `.impeccable/review/` |
+| --- | --- |
+| Rangers desktop and seated help | `club-rangers-desktop.png`, `club-rangers-seated.png`, `club-rangers-help.png` |
+| Rangers touch and IWER stereo | `club-rangers-mobile.png`, `club-rangers-headset.png` |
+| Elevator cabin and IWER stereo | `club-elevator-cabin.png`, `club-elevator-headset.png` |
+| Revised Mac groups | `club-mac-desktop.png` |

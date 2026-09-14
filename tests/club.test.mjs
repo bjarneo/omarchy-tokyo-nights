@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { CLUB, ENTRY, STATIONS, CLUB_CREW, ZONES, OBSTACLES } from '../src/club-data.mjs';
+import { CLUB, ENTRY, STATIONS, CLUB_CREW, CLUB_OBJECTS, ZONES, OBSTACLES } from '../src/club-data.mjs';
 import { ClubGame, canStand, moveWithinRoom, teleportArc, segmentHitsBox } from '../src/club-engine.mjs';
 import { ClubInput } from '../src/club-controls.mjs';
 import { CabinetGame } from '../src/club-games.mjs';
@@ -8,6 +8,7 @@ import { gestureAt } from '../src/club-motion.mjs';
 import { SECURITY_LABS, SECURITY_CREW } from '../src/club-security.mjs';
 import { DESIGN_CREW, DESIGN_DESKS } from '../src/club-design.mjs';
 import { MAC_CREW, MAC_MODELS } from '../src/club-mac.mjs';
+import { RANGERS, RANGER_CONTROLS } from '../src/club-rangers.mjs';
 
 test('every character and machine has an accessible interaction point from the entrance', () => {
   const queue = [{ x: 0, z: 10.5 }]; const seen = new Set(['0,10.5']);
@@ -23,7 +24,7 @@ test('every character and machine has an accessible interaction point from the e
   }
   assert.ok(queue.length > 1800);
   const game = new ClubGame();
-  for (const target of [...STATIONS, ...CLUB_CREW]) {
+  for (const target of [...STATIONS, ...CLUB_CREW, ...CLUB_OBJECTS]) {
     const reachable = queue.some((position) => {
       const distance = Math.hypot(position.x - target.x, position.z - target.z);
       if (distance > 2.8 || distance < 1.4) return false;
@@ -363,5 +364,37 @@ test('all seven Mac models expose working desktop, terminal, hardware, and power
       game.action(`mac:${mode}`); assert.equal(game.devices[station.id].mode, `mac-${mode}`);
       assert.equal(game.devices[station.id].power, true); assert.equal(game.state, 'explore');
     }
+  }
+});
+
+test('the Rangers remain seated and provide real movement help and room shortcuts', () => {
+  const game = new ClubGame(); game.enter();
+  for (let i = 0; i < 600; i++) game.update(.1);
+  assert.equal(RANGERS.length, 3);
+  for (const ranger of RANGERS) {
+    const npc = game.crew.find((item) => item.id === ranger.id);
+    assert.deepEqual([npc.x, npc.z, npc.travel], [ranger.x, ranger.z, 0]);
+    assert.equal(npc.height, 1.6); assert.equal(npc.eyeHeight, 1.3);
+    assert.ok(game.interact(npc.id, { x: npc.x, z: 9.35 }));
+    game.action('guide:controls'); assert.equal(game.reply, RANGER_CONTROLS);
+    assert.ok(game.panel().options.some((option) => option.id === 'map'));
+    game.action('map'); game.action('zone:mac-room'); assert.equal(game.zone.id, 'mac-room');
+    game.action('zone:rangers'); assert.equal(game.zone.id, 'rangers');
+  }
+});
+
+test('the elevator has a walk-in cabin, solid walls, and two usable directory controls', () => {
+  const game = new ClubGame(); game.enter();
+  const inside = moveWithinRoom({ x: -15.5, z: 10 }, 0, 2.5, game.obstacles);
+  assert.ok(Math.abs(inside.z - 12.5) < .001);
+  assert.ok(Math.abs(moveWithinRoom(inside, 0, -2.5, game.obstacles).z - 10) < .001);
+  assert.ok(moveWithinRoom(inside, -3, 0, game.obstacles).x > -17);
+  assert.ok(moveWithinRoom(inside, 0, 3, game.obstacles).z < 13.3);
+  for (const target of CLUB_OBJECTS) {
+    assert.ok(game.interact(target.id, target.stand), target.id);
+    assert.equal(game.panel().title, 'THE CLUB ELEVATOR');
+    game.action('map'); assert.equal(game.state, 'map');
+    assert.ok(game.panel().options.some((option) => option.id === 'zone:rangers'));
+    game.action('zone:design'); assert.equal(game.zone.id, 'design');
   }
 });

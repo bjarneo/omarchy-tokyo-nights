@@ -15,12 +15,12 @@ export function gestureAt(style, time) {
 
 export function createClubCrew() {
   return CLUB_CREW.map((npc, index) => ({
-    ...npc, homeX: npc.x, homeZ: npc.z, height: CLUB.playerHeight, eyeHeight: CLUB.eyeHeight,
+    ...npc, homeX: npc.x, homeZ: npc.z, homeYaw: npc.yaw || 0, height: npc.height || CLUB.playerHeight, eyeHeight: npc.eyeHeight || CLUB.eyeHeight,
     gesture: npc.gesture || CREW_GESTURES[index], clock: index === 2 ? 0 : index * 1.17,
     wait: 3 + index * .65, targetX: npc.x, targetZ: npc.z, turn: 0,
     yaw: npc.yaw || 0, moving: false, gait: 0, travel: 0, speed: .27 + index % 3 * .025,
     gestureBlend: 1, walkBlend: 0,
-    obstacle: { id: npc.id, x: npc.x, z: npc.z, width: .7, depth: .52, height: CLUB.playerHeight },
+    obstacle: { id: npc.id, x: npc.x, z: npc.z, width: .7, depth: .52, height: npc.height || CLUB.playerHeight },
   }));
 }
 
@@ -30,7 +30,7 @@ export function updateClubCrew(crew, delta, { player, selectedId = null, state =
   for (const [index, npc] of crew.entries()) {
     const distance = Math.hypot(player.x - npc.x, player.z - npc.z);
     const engaged = state === 'talk' && selectedId === npc.id;
-    const held = reducedMotion || engaged || distance < 3.2;
+    const held = npc.seated || reducedMotion || engaged || distance < 3.2;
     npc.moving = false;
     if (!reducedMotion) npc.clock += dt;
     if (!held) {
@@ -67,7 +67,8 @@ export function updateClubCrew(crew, delta, { player, selectedId = null, state =
       }
     }
     if (distance < 5 && !npc.moving) {
-      const yaw = Math.atan2(player.x - npc.x, player.z - npc.z);
+      let yaw = Math.atan2(player.x - npc.x, player.z - npc.z);
+      if (npc.seated) yaw = npc.homeYaw + clamp(Math.atan2(Math.sin(yaw - npc.homeYaw), Math.cos(yaw - npc.homeYaw)), -.4, .4);
       npc.yaw += Math.atan2(Math.sin(yaw - npc.yaw), Math.cos(yaw - npc.yaw)) * Math.min(1, dt * 4);
     }
     const blend = 1 - Math.exp(-dt * 8);

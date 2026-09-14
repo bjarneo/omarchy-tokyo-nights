@@ -18,8 +18,18 @@ const members = [
   ['jon-kinney', 'Jon Kinney', 'USA', { skin: '#d1ac8b', shade: '#a88363', hair: '#7b684b', top: '#2d4355', trim: '#5b7180', style: 'overshirt', cropped: true, wideSmile: true }, 'The community', 'The Omarchy teams page introduces the people who contribute to the project. This room celebrates the M team’s work on the Mac.'],
 ];
 
+const placements = [
+  [29.8, 18.7, 1.3], [32.7, 19.4, -1.8],
+  [35.5, 18.5, 1.0], [38.4, 20.2, -2.1],
+  [44.7, 18.6, .8], [48, 19, -1.8],
+  [30.5, 22.2, -.7], [35, 24, 2.7],
+  [33.4, 27.2, 1.3], [37.2, 27, -1.5],
+  [45.6, 28.2, 2.0], [42.4, 26.8, 1.0], [48, 26.8, -1.0],
+  [41, 21.7, -.9], [48.7, 22.5, -1.4],
+].map(([x, z, yaw]) => ({ x, z, yaw }));
+
 export const MAC_CREW = Object.freeze(members.map(([id, name, country, appearance, topic, reply], index) => Object.freeze({
-  id, name, country, appearance, team: 'mac', role: 'Omarchy M team', x: 30.5 + index % 5 * 4, z: 20 + Math.floor(index / 5) * 3.5, yaw: -Math.PI / 2,
+  id, name, country, appearance, team: 'mac', role: 'Omarchy M team', ...placements[index],
   gesture: ['wave', 'explain', 'hands', 'disk', 'glasses'][index % 5],
   source: MAC_ROOM.source, imageSource: `https://omarchy.org/assets/images/team/${id}.webp`,
   greeting: `Welcome to the Mac room. ${reply}`,

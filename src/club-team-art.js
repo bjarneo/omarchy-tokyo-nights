@@ -41,6 +41,7 @@ export function makeTeamCharacter(npc, facing = 'smile') {
     for (let y = 42; y < 64; y += 6) rect(ctx, 26, y, 1, 1, C.paper);
   }
   rect(ctx, 29, 47, 4, 6, C.paper); rect(ctx, 30, 48, 2, 3, '#343b58');
+  if (p.shield) { rect(ctx, 28, 45, 7, 6, C.cyan); rect(ctx, 29, 51, 5, 2, C.cyan); rect(ctx, 30, 53, 3, 1, C.cyan); rect(ctx, 31, 47, 1, 4, C.ink); }
   if (p.lanyard) {
     rect(ctx, 17, 34, 2, 17, C.cyan); rect(ctx, 30, 34, 2, 17, C.cyan);
     rect(ctx, 19, 49, 2, 7, C.cyan); rect(ctx, 28, 49, 2, 7, C.cyan);
@@ -61,6 +62,7 @@ export function makeTeamCharacter(npc, facing = 'smile') {
     ctx.clearRect(8, 0, 32, 16); rect(ctx, 13, 6, 23, 10, p.shade); rect(ctx, 15, 3, 19, 13, p.skin); rect(ctx, 18, 2, 13, 4, p.skin);
   }
   if (p.cap) { rect(ctx, 12, 5, 25, 10, '#343b58'); rect(ctx, 16, 3, 17, 5, '#343b58'); rect(ctx, 11, 13, 28, 3, '#565f89'); }
+  if (p.glassesTop) { ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.strokeRect(13.5, 3.5, 9, 4); ctx.strokeRect(25.5, 3.5, 9, 4); rect(ctx, 23, 4, 2, 1, C.ink); }
   if (p.beanie) {
     rect(ctx, 11, 4, 27, 11, '#343b58'); rect(ctx, 14, 2, 21, 5, '#343b58');
     rect(ctx, 10, 12, 29, 4, '#565f89');
@@ -102,6 +104,7 @@ export function makeTeamCharacter(npc, facing = 'smile') {
     rect(ctx, 26, 16, 8, 9, '#e5e9ff'); rect(ctx, 26, 16, 4, 9, '#315a78');
   }
   if (p.avatar) profileBadge(ctx, p.avatar);
+  if (p.silhouette) { rect(ctx, 15, 14, 19, 16, p.skin); rect(ctx, 28, 17, 8, 7, p.shade); rect(ctx, 33, 19, 4, 4, p.shade); }
   return canvas;
 }
 

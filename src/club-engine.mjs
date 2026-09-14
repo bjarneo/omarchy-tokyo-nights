@@ -1,9 +1,10 @@
-import { CLUB, ENTRY, FLOORS, OBSTACLES, STATIC_OBSTACLES, STATIONS, ZONES, zoneAt } from './club-data.mjs';
+import { CLUB, ENTRY, FLOORS, OBSTACLES, STATIC_OBSTACLES, STATIONS, CLUB_OBJECTS, ZONES, zoneAt } from './club-data.mjs';
 import { CabinetGame } from './club-games.mjs';
 import { createClubCrew, updateClubCrew } from './club-motion.mjs';
 import { SECURITY_LABS, createLabState, chooseLab, labPanel, createVirus, updateVirus, quarantineVirus } from './club-security.mjs';
 import { createDesignState, selectDesign, designPanel } from './club-design.mjs';
 import { MAC_MODES } from './club-mac.mjs';
+import { RANGER_CONTROLS } from './club-rangers.mjs';
 
 export function canStand(x, z, obstacles = OBSTACLES, radius = CLUB.radius) {
   if (!Number.isFinite(x) || !Number.isFinite(z)) return false;
@@ -72,7 +73,7 @@ export class ClubGame {
     this.crew = createClubCrew();
     this.obstacles = [...STATIC_OBSTACLES, ...this.crew.map((npc) => npc.obstacle)];
     this.crew.forEach((npc) => { npc.avoid = this.obstacles.filter((box) => box.id !== npc.id); });
-    this.clearSpaces = [...ZONES.map((zone) => zone.beacon), ...STATIONS.map((station) => station.stand)];
+    this.clearSpaces = [...ZONES.map((zone) => zone.beacon), ...STATIONS.map((station) => station.stand), ...CLUB_OBJECTS.map((object) => object.stand)];
     this.dialogueSpace = null;
     this.virus = createVirus();
     this.design = createDesignState();
@@ -87,7 +88,7 @@ export class ClubGame {
 
   interact(id, player = this.position) {
     if (this.state !== 'explore' && this.state !== 'sketch') return false;
-    const target = this.crew.find((item) => item.id === id) || STATIONS.find((item) => item.id === id) || (id === this.virus.id ? this.virus : null);
+    const target = this.crew.find((item) => item.id === id) || STATIONS.find((item) => item.id === id) || CLUB_OBJECTS.find((item) => item.id === id) || (id === this.virus.id ? this.virus : null);
     if (!target || Math.hypot(target.x - player.x, target.z - player.z) > 3) return false;
     const from = { x: player.x, y: player.y ?? CLUB.eyeHeight, z: player.z };
     const to = { x: target.x, y: target.eyeHeight || target.height, z: target.z };
@@ -114,6 +115,9 @@ export class ClubGame {
       const topic = this.selected.topics[Number(id.slice(6))];
       if (topic) { this.reply = topic[1]; this.changed(); this.onEvent({ type: 'speech', target: this.selected, text: this.reply }); }
       return;
+    }
+    if (id === 'guide:controls' && this.state === 'talk' && this.selected?.team === 'rangers') {
+      this.reply = RANGER_CONTROLS; this.changed(); this.onEvent({ type: 'speech', target: this.selected, text: this.reply }); return;
     }
     if (id.startsWith('mac:') && this.state === 'device' && this.selected?.mac) {
       const mode = `mac-${id.slice(4)}`;
@@ -219,9 +223,10 @@ export class ClubGame {
     if (this.state === 'entry') return { title: 'THE MIDNIGHT CLUB', text: 'A large room full of computers, consoles, and the crew. Explore freely and try any machine.', options: [option('explore', 'ENTER THE ROOM'), option('map', 'ROOM MAP')] };
     if (this.state === 'paused') return { title: 'CLUB PAUSED', text: 'Resume your conversation, game, or walk through the room.', options: [option('explore', 'RESUME'), option('map', 'ROOM MAP'), option('song', songLabel), option('center', 'CENTER VIEW'), option('race', 'VR RACE & GARAGE'), option('exit', 'EXIT VR')] };
     if (this.state === 'map') return { title: 'THE CLUB MAP', text: 'Select an area to teleport there. You can also walk through the wide central aisles.', options: [...ZONES.map((zone) => option(`zone:${zone.id}`, zone.name)), option('back', 'CLOSE MAP')] };
-    if (this.state === 'talk') return { title: this.selected.name.toUpperCase(), subtitle: `${this.selected.role.toUpperCase()}${this.selected.country ? ` · ${this.selected.country} · CAMEO` : ''}`, text: this.reply, portrait: this.selected.id, options: [...this.selected.topics.map((topic, index) => option(`topic:${index}`, topic[0])), option('read', 'READ ALOUD'), option('back', 'BACK TO THE ROOM')] };
+    if (this.state === 'talk') return { title: this.selected.name.toUpperCase(), subtitle: `${this.selected.role.toUpperCase()}${this.selected.country ? ` · ${this.selected.country} · CAMEO` : ''}`, text: this.reply, portrait: this.selected.id, layout: this.selected.team === 'rangers' ? 'guide' : undefined, options: [...this.selected.topics.map((topic, index) => option(`topic:${index}`, topic[0])), option('read', 'READ ALOUD'), ...(this.selected.team === 'rangers' ? [option('map', 'ROOM DIRECTORY'), option('guide:controls', 'MOVEMENT HELP')] : []), option('back', 'BACK TO THE ROOM')] };
     if (this.state === 'device') {
       const station = this.selected;
+      if (station.software === 'elevator') return { title: 'THE CLUB ELEVATOR', subtitle: 'ROOM DIRECTORY', text: station.detail, options: [option('map', 'CHOOSE A ROOM'), option('back', 'BACK TO THE ROOM')] };
       if (station.software === 'design') return designPanel(station, this.design);
       if (station.software === 'security') return labPanel(station, this.devices[station.id]);
       if (station.software === 'virus') return { title: 'BYTE · LAB VIRUS', subtitle: this.virus.quarantined ? 'QUARANTINED' : 'PATROL ACTIVE', text: this.virus.quarantined ? 'BYTE stays inside the containment field. Release the simulated virus to resume its patrol through the security room.' : 'A pixel computer virus patrols the lab. Its body, eyes, and antennae are part of the room simulation. Quarantine BYTE to stop its patrol.', options: [option(this.virus.quarantined ? 'virus:release' : 'virus:quarantine', this.virus.quarantined ? 'RELEASE BYTE' : 'QUARANTINE BYTE'), option('back', 'BACK TO THE ROOM')] };

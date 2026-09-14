@@ -7,6 +7,7 @@ import { MalibuCorner } from './club-malibu.js';
 import { ClubSecurityRoom } from './club-security-room.js';
 import { ClubDesignRoom } from './club-design-room.js';
 import { ClubMacRoom } from './club-mac-room.js';
+import { ClubRangersDesk } from './club-rangers-room.js';
 
 const C = { wood: '#80604b', darkWood: '#503d36', beige: '#b7b29a', edge: '#777b73', plastic: '#d5d1b9', ink: '#16161e', dark: '#24283b', cyan: '#7dcfff', pink: '#f7768e', gold: '#e0af68', green: '#9ece6a', paper: '#c0caf5' };
 
@@ -22,6 +23,7 @@ export class ClubRoom {
     this.security = new ClubSecurityRoom(this);
     this.design = new ClubDesignRoom(this);
     this.mac = new ClubMacRoom(this);
+    this.rangers = new ClubRangersDesk(this);
     STATIONS.forEach((station) => this.buildStation(station));
     FURNITURE.forEach((item) => this.buildFurniture(item));
     this.buildCharacters();
@@ -143,9 +145,9 @@ export class ClubRoom {
     this.sign(['NINTENDO & SEGA', 'CARTRIDGES · CRTs · CONTROLLERS'], 17.76, 3.1, 6.6, 6, C.pink, -Math.PI / 2);
     this.sign(['ARCADE ROW', 'ORIGINAL CLUB GAMES'], -12.8, 3.75, 6, 4, C.cyan);
     this.buildPosters();
-    for (const x of [-16.5, 16.5]) {
-      this.box(x, .28, 12.2, .7, .56, .7, '#755246');
-      for (let i = 0; i < 7; i++) this.box(x + Math.sin(i * 2) * .25, .95 + i * .075, 12.2 + Math.cos(i * 2) * .22, .16, .75, .12, '#547451', false, i);
+    for (const [x, z] of [[-13.05, 12.9], [16.5, 12.2]]) {
+      this.box(x, .28, z, .7, .56, .7, '#755246');
+      for (let i = 0; i < 7; i++) this.box(x + Math.sin(i * 2) * .25, .95 + i * .075, z + Math.cos(i * 2) * .22, .16, .75, .12, '#547451', false, i);
     }
   }
 
@@ -297,7 +299,7 @@ export class ClubRoom {
   }
 
   buildFurniture(item) {
-    if (item.kind === 'malibu-chair' || item.kind === 'security-rack' || item.kind === 'design-easel') return;
+    if (item.kind === 'malibu-chair' || item.kind === 'security-rack' || item.kind === 'design-easel' || item.kind === 'rangers') return;
     this.at(item.x, item.z);
     if (item.kind === 'sofa') {
       this.box(0, .28, 0, item.width, .45, item.depth, item.color);

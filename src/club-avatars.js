@@ -54,10 +54,13 @@ export class ClubAvatarFactory {
     for (let y = 0; y < 104; y++) for (let x = 0; x < 48; x++) if (pixels[(y * 48 + x) * 4 + 3] >= 128) { top = Math.min(top, y); bottom = Math.max(bottom, y + 1); }
     const unit = CLUB.playerHeight / (bottom - top);
     const point = (x, y, z = 0) => v((x - 24) * unit, (bottom - y) * unit, z);
+    const height = npc.height || CLUB.playerHeight;
+    const seatedOffset = npc.seated ? height - CLUB.playerHeight : 0;
     const avatar = new THREE.Group(); avatar.name = `club-character-${npc.id}`;
-    avatar.userData = { characterId: npc.id, standingHeight: CLUB.playerHeight, eyeHeight: point(24, EYE_ROW[npc.id] || 18).y, gesture: npc.gesture };
+    avatar.userData = { characterId: npc.id, standingHeight: CLUB.playerHeight, height, seated: Boolean(npc.seated), eyeHeight: point(24, EYE_ROW[npc.id] || 18).y + seatedOffset, gesture: npc.gesture };
     avatar.point = point;
     avatar.model = new THREE.Group(); avatar.add(avatar.model);
+    avatar.seatedOffset = seatedOffset; avatar.model.position.y = seatedOffset;
     const neck = point(24, 34);
     avatar.head = new THREE.Group(); avatar.head.position.copy(neck); avatar.faces = {};
     for (const facing of ['smile', 'profile', 'back']) {
@@ -82,12 +85,20 @@ export class ClubAvatarFactory {
     avatar.legs = [];
     for (const [left, x] of [[true, 18], [false, 32]]) {
       const hip = point(x, 70); const leg = new THREE.Group(); leg.position.copy(hip);
-      leg.add(this.part(pixels, (px, y) => y >= 70 && (left ? px < 25 : px >= 25), point, hip, .18));
+      leg.add(this.part(pixels, (px, y) => y >= 70 && (!npc.seated || y < 84) && (left ? px < 25 : px >= 25), point, hip, .18));
+      if (npc.seated) {
+        const knee = point(x, 84); const shin = new THREE.Group(); shin.position.copy(knee).sub(hip);
+        shin.add(this.part(pixels, (px, y) => y >= 84 && (left ? px < 25 : px >= 25), point, knee, .18));
+        leg.rotation.x = -Math.PI / 2; shin.rotation.x = Math.PI / 2;
+        shin.scale.y = (hip.y + seatedOffset) / knee.y;
+        leg.add(shin); leg.shin = shin;
+      }
       avatar.model.add(leg); avatar.legs.push(leg);
     }
-    avatar.tag = this.art.nameTag(npc.name.toUpperCase()); avatar.tag.position.y = CLUB.playerHeight + .17; avatar.add(avatar.tag);
-    avatar.pickTarget = new THREE.Mesh(new THREE.BoxGeometry(.7, CLUB.playerHeight, .52), this.art.pickMaterial);
-    avatar.pickTarget.position.y = CLUB.playerHeight / 2; avatar.pickTarget.userData.id = npc.id; avatar.add(avatar.pickTarget);
+    avatar.tag = this.art.nameTag(npc.name.toUpperCase()); avatar.tag.position.y = height + .17; avatar.add(avatar.tag);
+    avatar.pickTarget = new THREE.Mesh(new THREE.BoxGeometry(.7, height, .52), this.art.pickMaterial);
+    avatar.pickTarget.position.y = height / 2; avatar.pickTarget.userData.id = npc.id; avatar.add(avatar.pickTarget);
+    if (npc.seated) { avatar.chair = this.chair(); avatar.add(avatar.chair); }
     if (npc.gesture === 'coffee') avatar.prop = this.coffee();
     if (npc.gesture === 'disk') avatar.prop = this.disk();
     if (npc.gesture === 'handheld') avatar.prop = this.handheld();
@@ -122,6 +133,14 @@ export class ClubAvatarFactory {
     const mark = this.art.spritePlane(logo, 'club-coffee-mark', .1, .1); mark.position.set(0, -.002, .077); cup.add(mark);
     cup.rim = new THREE.Object3D(); cup.rim.position.y = .09; cup.add(cup.rim);
     return cup;
+  }
+
+  chair() {
+    const chair = new THREE.Group(); chair.name = 'ranger-chair';
+    this.art.box(chair, 0, .29, 0, .72, .08, .6, '#455f69');
+    this.art.box(chair, 0, .56, -.25, .72, .62, .10, '#455f69');
+    for (const x of [-.3, .3]) for (const z of [-.22, .22]) this.art.box(chair, x, .13, z, .045, .26, .045, '#9aa5ce');
+    return chair;
   }
 
   disk() {
@@ -167,16 +186,22 @@ export class ClubAvatarFactory {
     const gesture = gestureAt(npc.gesture, npc.clock);
     const amount = reducedMotion ? 0 : gesture.amount * npc.gestureBlend;
     const gait = Math.sin(npc.gait) * npc.walkBlend;
-    avatar.legs[0].rotation.x = gait * .23; avatar.legs[1].rotation.x = -gait * .23;
-    avatar.model.position.y = reducedMotion ? 0 : Math.abs(Math.sin(npc.gait * 2)) * npc.walkBlend * .005;
-    const left = v(-.27, .92, .08 + gait * .045); const right = v(.29, .92, .08 - gait * .045);
+    avatar.legs[0].rotation.x = npc.seated ? -Math.PI / 2 : gait * .23; avatar.legs[1].rotation.x = npc.seated ? -Math.PI / 2 : -gait * .23;
+    avatar.model.position.y = avatar.seatedOffset + (npc.seated || reducedMotion ? 0 : Math.abs(Math.sin(npc.gait * 2)) * npc.walkBlend * .005);
+    const left = npc.seated ? v(-.27, 1.18, .38) : v(-.27, .92, .08 + gait * .045);
+    const right = npc.seated ? v(.29, 1.18, .38) : v(.29, .92, .08 - gait * .045);
     let nod = Math.sin(npc.clock * 1.1) * .012;
     if (npc.gesture === 'wave') right.lerp(v(.41 + gesture.wave * .045, 1.64, .10), amount);
     if (npc.gesture === 'glasses') { right.lerp(v(.19, CLUB.eyeHeight - .015, .19), amount); nod += amount * .025; }
     if (npc.gesture === 'coffee') { left.set(-.27, .94, .14).lerp(v(-.12, avatar.mouthHeight - .105, .12), amount); nod += amount * .075; }
     if (npc.gesture === 'stretch') { left.lerp(v(-.6, 1.29, .1), amount); right.lerp(v(.6, 1.29, .1), amount); nod -= amount * .04; }
     if (npc.gesture === 'hands') { left.lerp(v(-.09, 1.12, .27), amount); right.lerp(v(.10, 1.12, .27), amount); nod += amount * .10; }
-    if (npc.gesture === 'beat') { left.lerp(v(-.26, 1.06 + gesture.tap * .035, .20), amount); right.lerp(v(.28, 1.06 - gesture.tap * .035, .20), amount); avatar.legs[1].rotation.x += amount * gesture.tap * .035; }
+    if (npc.gesture === 'beat') {
+      const y = npc.seated ? 1.18 : 1.06; const z = npc.seated ? .38 : .20;
+      const tap = gesture.tap * (npc.seated ? .025 : .035);
+      left.lerp(v(-.26, y + tap, z), amount); right.lerp(v(.28, y - tap, z), amount);
+      if (!npc.seated) avatar.legs[1].rotation.x += amount * gesture.tap * .035;
+    }
     if (npc.gesture === 'disk') { left.lerp(v(-.12, 1.13 + amount * .14, .27), .8); right.lerp(v(.12, 1.13 + amount * .14, .27), .8); nod += .08; }
     if (npc.gesture === 'handheld') { left.set(-.10, 1.13, .27); right.set(.10, 1.13 + amount * gesture.tap * .013, .27); nod += .10; }
     if (npc.gesture === 'explain') { right.lerp(v(.4, 1.18 + gesture.tap * .035, .24), amount); left.lerp(v(-.21, 1.10, .23), amount * .5); }
