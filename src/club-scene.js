@@ -191,7 +191,7 @@ export class ClubScene {
     const hit = this.gazeHit();
     if (this.select(hit)) return;
     this.headPose();
-    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= 3).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
+    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS, ...(this.game ? [this.game.virus] : [])].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= 3).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
     if (target) this.onTarget(target.id);
   }
 
@@ -276,8 +276,8 @@ export class ClubScene {
     const p = this.panel; const ctx = p.ctx; p.buttons = [];
     ctx.fillStyle = '#16161e'; ctx.fillRect(0, 0, 1024, 640); ctx.strokeStyle = '#565f89'; ctx.lineWidth = 4; ctx.strokeRect(2, 2, 1020, 636);
     ctx.fillStyle = '#f7768e'; ctx.font = `${model.title.length > 23 ? 24 : 32}px Arcade, monospace`; ctx.fillText(model.title, 40, 65);
-    if (model.subtitle) { ctx.fillStyle = '#e0af68'; ctx.font = '23px "Courier New", monospace'; ctx.fillText(model.subtitle, 40, 105); }
-    let startY = 320;
+    if (model.subtitle) { ctx.fillStyle = '#e0af68'; ctx.font = '23px "Courier New", monospace'; ctx.fillText(model.subtitle, 40, 105, 940); }
+    let startY = model.layout === 'security' ? 430 : 320;
     if (game.state === 'arcade') {
       ctx.fillStyle = '#16161e'; ctx.fillRect(0, 0, 1024, 640);
       ctx.save(); ctx.translate(205, 38); drawCabinet(ctx, game.arcade, 614, 460); ctx.restore();
@@ -288,7 +288,7 @@ export class ClubScene {
       drawMap(ctx, 505, 104, 465, 205, game.position); startY = 333;
     } else {
       paragraph(ctx, model.text, 40, model.subtitle ? 148 : 130, model.portrait ? 790 : 940, 28);
-      if (model.portrait) { ctx.imageSmoothingEnabled = false; ctx.drawImage(this.art.renderer.getFullCharacter(model.portrait), 874, 123, 88, 190); }
+      if (model.portrait) { ctx.imageSmoothingEnabled = false; ctx.drawImage(this.room.avatarFactory.portrait(model.portrait), 874, 123, 88, 190); }
       if (game.state === 'entry') paragraph(ctx, 'LEFT STICK: WALK · RIGHT STICK: SNAP TURN. Hold the left trigger and aim at the floor to teleport.', 40, 245, 940, 26, '#7dcfff');
     }
     if (model.layout === 'jukebox') {
@@ -303,7 +303,7 @@ export class ClubScene {
       p.texture.needsUpdate = true; return;
     }
     const buttonHeight = game.state === 'map' ? 58 : 62;
-    const columns = game.state === 'arcade' ? 3 : 2;
+    const columns = game.state === 'arcade' || game.state === 'map' ? 3 : 2;
     const step = columns === 3 ? 318 : 484;
     const width = columns === 3 ? 304 : 460;
     model.options.forEach((action, i) => this.drawButton(p, action, 40 + i % columns * step, startY + Math.floor(i / columns) * (buttonHeight + 12), width, buttonHeight, action.primary ?? i === 0));
@@ -327,7 +327,7 @@ export class ClubScene {
   drawTooltip(hit, immersive) {
     let text = '';
     if (hit?.object.userData.id && this.game.state === 'explore') {
-      const target = this.game.crew.find((item) => item.id === hit.object.userData.id) || STATIONS.find((item) => item.id === hit.object.userData.id);
+      const target = [...this.game.crew, ...STATIONS, this.game.virus].find((item) => item.id === hit.object.userData.id);
       if (target) { const distance = Math.hypot(target.x - this.head.x, target.z - this.head.z); text = distance <= 3 ? `${target.topics ? 'TALK TO' : 'USE'} ${target.name.toUpperCase()}` : distance <= 5 ? 'MOVE CLOSER' : ''; }
     }
     this.hint = text;
@@ -358,6 +358,7 @@ export class ClubScene {
       if (avatar.tag.visible) avatar.tag.lookAt(this.head);
     });
     this.room.malibu.update(game.elapsed, reducedMotion);
+    this.room.security.update(game.virus, reducedMotion, this.head, game.state === 'device' && game.selected?.id === game.virus.id);
     this.hover = null;
     let aimed = null;
     for (const { ray, line } of this.controllers) {

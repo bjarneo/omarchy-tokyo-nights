@@ -4,6 +4,7 @@ import { ClubAvatarFactory } from './club-avatars.js';
 import { CREW_GESTURES } from './club-motion.mjs';
 import { addOpenSourceWalls } from './club-logo-wall.js';
 import { MalibuCorner } from './club-malibu.js';
+import { ClubSecurityRoom } from './club-security-room.js';
 
 const C = { wood: '#80604b', darkWood: '#503d36', beige: '#b7b29a', edge: '#777b73', plastic: '#d5d1b9', ink: '#16161e', dark: '#24283b', cyan: '#7dcfff', pink: '#f7768e', gold: '#e0af68', green: '#9ece6a', paper: '#c0caf5' };
 
@@ -16,6 +17,7 @@ export class ClubRoom {
     this.screens = new Map(); this.targets = []; this.characters = [];
     this.frame = { x: 0, z: 0, yaw: 0 };
     this.buildRoom();
+    this.security = new ClubSecurityRoom(this);
     STATIONS.forEach((station) => this.buildStation(station));
     FURNITURE.forEach((item) => this.buildFurniture(item));
     this.buildCharacters();
@@ -115,8 +117,9 @@ export class ClubRoom {
         this.box(18, MALIBU.sill / 2, -14 + windowDepth / 2, .35, MALIBU.sill, windowDepth, '#a6a7a1');
         continue;
       }
-      this.box(wall.x, wall.height / 2, wall.z, wall.width, wall.height, wall.depth, '#736f70');
-      this.box(wall.x, .55, wall.z, wall.width + .06, 1.1, wall.depth + .06, C.darkWood);
+      const bottom = wall.bottom || 0;
+      this.box(wall.x, (wall.height + bottom) / 2, wall.z, wall.width, wall.height - bottom, wall.depth, wall.id.startsWith('security-') ? '#465463' : '#736f70');
+      if (!bottom) this.box(wall.x, .55, wall.z, wall.width + .06, 1.1, wall.depth + .06, wall.id.startsWith('security-') ? C.dark : C.darkWood);
     }
     this.box(0, 4.63, 0, 36, .14, 28, '#49444a');
     for (let z = -12; z <= 12; z += 4) {
@@ -135,10 +138,6 @@ export class ClubRoom {
     this.sign(['THE BBS CORNER', '1200 BAUD · LOCAL TERMINAL'], -11.6, 3.15, -13.76, 7, C.green);
     this.sign(['NINTENDO & SEGA', 'CARTRIDGES · CRTs · CONTROLLERS'], 17.76, 3.1, 6.6, 6, C.pink, -Math.PI / 2);
     this.sign(['ARCADE ROW', 'ORIGINAL CLUB GAMES'], -12.8, 3.75, 6, 4, C.cyan);
-    this.sign(['OPEN SOURCE CLUB', 'SHARE CODE · MAKE THINGS'], 0, 3.85, 13.74, 2.7, C.gold, Math.PI);
-    this.sign(['EXIT TO THE GARAGE', 'TOKYO NIGHTS'], 0, 2.8, 13.75, 4, C.cyan, Math.PI);
-    this.box(0, 1.2, 13.8, 2, 2.4, .08, '#33333e');
-    this.box(.75, 1, 13.69, .12, .06, .05, C.gold);
     this.buildPosters();
     for (const x of [-16.5, 16.5]) {
       this.box(x, .28, 12.2, .7, .56, .7, '#755246');
@@ -200,6 +199,7 @@ export class ClubRoom {
   }
 
   buildStation(station) {
+    if (station.kind === 'security') { this.security.bench(station); return; }
     if (station.kind === 'malibu') { this.malibu = new MalibuCorner(this, station); return; }
     this.at(station.x, station.z, station.yaw);
     const color = station.id === 'spectrum' ? '#30313c' : station.id === 'c64' ? '#aaa084' : station.id === 'cpc464' ? '#404950' : C.beige;
@@ -291,7 +291,7 @@ export class ClubRoom {
   }
 
   buildFurniture(item) {
-    if (item.kind === 'malibu-chair') return;
+    if (item.kind === 'malibu-chair' || item.kind === 'security-rack') return;
     this.at(item.x, item.z);
     if (item.kind === 'sofa') {
       this.box(0, .28, 0, item.width, .45, item.depth, item.color);
@@ -329,10 +329,11 @@ export class ClubRoom {
   buildCharacters() {
     this.at(0, 0);
     CLUB_CREW.forEach((npc, index) => {
-      const avatar = this.avatarFactory.create({ ...npc, gesture: CREW_GESTURES[index] });
+      const avatar = this.avatarFactory.create({ ...npc, gesture: npc.gesture || CREW_GESTURES[index] });
       avatar.position.set(npc.x, 0, npc.z);
+      avatar.rotation.y = npc.yaw || 0;
       avatar.pickTarget.userData.id = npc.id;
-      avatar.userData.homeYaw = 0;
+      avatar.userData.homeYaw = npc.yaw || 0;
       this.root.add(avatar); this.characters.push(avatar); this.targets.push(avatar.pickTarget);
     });
   }

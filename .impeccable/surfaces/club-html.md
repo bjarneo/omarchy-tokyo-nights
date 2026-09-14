@@ -2,7 +2,7 @@
 version: 1
 slug: "club-html"
 primary_target: "club.html"
-related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
+related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
 ---
 
 # Retro clubhouse
@@ -28,6 +28,18 @@ The curved desk silhouette and wraparound view carry the photograph's identity w
 The room map provides direct access. The monitor offers a local desktop and coastal wallpaper.
 
 Reference: https://world.hey.com/dhh/baefaf09/representations/eyJfcmFpbHMiOnsiZGF0YSI6MTExMTUxODU0MCwicHVyIjoiYmxvYl9pZCJ9fQ--3239074e8fbf1c8170c3478d039bf0d22fe53ca6887b7d534c79aae8d27d3ce5/eyJfcmFpbHMiOnsiZGF0YSI6eyJmb3JtYXQiOiJqcGciLCJyZXNpemVfdG9fbGltaXQiOlszODQwLDI1NjBdLCJxdWFsaXR5Ijo2MCwibG9hZGVyIjp7InBhZ2UiOm51bGx9LCJjb2FsZXNjZSI6dHJ1ZX0sInB1ciI6InZhcmlhdGlvbiJ9fQ--b3779d742b3242a2a5284869a45b2a113e0c177f0450c29f0baca1ee780f6604/early-malibu.jpg
+
+### Security room addition
+
+The user approves a full security lab through an open doorway beside the entrance.
+The extension preserves the existing voxel art, Tokyo Night palette, and shared screen and WebXR controls.
+A separate `18 × 14m` room extends south from the main club.
+Red-team and blue-team illustrated walls face a central patrol area for an animated pixel-virus creature.
+Five benches provide local pentest, zero-day, incident-response, forensics, and reverse-engineering exercises.
+Five walk-up cameos use the names and countries from `https://omarchy.org/teams/`.
+Their original pixel portraits use the official team photos as visual references. Their dialogue uses fictional club scripts.
+The map adds a security destination. The doorway frames the command board, crew, and virus patrol on entry.
+The virus supports quarantine and release. Reduced motion stops its patrol and idle motion.
 
 ## Direction contract
 
@@ -359,6 +371,42 @@ CLUB_RADIO_SOURCE=/path/to/public/tracks npm run assets:club-radio
 - Reduced motion stops autonomous crew walks, gestures, head tilt, body bounce, and button transitions.
 - User-controlled movement, character orientation toward the player, and machine demos continue.
 
+### Security room
+
+- The separate `18 × 14m` room occupies `x: [-9, 9]`, `z: [14, 28]`, with solid outer walls.
+- The former south decorative door becomes a `3.4m`-wide doorway with `3.2m` clearance. Smooth walk and arc teleport cross it continuously.
+- `SECURITY ROOM` is the eighth map destination. The current club contains 27 stations and 14 human cameos.
+- Five retro CRT benches, two server racks, and a team command board furnish the room.
+- Four authored wall images cover red-team work, blue-team work, zero-day research, and digital forensics.
+- Five local exercises use three steps each: `pentest`, `zero-day`, `blue-team`, `forensics`, and `reverse`.
+- Each choice gives feedback. Correct choices advance the exercise and update its latest evidence on the physical CRT.
+- Each exercise retains its step, feedback, latest evidence, and completion state in memory across panel closure and pause.
+- A page reload clears all exercises. `RESTART EXERCISE` resets the selected exercise.
+- The blue-team containment step quarantines BYTE at `x: 0`, `z: 21`.
+- BYTE patrols the central rectangle at `x: [-2, 2]`, `z: [18, 22]`. Its clock freezes during BYTE interaction, pause, and reduced motion.
+- Quarantine stops BYTE in the containment field. Release resets its patrol. BYTE faces the viewer during interaction and containment.
+- Native and spatial panels share `ClubGame` state. Exercises use the `device` state and `layout: 'security'`.
+- Security spatial controls start at texture `y = 430` in the existing `1024 × 640` panel. The spatial map uses three columns.
+- The addition reuses the global typography and rectangular controls from `DESIGN.md`.
+
+#### Security source provenance
+
+The five cameos match the names and country labels on the official [security team page](https://omarchy.org/teams/).
+`SECURITY_CREW` in `src/club-security.mjs` stores the roster URL and each official photo URL.
+
+| Cameo | Official country label | Official photo reference |
+| --- | --- | --- |
+| Adrian Rangel | Mexico | [adrian-rangel.webp](https://omarchy.org/assets/images/team/adrian-rangel.webp) |
+| Mehmet İnce | UK/Türkiye | [mehmet-ince.webp](https://omarchy.org/assets/images/team/mehmet-ince.webp) |
+| Erik Melton | Norway | [erik-melton.webp](https://omarchy.org/assets/images/team/erik-melton.webp) |
+| Sayem Chowdhury | Bangladesh | [sayem-chowdhury.webp](https://omarchy.org/assets/images/team/sayem-chowdhury.webp) |
+| Sebastian Stange | Germany | [sebastian-stange.webp](https://omarchy.org/assets/images/team/sebastian-stange.webp) |
+
+`src/club-security-art.js` draws original `48 × 104` Canvas portraits from those photo references.
+The avatar factory turns them into articulated voxel figures. Club dialogue uses fictional scripts.
+The wall images and command board use authored Canvas art. BYTE uses authored voxel geometry in `src/club-security-room.js`.
+`src/club-security-screen.js` draws the local exercise displays. The extension adds no shipped raster files or runtime photo requests.
+
 ## Verification evidence
 
 - The supplied current results report all 24 focused Node tests in `tests/club.test.mjs` and `tests/club-jukebox.test.mjs` as passed.
@@ -403,3 +451,33 @@ CLUB_RADIO_SOURCE=/path/to/public/tracks npm run assets:club-radio
 Live YouTube playback, physical headset results, and audible speech results remain unverified.
 The supplied clubhouse finish verdict arrives through the handoff. The review directory contains its captures but no separate clubhouse verdict file.
 The inherited stripe and landscape-type advisories remain outside this documentation pass. They do not become new design rules.
+
+### Security room checks
+
+- `.impeccable/review/club-security-finish.md` records `ship` for the supplied desktop, mobile, and IWER stereo scope. It requests no material fixes.
+- The supplied full Node run passes all 99 tests. The browser runs pass 13 original clubhouse tests and all three new security tests.
+- After the final orientation adjustments, the supplied reruns pass 22 focused Node tests and all three security browser tests.
+- The tests cover doorway traversal, solid walls, teleport arcs, five cameos, all exercises, retained evidence, BYTE controls, mobile access, and spatial actions.
+- The supplied detector runs once. It reports the inherited Courier New `new` false positive and stripe advisory.
+- Its `#283643` advisory describes the local 3D floor material. Material colors do not become global tokens.
+- The supplied build check and this documentation pass both pass `git diff --check`.
+- This pass checks source, test definitions, the official roster, the finish record, and the desktop, mobile-lab, and stereo-lab captures.
+- Physical headset behavior remains unverified.
+
+The first browser attempt reaches an occupied port and returns `404`. Correct verification uses `PORT=3127 CI=1`.
+To reproduce the supplied checks, run these commands from the repository root:
+
+```sh
+npm test
+node --test tests/club.test.mjs
+PORT=3127 CI=1 npm run test:browser -- tests/browser/club.spec.js --grep-invert security
+PORT=3127 CI=1 npm run test:browser -- tests/browser/club.spec.js --grep security
+git diff --check
+```
+
+| Review area | Captures under `.impeccable/review/` |
+| --- | --- |
+| Security room and desktop panels | `club-security-desktop.png`, `club-security-cameo.png`, `club-security-lab.png`, `club-security-virus.png` |
+| Security mobile panels | `club-security-mobile.png`, `club-security-lab-mobile.png` |
+| Security IWER stereo | `club-security-headset.png`, `club-security-lab-headset.png` |
+| Entry and map | `club-desktop.png`, `club-mobile.png`, `club-map.png` |

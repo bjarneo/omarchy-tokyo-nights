@@ -2,15 +2,25 @@ import * as THREE from '../assets/three.module.js';
 import { makeFullCharacter } from './full-characters.js';
 import { CLUB } from './club-data.mjs';
 import { gestureAt } from './club-motion.mjs';
+import { SECURITY_CREW } from './club-security.mjs';
+import { makeSecurityCharacter } from './club-security-art.js';
 
 const EYE_ROW = { ryan: 19, krzysztof: 19, hancore: 18.5, outfoxxed: 19 };
 const v = (x, y, z = 0) => new THREE.Vector3(x, y, z);
 
 export class ClubAvatarFactory {
-  constructor(art) { this.art = art; this.scratch = new THREE.Object3D(); this.color = new THREE.Color(); }
+  constructor(art) { this.art = art; this.scratch = new THREE.Object3D(); this.color = new THREE.Color(); this.securityPortraits = new Map(); }
+
+  portrait(id, facing = 'smile') {
+    const npc = SECURITY_CREW.find((member) => member.id === id);
+    if (!npc) return this.art.renderer.getFullCharacter(id, facing);
+    const key = `${id}:${facing}`;
+    if (!this.securityPortraits.has(key)) this.securityPortraits.set(key, makeSecurityCharacter(npc, facing));
+    return this.securityPortraits.get(key);
+  }
 
   pixels(id, facing = 'smile') {
-    const canvas = makeFullCharacter(this.art.renderer.drivers[id][facing], id, { props: false });
+    const canvas = SECURITY_CREW.some((member) => member.id === id) ? this.portrait(id, facing) : makeFullCharacter(this.art.renderer.drivers[id][facing], id, { props: false });
     return { canvas, pixels: canvas.getContext('2d').getImageData(0, 0, 48, 104).data };
   }
 

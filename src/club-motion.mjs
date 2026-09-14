@@ -16,9 +16,9 @@ export function gestureAt(style, time) {
 export function createClubCrew() {
   return CLUB_CREW.map((npc, index) => ({
     ...npc, homeX: npc.x, homeZ: npc.z, height: CLUB.playerHeight, eyeHeight: CLUB.eyeHeight,
-    gesture: CREW_GESTURES[index], clock: index === 2 ? 0 : index * 1.17,
+    gesture: npc.gesture || CREW_GESTURES[index], clock: index === 2 ? 0 : index * 1.17,
     wait: 3 + index * .65, targetX: npc.x, targetZ: npc.z, turn: 0,
-    yaw: 0, moving: false, gait: 0, travel: 0, speed: .27 + index % 3 * .025,
+    yaw: npc.yaw || 0, moving: false, gait: 0, travel: 0, speed: .27 + index % 3 * .025,
     gestureBlend: 1, walkBlend: 0,
     obstacle: { id: npc.id, x: npc.x, z: npc.z, width: .7, depth: .52, height: CLUB.playerHeight },
   }));

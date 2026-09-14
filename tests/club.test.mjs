@@ -1,10 +1,11 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { CLUB, ENTRY, STATIONS, CLUB_CREW, ZONES, OBSTACLES } from '../src/club-data.mjs';
-import { ClubGame, canStand, moveWithinRoom, teleportArc } from '../src/club-engine.mjs';
+import { ClubGame, canStand, moveWithinRoom, teleportArc, segmentHitsBox } from '../src/club-engine.mjs';
 import { ClubInput } from '../src/club-controls.mjs';
 import { CabinetGame } from '../src/club-games.mjs';
 import { gestureAt } from '../src/club-motion.mjs';
+import { SECURITY_LABS, SECURITY_CREW } from '../src/club-security.mjs';
 
 test('every character and machine has an accessible interaction point from the entrance', () => {
   const queue = [{ x: 0, z: 10.5 }]; const seen = new Set(['0,10.5']);
@@ -237,4 +238,66 @@ test('the Malibu map destination and display work while the glazed walls remain 
   assert.equal(game.interact(desk.id, { x: 18.3, z: -11.65 }), false);
   assert.equal(teleportArc({ x: 17.3, y: 1.4, z: -12.7 }, { x: 1, y: -.1, z: 0 }, game.obstacles).valid, false);
   assert.equal(teleportArc({ x: 16.8, y: 1.4, z: -13.1 }, { x: 0, y: -.1, z: -1 }, game.obstacles).valid, false);
+});
+
+test('the security doorway supports continuous movement and teleportation while its walls stay solid', () => {
+  const inside = moveWithinRoom({ x: 0, z: 12 }, 0, 4);
+  assert.ok(Math.abs(inside.z - 16) < .001);
+  assert.ok(Math.abs(moveWithinRoom(inside, 0, -4).z - 12) < .001);
+  assert.ok(moveWithinRoom({ x: 3, z: 12 }, 0, 4).z < 14);
+  assert.equal(canStand(12, 20), false);
+  assert.equal(canStand(0, 29), false);
+  assert.equal(teleportArc({ x: 0, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, true);
+  assert.equal(teleportArc({ x: 3, y: 1.4, z: 13 }, { x: 0, y: -.1, z: 1 }).valid, false);
+  const lintel = OBSTACLES.find((item) => item.id === 'security-lintel');
+  assert.equal(segmentHitsBox({ x: 0, y: 3.6, z: 13 }, { x: 0, y: 3.6, z: 15 }, lintel), true);
+  assert.equal(segmentHitsBox({ x: 0, y: 1.65, z: 13 }, { x: 0, y: 1.65, z: 15 }, lintel), false);
+  const game = new ClubGame(); game.action('zone:security');
+  assert.equal(game.zone.id, 'security');
+  assert.equal(SECURITY_CREW.length, 5);
+});
+
+test('security exercises reject incorrect choices, retain progress, and complete each evidence trail', () => {
+  const game = new ClubGame(); game.enter();
+  for (const station of STATIONS.filter((item) => item.lab)) {
+    const lab = SECURITY_LABS[station.lab];
+    assert.ok(game.interact(station.id, station.stand));
+    const state = game.devices[station.id].lab;
+    game.action(`security:choice:${1 - lab.steps[0].correct}`);
+    assert.equal(state.step, 0); assert.match(game.panel().text, /try the other action/);
+    game.action('security:choice:99'); assert.equal(state.step, 0);
+    for (const current of lab.steps) {
+      game.action(`security:choice:${current.correct}`);
+      assert.ok(state.evidence.length > 0);
+      game.pause(); const saved = structuredClone(state); game.update(10);
+      assert.deepEqual(state, saved); game.resume();
+    }
+    assert.equal(state.complete, true); assert.match(game.panel().subtitle, /COMPLETE/);
+    if (station.lab === 'blue-team') assert.equal(game.virus.quarantined, true);
+    game.back(); assert.ok(game.interact(station.id, station.stand));
+    assert.equal(game.devices[station.id].lab.complete, true);
+    game.action('security:reset'); assert.equal(game.devices[station.id].lab.step, 0);
+    assert.equal(game.devices[station.id].lab.complete, false); game.back();
+  }
+});
+
+test('BYTE patrols clear security floor and stops for pause, reduced motion, interaction, and quarantine', () => {
+  const game = new ClubGame(); game.enter();
+  for (let i = 0; i < 500; i++) {
+    game.update(.05);
+    assert.ok(canStand(game.virus.x, game.virus.z, game.obstacles, .5));
+    assert.ok(game.virus.z >= 18 && game.virus.z <= 22);
+  }
+  assert.ok(game.virus.clock > 0);
+  const frozen = { ...game.virus }; game.pause(); game.update(.25);
+  assert.deepEqual(game.virus, frozen); game.resume();
+  game.update(.25, { reducedMotion: true }); assert.deepEqual(game.virus, frozen);
+  game.position = { x: game.virus.x, z: game.virus.z - 1.3 };
+  assert.ok(game.interact(game.virus.id)); game.update(.25); assert.deepEqual(game.virus, frozen);
+  game.action('virus:quarantine'); assert.equal(game.virus.quarantined, true);
+  assert.deepEqual([game.virus.x, game.virus.z], [0, 21]);
+  game.back(); game.update(.25); assert.deepEqual([game.virus.x, game.virus.z], [0, 21]);
+  assert.ok(game.interact(game.virus.id, { x: 0, z: 19.5 }));
+  game.action('virus:release'); game.back(); game.update(.25);
+  assert.equal(game.virus.quarantined, false); assert.ok(game.virus.x > -2);
 });

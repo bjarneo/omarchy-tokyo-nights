@@ -1,5 +1,6 @@
-import { CLUB_CREW, ZONES, STATIONS, CLUB } from './club-data.mjs';
+import { CLUB_CREW, ZONES, STATIONS, FLOORS, WALLS } from './club-data.mjs';
 import { drawMalibuDisplay } from './club-malibu-screen.js';
+import { drawSecurityDisplay } from './club-security-screen.js';
 
 const C = { ink: '#16161e', paper: '#c0caf5', cyan: '#7dcfff', gold: '#e0af68', pink: '#f7768e', purple: '#bb9af7', green: '#9ece6a', muted: '#9aa5ce' };
 const hash = (n) => { const value = Math.sin(n * 93.7) * 43758.54; return value - Math.floor(value); };
@@ -96,6 +97,7 @@ export function drawStation(ctx, station, state, game, jukebox) {
   if (station.kind === 'malibu') { drawMalibuDisplay(ctx, state); return; }
   ctx.fillStyle = '#0b1015'; ctx.fillRect(0, 0, 256, 192);
   if (!state.power) return;
+  if (station.software === 'security') { drawSecurityDisplay(ctx, station, state); return; }
   const time = state.clock;
   if (station.software === 'jukebox') {
     label(ctx, 'OMARCHY RADIO', 16, 22, 16, C.gold);
@@ -176,14 +178,27 @@ export function drawStation(ctx, station, state, game, jukebox) {
 }
 
 export function drawMap(ctx, x, y, width, height, player) {
-  ctx.fillStyle = '#24283b'; ctx.fillRect(x, y, width, height);
-  for (const [i, zone] of ZONES.entries()) {
-    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b'][i];
-    ctx.fillRect(x + (zone.x - zone.width / 2 + 18) / CLUB.width * width, y + (zone.z - zone.depth / 2 + 14) / CLUB.depth * height, zone.width / CLUB.width * width, zone.depth / CLUB.depth * height);
+  ctx.save(); ctx.beginPath(); ctx.rect(x, y, width, height); ctx.clip();
+  ctx.fillStyle = '#16161e'; ctx.fillRect(x, y, width, height);
+  const scale = Math.min((width - 24) / 36, (height - 16) / 42);
+  const left = x + (width - 36 * scale) / 2; const top = y + 8;
+  const px = (value) => left + (value + 18) * scale;
+  const pz = (value) => top + (value + 14) * scale;
+  for (const floor of FLOORS) {
+    ctx.fillStyle = '#24283b'; ctx.fillRect(px(floor.x - floor.width / 2), pz(floor.z - floor.depth / 2), floor.width * scale, floor.depth * scale);
   }
+  for (const [i, zone] of ZONES.entries()) {
+    ctx.fillStyle = ['#383449', '#324968', '#395245', '#573b4d', '#484251', '#4d4639', '#89786b', '#304b53'][i];
+    ctx.fillRect(px(zone.x - zone.width / 2), pz(zone.z - zone.depth / 2), zone.width * scale, zone.depth * scale);
+  }
+  ctx.fillStyle = '#9aa5ce';
+  WALLS.filter((wall) => !wall.bottom).forEach((wall) => ctx.fillRect(px(wall.x - wall.width / 2), pz(wall.z - wall.depth / 2), Math.max(1, wall.width * scale), Math.max(1, wall.depth * scale)));
   ctx.fillStyle = C.muted;
-  STATIONS.forEach((station) => ctx.fillRect(x + (station.x + 18) / 36 * width - 3, y + (station.z + 14) / 28 * height - 2, 6, 4));
+  STATIONS.forEach((station) => ctx.fillRect(px(station.x) - 2, pz(station.z) - 2, 4, 4));
+  label(ctx, 'CLUB', px(0), pz(1), 12, C.paper, 'center');
+  label(ctx, 'SECURITY', px(0), pz(21.5), 11, C.cyan, 'center');
   ctx.fillStyle = C.gold;
-  ctx.beginPath(); ctx.arc(x + (player.x + 18) / 36 * width, y + (player.z + 14) / 28 * height, 6, 0, Math.PI * 2); ctx.fill();
+  ctx.beginPath(); ctx.arc(px(player.x), pz(player.z), 4, 0, Math.PI * 2); ctx.fill();
   ctx.strokeStyle = C.muted; ctx.lineWidth = 2; ctx.strokeRect(x, y, width, height);
+  ctx.restore();
 }

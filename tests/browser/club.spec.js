@@ -28,11 +28,11 @@ async function approach(page, id) {
   await page.evaluate(async (id) => {
     const { STATIONS, CLUB } = await import('/src/club-data.mjs');
     const { canStand, segmentHitsBox } = await import('/src/club-engine.mjs');
-    const target = STATIONS.find((item) => item.id === id) || clubModel.crew.find((item) => item.id === id);
+    const target = STATIONS.find((item) => item.id === id) || clubModel.crew.find((item) => item.id === id) || (id === clubModel.virus.id ? clubModel.virus : null);
     const point = target.stand || Array.from({ length: 16 }, (_, index) => {
       const yaw = index * Math.PI / 8;
       return { x: target.x + Math.sin(yaw) * 2, z: target.z + Math.cos(yaw) * 2, yaw };
-    }).find((candidate) => canStand(candidate.x, candidate.z, clubModel.obstacles) && !clubModel.obstacles.some((box) => box.id !== id && segmentHitsBox({ ...candidate, y: CLUB.eyeHeight }, { x: target.x, y: target.eyeHeight, z: target.z }, box)));
+    }).find((candidate) => canStand(candidate.x, candidate.z, clubModel.obstacles) && !clubModel.obstacles.some((box) => box.id !== id && segmentHitsBox({ ...candidate, y: CLUB.eyeHeight }, { x: target.x, y: target.eyeHeight || target.height, z: target.z }, box)));
     if (!point) throw new Error('No clear approach point.');
     if (!clubView.teleport(point, point.yaw)) throw new Error('The approach point is blocked.');
     clubView.resetCamera(); clubView.scene.updateMatrixWorld(true); clubView.camera.getWorldPosition(clubView.head);
@@ -587,4 +587,129 @@ test('the headset reaches the Malibu corner and operates its monitor through spa
   await expect(page.locator('body')).toHaveAttribute('data-state', 'explore');
   await page.evaluate(() => xrDevice.activeSession.end());
   expect(errors).toEqual([]);
+});
+
+test('the security room has a walk-through doorway, five cameos, lab exercises, and a roaming virus', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors = []; const requests = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('request', (request) => requests.push(request.url()));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.evaluate(() => Promise.all([document.fonts.ready, clubView.room.galleryReady]));
+  await page.locator('#club-explore').click();
+  await page.keyboard.down('KeyS');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.z), { timeout: 15000 }).toBeGreaterThan(15.2); }
+  finally { await page.keyboard.up('KeyS'); }
+  await expect(page.locator('#club-location')).toHaveText('SECURITY ROOM');
+  await page.evaluate(() => { clubView.teleport({ x: 0, z: 14.8 }, Math.PI); });
+  await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-security-desktop.png', fullPage: true });
+  expect(await page.evaluate(() => clubView.room.security.posters.map((mesh) => mesh.name))).toEqual(['security-art-red', 'security-art-blue', 'security-art-zero', 'security-art-forensics']);
+  const crew = await page.evaluate(() => clubModel.crew.filter((npc) => npc.team === 'security').map(({ id, name, country }) => ({ id, name, country })));
+  expect(crew).toHaveLength(5);
+  const portraits = [];
+  for (const npc of crew) {
+    await approach(page, npc.id); await page.keyboard.press('KeyE');
+    await expect(page.locator('#club-panel-title')).toHaveText(npc.name.toUpperCase());
+    await expect(page.locator('#club-panel-subtitle')).toContainText(npc.country);
+    await page.locator('[data-action="topic:0"]').click();
+    await expect(page.locator('#club-panel-text')).toContainText(npc.name);
+    portraits.push(await page.locator('#club-portrait').evaluate((canvas) => canvas.toDataURL()));
+    if (npc.id === 'mehmet-ince') await page.screenshot({ path: '.impeccable/review/club-security-cameo.png', fullPage: true });
+    await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+  }
+  expect(new Set(portraits).size).toBe(5);
+  const labs = await page.evaluate(async () => {
+    const { SECURITY_LABS } = await import('/src/club-security.mjs');
+    return Object.entries(SECURITY_LABS).map(([id, lab]) => ({ id, answers: lab.steps.map((step) => step.correct) }));
+  });
+  for (const lab of labs) {
+    await approach(page, `security-${lab.id}`); await page.keyboard.press('KeyE');
+    const before = await page.evaluate((id) => clubView.room.screens.get(`security-${id}`).canvas.toDataURL(), lab.id);
+    if (lab.id === 'pentest') {
+      await page.locator('[data-action="security:choice:1"]').click();
+      await expect(page.locator('#club-panel-text')).toContainText('try the other action');
+    }
+    for (const answer of lab.answers) await page.locator(`[data-action="security:choice:${answer}"]`).click();
+    await expect(page.locator('#club-panel-subtitle')).toContainText('COMPLETE');
+    expect(await page.evaluate((id) => clubView.room.screens.get(`security-${id}`).canvas.toDataURL(), lab.id)).not.toBe(before);
+    if (lab.id === 'zero-day') await page.screenshot({ path: '.impeccable/review/club-security-lab.png', fullPage: true });
+    await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+  }
+  await approach(page, 'byte-virus'); await page.keyboard.press('KeyE');
+  await expect(page.locator('#club-panel-subtitle')).toHaveText('QUARANTINED');
+  expect(await page.evaluate(() => clubView.room.security.cage.visible)).toBe(true);
+  await page.screenshot({ path: '.impeccable/review/club-security-virus.png', fullPage: true });
+  await page.getByRole('button', { name: 'RELEASE BYTE', exact: true }).click();
+  await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await expect.poll(() => page.evaluate(() => clubModel.virus.clock)).toBeGreaterThan(.3);
+  await page.keyboard.press('KeyP');
+  const clock = await page.evaluate(() => clubModel.virus.clock); await page.waitForTimeout(220);
+  expect(await page.evaluate(() => clubModel.virus.clock)).toBe(clock);
+  await page.keyboard.press('KeyP'); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const stopped = await page.evaluate(() => ({ ...clubModel.virus })); await page.waitForTimeout(220);
+  expect(await page.evaluate(() => ({ ...clubModel.virus }))).toEqual(stopped);
+  await page.locator('#club-map').click(); await page.getByRole('button', { name: 'SECURITY ROOM', exact: true }).click();
+  await page.keyboard.down('KeyS');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.z), { timeout: 15000 }).toBeLessThan(13); }
+  finally { await page.keyboard.up('KeyS'); }
+  await expect(page.locator('#club-location')).toHaveText('THE LOUNGE');
+  expect(errors).toEqual([]);
+  expect(requests.every((url) => url.startsWith(new URL(page.url()).origin))).toBe(true);
+});
+
+test('the security map, cameo, and lab controls work on a narrow touch display', async ({ browser }) => {
+  const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true, reducedMotion: 'reduce' });
+  const page = await context.newPage(); const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.locator('#club-explore').tap(); await page.locator('#club-touch-map').tap();
+  await page.getByRole('button', { name: 'SECURITY ROOM', exact: true }).tap();
+  await expect(page.locator('#club-location')).toHaveText('SECURITY ROOM');
+  await approach(page, 'sayem-chowdhury'); await page.locator('#club-touch-use').tap();
+  await expect(page.locator('#club-panel-title')).toHaveText('SAYEM CHOWDHURY');
+  await expect(page.locator('#club-panel-subtitle')).toContainText('Bangladesh');
+  await page.screenshot({ path: '.impeccable/review/club-security-mobile.png', fullPage: true });
+  await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).tap();
+  await approach(page, 'security-blue-team'); await page.locator('#club-touch-use').tap();
+  await page.locator('[data-action="security:choice:0"]').tap(); await page.locator('[data-action="security:choice:1"]').tap();
+  expect(await page.evaluate(() => clubModel.virus.quarantined)).toBe(true);
+  await page.screenshot({ path: '.impeccable/review/club-security-lab-mobile.png', fullPage: true });
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+  expect(errors).toEqual([]); await context.close();
+});
+
+test('the headset enters the security room and uses its spatial lab and virus controls', async ({ page }) => {
+  test.setTimeout(80_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' }); await emulate(page);
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-enter-vr')).toBeEnabled(); await observe(page);
+  await page.locator('#club-enter-vr').click(); await xrClick(page, 'explore');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 1));
+  await expect(page.locator('body')).toHaveAttribute('data-state', 'map');
+  await page.evaluate(() => xrDevice.controllers.left.updateButtonValue('y-button', 0));
+  expect(await page.evaluate(() => clubView.panel.buttons.every((button) => button.y + button.height <= 640))).toBe(true);
+  await xrClick(page, 'zone:security'); await expect(page.locator('#club-location')).toHaveText('SECURITY ROOM');
+  await page.screenshot({ path: '.impeccable/review/club-security-headset.png', fullPage: true });
+  await approach(page, 'adrian-rangel');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('ADRIAN RANGEL');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await xrClick(page, 'topic:1'); await expect(page.locator('#club-panel-text')).toContainText('red-team bench');
+  await xrClick(page, 'back');
+  await approach(page, 'security-zero-day');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('ZERO-DAY RESEARCH');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  for (const choice of [1, 0, 1]) await xrClick(page, `security:choice:${choice}`);
+  await expect(page.locator('#club-panel-subtitle')).toContainText('COMPLETE');
+  await page.screenshot({ path: '.impeccable/review/club-security-lab-headset.png', fullPage: true });
+  await xrClick(page, 'back'); await approach(page, 'byte-virus');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 1));
+  await expect(page.locator('#club-panel-title')).toHaveText('BYTE · LAB VIRUS');
+  await page.evaluate(() => xrDevice.controllers.right.updateButtonValue('a-button', 0));
+  await xrClick(page, 'virus:quarantine'); expect(await page.evaluate(() => clubView.room.security.cage.visible)).toBe(true);
+  await xrClick(page, 'virus:release'); expect(await page.evaluate(() => clubModel.virus.quarantined)).toBe(false);
+  await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
 });

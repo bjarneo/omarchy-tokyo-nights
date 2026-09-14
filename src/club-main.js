@@ -177,7 +177,7 @@ function syncUI() {
     $('club-portrait').hidden = !panel.portrait;
     if (panel.portrait && scene) {
       const ctx = $('club-portrait').getContext('2d'); ctx.clearRect(0, 0, 48, 104); ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(scene.art.renderer.getFullCharacter(panel.portrait), 0, 0);
+      ctx.drawImage(scene.room.avatarFactory.portrait(panel.portrait), 0, 0);
     }
     const focused = document.activeElement?.dataset?.action;
     $('club-panel-actions').dataset.layout = panel.layout || '';

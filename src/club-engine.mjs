@@ -1,10 +1,15 @@
-import { CLUB, ENTRY, OBSTACLES, STATIC_OBSTACLES, STATIONS, ZONES, zoneAt } from './club-data.mjs';
+import { CLUB, ENTRY, FLOORS, OBSTACLES, STATIC_OBSTACLES, STATIONS, ZONES, zoneAt } from './club-data.mjs';
 import { CabinetGame } from './club-games.mjs';
 import { createClubCrew, updateClubCrew } from './club-motion.mjs';
+import { SECURITY_LABS, createLabState, chooseLab, labPanel, createVirus, updateVirus, quarantineVirus } from './club-security.mjs';
 
 export function canStand(x, z, obstacles = OBSTACLES, radius = CLUB.radius) {
-  if (!Number.isFinite(x) || !Number.isFinite(z) || Math.abs(x) > CLUB.width / 2 - radius - .18 || Math.abs(z) > CLUB.depth / 2 - radius - .18) return false;
-  return !obstacles.some((item) => Math.abs(x - item.x) < item.width / 2 + radius && Math.abs(z - item.z) < item.depth / 2 + radius);
+  if (!Number.isFinite(x) || !Number.isFinite(z)) return false;
+  const edge = radius + .18;
+  for (const dx of [-edge, edge]) for (const dz of [-edge, edge]) {
+    if (!FLOORS.some((floor) => Math.abs(x + dx - floor.x) <= floor.width / 2 && Math.abs(z + dz - floor.z) <= floor.depth / 2)) return false;
+  }
+  return !obstacles.some((item) => (item.bottom || 0) < CLUB.playerHeight && Math.abs(x - item.x) < item.width / 2 + radius && Math.abs(z - item.z) < item.depth / 2 + radius);
 }
 
 export function moveWithinRoom(position, dx, dz, obstacles = OBSTACLES, radius = CLUB.radius) {
@@ -19,7 +24,7 @@ export function moveWithinRoom(position, dx, dz, obstacles = OBSTACLES, radius =
 
 export function segmentHitsBox(a, b, box) {
   let near = 0; let far = 1;
-  const minimum = [box.x - box.width / 2, 0, box.z - box.depth / 2];
+  const minimum = [box.x - box.width / 2, box.bottom || 0, box.z - box.depth / 2];
   const maximum = [box.x + box.width / 2, box.height, box.z + box.depth / 2];
   for (const [i, axis] of ['x', 'y', 'z'].entries()) {
     const delta = b[axis] - a[axis];
@@ -57,7 +62,7 @@ export class ClubGame {
   constructor({ onChange = () => {}, onEvent = () => {}, best = {} } = {}) {
     this.onChange = onChange; this.onEvent = onEvent;
     this.state = 'entry'; this.previousState = 'explore'; this.position = { ...ENTRY };
-    this.devices = Object.fromEntries(STATIONS.map((station) => [station.id, { power: station.kind !== 'malibu', mode: station.initial, clock: 0, online: false, pattern: 0, pixels: [] }]));
+    this.devices = Object.fromEntries(STATIONS.map((station) => [station.id, { power: station.kind !== 'malibu', mode: station.initial, clock: 0, online: false, pattern: 0, pixels: [], ...(station.lab ? { lab: createLabState() } : {}) }]));
     this.best = Object.fromEntries(['star', 'brick', 'snake'].map((id) => { const value = Number(best?.[id]); return [id, Number.isFinite(value) && value >= 0 ? Math.floor(value) : 0]; }));
     this.selected = null; this.reply = ''; this.arcade = null; this.revision = 0;
     this.elapsed = 0;
@@ -67,6 +72,7 @@ export class ClubGame {
     this.crew.forEach((npc) => { npc.avoid = this.obstacles.filter((box) => box.id !== npc.id); });
     this.clearSpaces = [...ZONES.map((zone) => zone.beacon), ...STATIONS.map((station) => station.stand)];
     this.dialogueSpace = null;
+    this.virus = createVirus();
   }
 
   changed() { if (this.state !== 'talk') this.dialogueSpace = null; this.revision++; this.onChange(this); }
@@ -78,7 +84,7 @@ export class ClubGame {
 
   interact(id, player = this.position) {
     if (this.state !== 'explore' && this.state !== 'sketch') return false;
-    const target = this.crew.find((item) => item.id === id) || STATIONS.find((item) => item.id === id);
+    const target = this.crew.find((item) => item.id === id) || STATIONS.find((item) => item.id === id) || (id === this.virus.id ? this.virus : null);
     if (!target || Math.hypot(target.x - player.x, target.z - player.z) > 3) return false;
     const from = { x: player.x, y: player.y ?? CLUB.eyeHeight, z: player.z };
     const to = { x: target.x, y: target.eyeHeight || target.height, z: target.z };
@@ -105,6 +111,23 @@ export class ClubGame {
       const topic = this.selected.topics[Number(id.slice(6))];
       if (topic) { this.reply = topic[1]; this.changed(); this.onEvent({ type: 'speech', target: this.selected, text: this.reply }); }
       return;
+    }
+    if (id.startsWith('security:') && this.state === 'device' && this.selected?.lab) {
+      const device = this.devices[this.selected.id];
+      if (id === 'security:reset') device.lab = createLabState();
+      else if (id.startsWith('security:choice:')) {
+        const effect = chooseLab(SECURITY_LABS[this.selected.lab], device.lab, Number(id.slice(16)));
+        if (effect === 'quarantine') quarantineVirus(this.virus);
+      } else return;
+      this.changed(); this.onEvent({ type: 'beep', target: this.selected });
+      this.onEvent({ type: 'speech', target: this.selected, text: this.panel().text });
+      return;
+    }
+    if (id.startsWith('virus:') && this.state === 'device' && this.selected?.id === this.virus.id) {
+      if (id === 'virus:quarantine') quarantineVirus(this.virus);
+      else if (id === 'virus:release') Object.assign(this.virus, createVirus());
+      else return;
+      this.changed(); return;
     }
     if (id === 'start-game' && this.arcade) { this.arcade.reset(); this.arcade.start(); this.changed(); return; }
     if (id.startsWith('game:') && this.selected && !this.selected.topics) {
@@ -153,6 +176,7 @@ export class ClubGame {
       },
     });
     if (this.state === 'entry') return;
+    updateVirus(this.virus, dt, input.reducedMotion || this.state === 'device' && this.selected?.id === this.virus.id);
     this.elapsed += Math.min(dt, .25);
     for (const device of Object.values(this.devices)) if (device.power) device.clock += Math.min(dt, .25);
     if (this.state === 'arcade' && this.arcade) {
@@ -175,9 +199,11 @@ export class ClubGame {
     if (this.state === 'entry') return { title: 'THE MIDNIGHT CLUB', text: 'A large room full of computers, consoles, and the crew. Explore freely and try any machine.', options: [option('explore', 'ENTER THE ROOM'), option('map', 'ROOM MAP')] };
     if (this.state === 'paused') return { title: 'CLUB PAUSED', text: 'Resume your conversation, game, or walk through the room.', options: [option('explore', 'RESUME'), option('map', 'ROOM MAP'), option('song', songLabel), option('center', 'CENTER VIEW'), option('race', 'VR RACE & GARAGE'), option('exit', 'EXIT VR')] };
     if (this.state === 'map') return { title: 'THE CLUB MAP', text: 'Select an area to teleport there. You can also walk through the wide central aisles.', options: [...ZONES.map((zone) => option(`zone:${zone.id}`, zone.name)), option('back', 'CLOSE MAP')] };
-    if (this.state === 'talk') return { title: this.selected.name.toUpperCase(), subtitle: this.selected.role.toUpperCase(), text: this.reply, portrait: this.selected.id, options: [...this.selected.topics.map((topic, index) => option(`topic:${index}`, topic[0])), option('read', 'READ ALOUD'), option('back', 'BACK TO THE ROOM')] };
+    if (this.state === 'talk') return { title: this.selected.name.toUpperCase(), subtitle: `${this.selected.role.toUpperCase()}${this.selected.country ? ` · ${this.selected.country} · CAMEO` : ''}`, text: this.reply, portrait: this.selected.id, options: [...this.selected.topics.map((topic, index) => option(`topic:${index}`, topic[0])), option('read', 'READ ALOUD'), option('back', 'BACK TO THE ROOM')] };
     if (this.state === 'device') {
       const station = this.selected;
+      if (station.software === 'security') return labPanel(station, this.devices[station.id]);
+      if (station.software === 'virus') return { title: 'BYTE · LAB VIRUS', subtitle: this.virus.quarantined ? 'QUARANTINED' : 'PATROL ACTIVE', text: this.virus.quarantined ? 'BYTE stays inside the containment field. Release the simulated virus to resume its patrol through the security room.' : 'A pixel computer virus patrols the lab. Its body, eyes, and antennae are part of the room simulation. Quarantine BYTE to stop its patrol.', options: [option(this.virus.quarantined ? 'virus:release' : 'virus:quarantine', this.virus.quarantined ? 'RELEASE BYTE' : 'QUARANTINE BYTE'), option('back', 'BACK TO THE ROOM')] };
       if (station.software === 'jukebox' && this.jukebox) return this.jukebox.panel();
       const device = this.devices[station.id];
       let controls = [];

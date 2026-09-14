@@ -1,7 +1,9 @@
 import { CHARACTERS } from './characters.mjs';
+import { SECURITY, SECURITY_CREW, SECURITY_LABS } from './club-security.mjs';
 
 export const CLUB = Object.freeze({ width: 36, depth: 28, height: 4.6, eyeHeight: 1.65, playerHeight: 1.95, radius: .3, speed: 4.2, crewRadius: .36 });
 export const ENTRY = Object.freeze({ x: 0, z: 10.8, yaw: 0 });
+export const FLOORS = Object.freeze([{ x: 0, z: 0, width: CLUB.width, depth: CLUB.depth }, SECURITY]);
 export const MALIBU = Object.freeze({ x: 15.65, z: -11.65, yaw: -Math.PI / 8, northStart: 13.3, eastEnd: -9.25, sill: .16, lintel: 4.18, chairX: .42, chairZ: 1.03, approach: Object.freeze({ x: 14.6, z: -10.1, yaw: Math.atan2(-1.05, 1.55) }) });
 
 export const ZONES = Object.freeze([
@@ -12,6 +14,7 @@ export const ZONES = Object.freeze([
   { id: 'arcade', name: 'THE ARCADE ROW', x: -11.7, z: 6, width: 12.4, depth: 16, beacon: { x: -10.5, z: 9.7, yaw: Math.PI / 2 } },
   { id: 'workshop', name: 'REPAIR & DEMO STAGE', x: 0, z: -7, width: 11, depth: 14, beacon: { x: 2.7, z: -5.8, yaw: 0 } },
   { id: 'malibu', name: 'MALIBU CORNER', x: 15.65, z: -11.625, width: 4.7, depth: 4.75, beacon: { ...MALIBU.approach } },
+  { id: 'security', name: 'SECURITY ROOM', ...SECURITY, beacon: { x: 0, z: 16, yaw: Math.PI } },
 ]);
 
 const hardware = [
@@ -37,10 +40,12 @@ const hardware = [
   ['jukebox', 'Omarchy jukebox', 1989, 'jukebox', 'jukebox', 3.3, 9, 0, 'Choose any track from Omarchy Radio. Add tracks to the play queue.', 'jukebox'],
   ['omacon-crt', 'The club cinema', 1989, 'video', 'video', -2.5, 11.2, Math.PI / 2, 'Watch Omacon 2026 in the official YouTube player. This action exits VR and opens the browser player.', 'video'],
   ['malibu-desk', 'The Malibu desk', null, 'coastal', 'malibu', MALIBU.x, MALIBU.z, MALIBU.yaw, 'A sculpted white desk, a mesh chair, and a coastal sunrise through corner windows. Wake the display or enjoy the view.', 'coastal-view'],
+  ...Object.entries(SECURITY_LABS).map(([id, lab]) => [`security-${id}`, lab.title, null, 'security', 'security', lab.x, lab.z, lab.yaw, lab.intro, id]),
 ];
 
 export const STATIONS = Object.freeze(hardware.map(([id, name, year, software, kind, x, z, yaw, detail, initial]) => Object.freeze({
   id, name, year, software, kind, x, z, yaw, detail, initial,
+  ...(software === 'security' ? { lab: initial } : {}),
   height: kind === 'malibu' ? 1.43 : kind === 'video' ? 1.72 : kind === 'arcade' || kind === 'jukebox' ? 1.48 : kind === 'gameboy' ? .99 : 1.25,
   stand: kind === 'malibu' ? { ...MALIBU.approach } : { x: x + Math.sin(yaw) * 1.85, z: z + Math.cos(yaw) * 1.85, yaw },
 })));
@@ -49,7 +54,7 @@ const conversations = [
   { role: 'Club host', x: -2.2, z: 7.1, greeting: 'Welcome to the midnight computer club. Every machine is here for free play. Pick a corner and explore.', topics: [
     ['Show me around', 'The Amiga lab is at the back on the right. Its Malibu corner has a white desk and coastal windows. The BBS corner is on the left. Nintendo and Sega share the sofas.'],
     ['What can I play?', 'Star Patrol and Brick Break run in the arcade row. The Game Boy has a small Snake demo. Open the map to find them.'],
-    ['Tell me about the room', 'The jukebox and large video CRT stand beside the entrance. Choose music from Omarchy Radio or watch Omacon 2026. The repair bench sits between the computer labs.'],
+    ['The security room', 'Turn toward the entrance and walk through the doorway marked SECURITY ROOM. Meet the five security cameos, try the lab exercises, and find BYTE, the roaming pixel virus.'],
   ] },
   { role: 'Console collector', x: 11.8, z: 4, greeting: 'The NES, Famicom, and Sega systems share this corner. The controllers are ready.', topics: [
     ['NES and Famicom', 'The Famicom arrives in Japan in 1983. The gray NES follows in North America in 1985. Their cartridge connectors differ.'],
@@ -93,7 +98,7 @@ const conversations = [
   ] },
 ];
 
-export const CLUB_CREW = Object.freeze(CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })));
+export const CLUB_CREW = Object.freeze([...CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })), ...SECURITY_CREW]);
 
 export const FURNITURE = Object.freeze([
   { id: 'sofa-main', kind: 'sofa', x: 10, z: 7.4, width: 3.2, depth: 1.15, height: .9, color: '#59465a' },
@@ -105,13 +110,18 @@ export const FURNITURE = Object.freeze([
   { id: 'shelf-games', kind: 'shelf', x: 17.2, z: 11.6, width: 1, depth: 2.8, height: 2.6, color: '#80604b' },
   { id: 'shelf-tapes', kind: 'shelf', x: -17.2, z: -1.5, width: 1, depth: 3, height: 2.6, color: '#80604b' },
   { id: 'malibu-chair', kind: 'malibu-chair', x: MALIBU.x + MALIBU.chairX * Math.cos(MALIBU.yaw) + MALIBU.chairZ * Math.sin(MALIBU.yaw), z: MALIBU.z + MALIBU.chairZ * Math.cos(MALIBU.yaw) - MALIBU.chairX * Math.sin(MALIBU.yaw), width: .92, depth: .92, height: 1.4 },
+  ...[-7.3, 7.3].map((x) => ({ id: `security-rack-${x}`, kind: 'security-rack', x, z: 26.4, width: 1.5, depth: 1, height: 2.8 })),
 ]);
 
 export const WALLS = Object.freeze([
   { id: 'west-wall', x: -18, z: 0, width: .35, depth: 28.35, height: 4.6 },
   { id: 'east-wall', x: 18, z: 0, width: .35, depth: 28.35, height: 4.6 },
   { id: 'north-wall', x: 0, z: -14, width: 36, depth: .35, height: 4.6 },
-  { id: 'south-wall', x: 0, z: 14, width: 36, depth: .35, height: 4.6 },
+  ...[-1, 1].map((side) => ({ id: `south-wall-${side}`, x: side * (18 + SECURITY.doorWidth / 2) / 2, z: 14, width: 18 - SECURITY.doorWidth / 2, depth: .35, height: 4.6 })),
+  { id: 'security-lintel', x: 0, z: 14, width: SECURITY.doorWidth, depth: .35, height: 4.6, bottom: 3.2 },
+  { id: 'security-west', x: -9, z: 21, width: .35, depth: 14, height: 4.6 },
+  { id: 'security-east', x: 9, z: 21, width: .35, depth: 14, height: 4.6 },
+  { id: 'security-south', x: 0, z: 28, width: 18.35, depth: .35, height: 4.6 },
   { id: 'bbs-divider', x: -5.5, z: -9.5, width: .22, depth: 9, height: 3.5 },
   { id: 'amiga-divider', x: 5.5, z: -9.5, width: .22, depth: 9, height: 3.5 },
   ...[-4.5, 4.5].flatMap((x) => [-2.7, 4.5].map((z) => ({ id: `column-${x}-${z}`, x, z, width: .45, depth: .45, height: 4.6 }))),
@@ -134,6 +144,7 @@ export const OBSTACLES = Object.freeze([
 ]);
 
 export function zoneAt(x, z) {
+  if (z > SECURITY.doorZ && Math.abs(x) <= SECURITY.width / 2 && z <= SECURITY.z + SECURITY.depth / 2) return ZONES.find((zone) => zone.id === 'security');
   if (x >= MALIBU.northStart && z <= MALIBU.eastEnd) return ZONES.find((zone) => zone.id === 'malibu');
   return ZONES.find((zone) => Math.abs(x - zone.x) <= zone.width / 2 && Math.abs(z - zone.z) <= zone.depth / 2) || ZONES[0];
 }
