@@ -26,8 +26,13 @@
     <main class="club-main" id="club-main">
       <canvas id="club-canvas" tabindex="0" aria-label="A large 1980s computer club with the Tokyo Nights crew. Use WASD or arrow keys to walk. Drag to look around. Press E to interact." aria-describedby="club-controls"></canvas>
       <div class="club-location" id="club-location">THE LOUNGE</div>
+      <div class="club-now-playing" id="club-now-playing" hidden></div>
+      <div class="club-toast" id="club-toast" role="status" hidden></div>
+      <div class="club-title-card" id="club-title-card" hidden></div>
+      <div class="club-perf" id="club-perf" hidden></div>
       <div class="club-reticle" aria-hidden="true"></div>
       <p class="club-hint" id="club-hint" hidden></p>
+      <p class="club-caption" id="club-caption" hidden></p>
       <section class="club-entry" id="club-entry" aria-labelledby="club-title">
         <h1 id="club-title">THE MIDNIGHT<br /><span>COMPUTER CLUB.</span></h1>
         <p>Meet the crew. Try the machines.<br />Stay for another game.</p>
@@ -35,7 +40,21 @@
         <div class="club-entry-actions">
           <button class="primary-button" id="club-enter-vr" disabled>CHECK HEADSET</button>
           <button class="club-secondary" id="club-explore" disabled>EXPLORE ON SCREEN</button>
+          <button class="club-secondary" id="club-tour" disabled>TAKE THE TOUR</button>
         </div>
+        <details class="club-settings" id="club-settings">
+          <summary>SETTINGS</summary>
+          <label>QUALITY<select id="setting-quality"><option value="auto">AUTO</option><option value="low">LOW</option><option value="high">HIGH</option></select></label>
+          <label>TURN<select id="setting-turn"><option value="snap">SNAP</option><option value="smooth">SMOOTH</option></select></label>
+          <label>SNAP ANGLE<select id="setting-angle"><option value="15">15</option><option value="30">30</option><option value="45">45</option></select></label>
+          <label>SPEED<select id="setting-speed"><option value="normal">NORMAL</option><option value="calm">CALM</option></select></label>
+          <label>HEIGHT<select id="setting-height"><option value="standing">STANDING</option><option value="seated">SEATED</option></select></label>
+          <label>TEXT<select id="setting-text"><option value="normal">NORMAL</option><option value="large">LARGE</option></select></label>
+          <label class="club-check"><input type="checkbox" id="setting-haptics" checked />HAPTICS</label>
+          <label class="club-check"><input type="checkbox" id="setting-captions" checked />CAPTIONS</label>
+          <label class="club-check"><input type="checkbox" id="setting-dwell" />GAZE DWELL</label>
+          <label class="club-check"><input type="checkbox" id="setting-single" />ONE-HAND MODE</label>
+        </details>
         <p class="club-support" id="club-support" role="status">Load the room and check WebXR support.</p>
         <details class="club-help">
           <summary>HOW TO EXPLORE</summary>
@@ -50,7 +69,12 @@
       <section class="club-panel" id="club-panel" aria-labelledby="club-panel-title" hidden>
         <div class="club-panel-heading"><div><h2 id="club-panel-title"></h2><p id="club-panel-subtitle"></p></div><canvas id="club-portrait" width="48" height="104" aria-hidden="true" hidden></canvas></div>
         <p id="club-panel-text"></p>
-        <canvas id="club-map-canvas" width="600" height="250" aria-label="Map of the computer club" role="img" hidden></canvas>
+        <canvas id="club-map-canvas" width="800" height="400" aria-label="Map of the computer club" role="img" hidden></canvas>
+        <div class="club-map-tabs" id="club-map-tabs" hidden>
+          <button data-floor="B1">B1</button>
+          <button data-floor="L1">L1</button>
+          <button data-floor="R1">R1</button>
+        </div>
         <canvas id="club-design-canvas" width="768" height="432" aria-label="Live studio poster. The desk choices change its colors, type, layout, icon, and motion." role="img" hidden></canvas>
         <canvas id="club-game-canvas" width="512" height="384" aria-label="The active club game" role="img" hidden></canvas>
         <p class="club-game-stats" id="club-game-stats" hidden><span>SCORE <b id="club-game-score">0</b></span><span>PERSONAL BEST <b id="club-game-best">0</b></span></p>

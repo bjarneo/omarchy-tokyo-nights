@@ -30,7 +30,7 @@ export function updateClubCrew(crew, delta, { player, selectedId = null, state =
   for (const [index, npc] of crew.entries()) {
     const distance = Math.hypot(player.x - npc.x, player.z - npc.z);
     const engaged = state === 'talk' && selectedId === npc.id;
-    const held = npc.seated || reducedMotion || engaged || distance < 3.2;
+    const held = npc.seated || reducedMotion || engaged || distance < 2.2;
     npc.moving = false;
     if (!reducedMotion) npc.clock += dt;
     if (!held) {
@@ -43,7 +43,7 @@ export function updateClubCrew(crew, delta, { player, selectedId = null, state =
           for (let attempt = 0; attempt < 8; attempt++) {
             const seed = index * 97 + npc.turn * 23 + attempt * 11;
             const angle = hash(seed) * Math.PI * 2;
-            const radius = .45 + hash(seed + 3) * .4;
+            const radius = .45 + hash(seed + 3) * .75;
             const x = npc.homeX + Math.cos(angle) * radius; const z = npc.homeZ + Math.sin(angle) * radius;
             const steps = Math.max(1, Math.ceil(Math.hypot(x - npc.x, z - npc.z) / .08));
             let clear = true;

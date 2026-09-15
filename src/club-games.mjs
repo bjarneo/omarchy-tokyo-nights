@@ -11,6 +11,7 @@ export class CabinetGame {
     this.state = 'ready'; this.score = 0; this.lives = 3; this.elapsed = 0;
     this.x = .5; this.cooldown = 0; this.bullets = [];
     this.ball = { x: .5, y: .74, vx: .24, vy: -.48 };
+    this.pong = { x: .5, y: .5, vx: .42, vy: .3, player: 0, cpu: 0, cpuY: .5 };
     this.bricks = Array.from({ length: 24 }, (_, i) => ({ x: .07 + (i % 8) * .112, y: .14 + Math.floor(i / 8) * .08, active: true }));
     this.targets = Array.from({ length: 18 }, (_, i) => ({ x: .13 + (i % 6) * .145, y: .16 + Math.floor(i / 6) * .1, active: true }));
     this.snake = [{ x: 7, y: 6 }, { x: 6, y: 6 }, { x: 5, y: 6 }];
@@ -35,6 +36,7 @@ export class CabinetGame {
       this.x = clamp(this.x + (input.x || 0) * dt * .75, .09, .91);
       if (this.kind === 'snake') this.updateSnake(dt);
       else if (this.kind === 'star') this.updateStar(dt, input.fire);
+      else if (this.kind === 'pong') this.updatePong(dt, input);
       else this.updateBrick(dt);
       remaining -= dt;
     }
@@ -75,6 +77,33 @@ export class CabinetGame {
     this.bullets = this.bullets.filter((bullet) => bullet.y >= 0);
     if (this.targets.every((target) => !target.active)) this.state = 'won';
     else if (this.targets.some((target) => target.active && target.y + descent > .81)) this.state = 'over';
+  }
+
+  updatePong(dt, input = {}) {
+    const pong = this.pong;
+    pong.cpuY = clamp(pong.cpuY + clamp(pong.y - pong.cpuY, -.5, .5) * dt * 2.2, .16, .84);
+    pong.x += pong.vx * dt; pong.y += pong.vy * dt;
+    if (pong.y < .09 || pong.y > .91) { pong.y = clamp(pong.y, .09, .91); pong.vy *= -1; }
+    const playerY = .86;
+    if (pong.vy > 0 && pong.y >= playerY - .02 && pong.y <= playerY + .03 && Math.abs(pong.x - this.x) < .13) {
+      pong.y = playerY - .02; pong.vy = -Math.abs(pong.vy) * 1.04; pong.vx = clamp(pong.vx + (pong.x - this.x) * 2.4, -.7, .7);
+    }
+    if (pong.vy < 0 && pong.y <= .16 && pong.y >= .11 && Math.abs(pong.x - .5) < .16) {
+      pong.y = .16; pong.vy = Math.abs(pong.vy) * 1.03;
+    }
+    if (pong.y > .96) { pong.cpu++; this.servePong(-1); }
+    if (pong.y < .05) { pong.player++; this.score += 100; this.servePong(1); }
+    if (pong.player >= 5 || pong.cpu >= 5) {
+      this.score += Math.max(0, pong.player - pong.cpu) * 20 + (pong.player >= 5 ? 100 : 0);
+      this.state = pong.player >= 5 ? 'won' : 'over';
+    }
+    void input;
+  }
+
+  servePong(direction) {
+    this.pong.x = .5; this.pong.y = .5;
+    this.pong.vx = (this.random() - .5) * .6;
+    this.pong.vy = .34 * direction;
   }
 
   updateBrick(dt) {

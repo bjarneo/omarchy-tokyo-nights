@@ -3,11 +3,13 @@ import { SECURITY, SECURITY_CREW, SECURITY_LABS } from './club-security.mjs';
 import { DESIGN_STUDIO, DESIGN_CREW, DESIGN_DESKS } from './club-design.mjs';
 import { MAC_ROOM, MAC_CREW, MAC_MODELS } from './club-mac.mjs';
 import { RANGERS, RANGERS_AREA, RANGERS_FURNITURE, ELEVATOR, ELEVATOR_CABIN } from './club-rangers.mjs';
+import { BASEMENT, BASEMENT_CREW, BASEMENT_STATIONS, BASEMENT_ELEVATOR, BASEMENT_ELEVATOR_CABIN } from './club-basement.mjs';
+import { ROOF, ROOF_CREW, ROOF_STATIONS, ROOF_ELEVATOR, ROOF_ELEVATOR_CABIN } from './club-roof.mjs';
 
 export const CLUB = Object.freeze({ width: 36, depth: 28, height: 4.6, eyeHeight: 1.65, playerHeight: 1.95, radius: .3, speed: 4.2, crewRadius: .36 });
 export const ENTRY = Object.freeze({ x: 0, z: 10.8, yaw: 0 });
-export const CLUB_OBJECTS = Object.freeze([ELEVATOR, ELEVATOR_CABIN]);
-export const FLOORS = Object.freeze([{ x: 0, z: 0, width: CLUB.width, depth: CLUB.depth }, SECURITY, DESIGN_STUDIO, MAC_ROOM]);
+export const CLUB_OBJECTS = Object.freeze([ELEVATOR, ELEVATOR_CABIN, BASEMENT_ELEVATOR, BASEMENT_ELEVATOR_CABIN, ROOF_ELEVATOR, ROOF_ELEVATOR_CABIN]);
+export const FLOORS = Object.freeze([{ x: 0, z: 0, width: CLUB.width, depth: CLUB.depth }, SECURITY, DESIGN_STUDIO, MAC_ROOM, BASEMENT, ROOF]);
 export const MALIBU = Object.freeze({ x: 15.65, z: -11.65, yaw: -Math.PI / 8, northStart: 13.3, eastEnd: -9.25, sill: .16, lintel: 4.18, chairX: .42, chairZ: 1.03, approach: Object.freeze({ x: 14.6, z: -10.1, yaw: Math.atan2(-1.05, 1.55) }) });
 
 export const ZONES = Object.freeze([
@@ -22,6 +24,8 @@ export const ZONES = Object.freeze([
   { id: 'design', name: 'DESIGN STUDIO', ...DESIGN_STUDIO, beacon: { x: 12.5, z: 16, yaw: -Math.PI * .75 } },
   { id: 'mac-room', name: 'MAC ROOM · TEAM M', ...MAC_ROOM, beacon: { x: 28.8, z: 25.5, yaw: -Math.PI / 2 } },
   RANGERS_AREA,
+  { id: 'basement', name: 'BASEMENT ARCADE', ...BASEMENT, beacon: { x: 0, z: 44.6, yaw: 0 }, floor: 'B1' },
+  { id: 'roof', name: 'ROOFTOP CINEMA', ...ROOF, beacon: { x: 8.2, z: -21.9, yaw: 0 }, floor: 'R1' },
 ]);
 
 const hardware = [
@@ -52,14 +56,16 @@ const hardware = [
   ...MAC_MODELS.map((mac) => [mac.id, mac.name, mac.year, 'maclab', 'maclab', mac.x, mac.z, mac.yaw, `${mac.chip}. Choose the Omarchy desktop, local terminal, or hardware card. These are club display demos.`, 'mac-desktop']),
 ];
 
-export const STATIONS = Object.freeze(hardware.map(([id, name, year, software, kind, x, z, yaw, detail, initial]) => Object.freeze({
+export const STATIONS = Object.freeze([...hardware.map(([id, name, year, software, kind, x, z, yaw, detail, initial]) => Object.freeze({
   id, name, year, software, kind, x, z, yaw, detail, initial,
   ...(software === 'security' ? { lab: initial } : {}),
   ...(software === 'design' ? { studio: initial } : {}),
   ...(software === 'maclab' ? { mac: MAC_MODELS.find((mac) => mac.id === id) } : {}),
   height: kind === 'malibu' ? 1.43 : kind === 'video' ? 1.72 : kind === 'arcade' || kind === 'jukebox' ? 1.48 : kind === 'gameboy' ? .99 : 1.25,
   stand: kind === 'malibu' ? { ...MALIBU.approach } : { x: x + Math.sin(yaw) * 1.85, z: z + Math.cos(yaw) * 1.85, yaw },
-})));
+})), ...[...BASEMENT_STATIONS, ...ROOF_STATIONS].map((station) => Object.freeze({
+  ...station, year: null, stand: { x: station.x + Math.sin(station.yaw) * 1.85, z: station.z + Math.cos(station.yaw) * 1.85, yaw: station.yaw },
+}))]);
 
 const conversations = [
   { role: 'Club host', x: -2.2, z: 7.1, greeting: 'Welcome to the midnight computer club. Every machine is here for free play. Pick a corner and explore.', topics: [
@@ -111,7 +117,7 @@ const conversations = [
   ] },
 ];
 
-export const CLUB_CREW = Object.freeze([...CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })), ...SECURITY_CREW, ...DESIGN_CREW, ...MAC_CREW, ...RANGERS]);
+export const CLUB_CREW = Object.freeze([...CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })), ...SECURITY_CREW, ...DESIGN_CREW, ...MAC_CREW, ...RANGERS, ...BASEMENT_CREW, ...ROOF_CREW]);
 
 export const FURNITURE = Object.freeze([
   { id: 'sofa-main', kind: 'sofa', x: 10, z: 7.4, width: 3.2, depth: 1.15, height: .9, color: '#59465a' },
@@ -125,6 +131,20 @@ export const FURNITURE = Object.freeze([
   { id: 'malibu-chair', kind: 'malibu-chair', x: MALIBU.x + MALIBU.chairX * Math.cos(MALIBU.yaw) + MALIBU.chairZ * Math.sin(MALIBU.yaw), z: MALIBU.z + MALIBU.chairZ * Math.cos(MALIBU.yaw) - MALIBU.chairX * Math.sin(MALIBU.yaw), width: .92, depth: .92, height: 1.4 },
   ...[-7.3, 7.3].map((x) => ({ id: `security-rack-${x}`, kind: 'security-rack', x, z: 26.4, width: 1.5, depth: 1, height: 2.8 })),
   { id: 'design-easel', kind: 'design-easel', x: 18, z: 21, width: 3.4, depth: 3.4, height: 3.2 },
+  { id: 'basement-table', kind: 'coffee', x: -4.5, z: 42.5, width: 2.4, depth: 1, height: .5, color: '#3a3348' },
+  { id: 'basement-stools', kind: 'basement', x: 4.5, z: 42.5, width: 2.4, depth: 1.4, height: .55 },
+  { id: 'basement-elevator-left', kind: 'basement', x: -1.7, z: 47.6, width: .18, depth: 2.8, height: 3 },
+  { id: 'basement-elevator-right', kind: 'basement', x: 1.7, z: 47.6, width: .18, depth: 2.8, height: 3 },
+  { id: 'basement-elevator-back', kind: 'basement', x: 0, z: 48.85, width: 3.6, depth: .18, height: 3 },
+  { id: 'basement-elevator-roof', kind: 'basement', x: 0, z: 47.6, width: 3.6, depth: 2.8, height: 3.1, bottom: 3 },
+  { id: 'roof-hut-left', kind: 'roof', x: 6.5, z: -19.9, width: .18, depth: 2.6, height: 2.6 },
+  { id: 'roof-hut-right', kind: 'roof', x: 9.9, z: -19.9, width: .18, depth: 2.6, height: 2.6 },
+  { id: 'roof-hut-back', kind: 'roof', x: 8.2, z: -19.05, width: 3.6, depth: .18, height: 2.6 },
+  { id: 'roof-hut-roof', kind: 'roof', x: 8.2, z: -19.9, width: 3.6, depth: 2.6, height: 2.7, bottom: 2.6 },
+  { id: 'roof-bench-a', kind: 'coffee', x: -4, z: -25, width: 2.6, depth: .9, height: .5, color: '#3d4a5a' },
+  { id: 'roof-bench-b', kind: 'coffee', x: 4, z: -25, width: 2.6, depth: .9, height: .5, color: '#3d4a5a' },
+  { id: 'roof-planter-w', kind: 'roof', x: -9.4, z: -31.5, width: .8, depth: .8, height: .7 },
+  { id: 'roof-planter-e', kind: 'roof', x: 9.4, z: -31.5, width: .8, depth: .8, height: .7 },
   ...RANGERS_FURNITURE,
 ]);
 
@@ -147,6 +167,14 @@ export const WALLS = Object.freeze([
   { id: 'design-south', x: 18, z: 28, width: 18, depth: .35, height: 4.6 },
   { id: 'bbs-divider', x: -5.5, z: -9.5, width: .22, depth: 9, height: 3.5 },
   { id: 'amiga-divider', x: 5.5, z: -9.5, width: .22, depth: 9, height: 3.5 },
+  { id: 'basement-west', x: -12, z: 42, width: .35, depth: 14.35, height: 3.2 },
+  { id: 'basement-east', x: 12, z: 42, width: .35, depth: 14.35, height: 3.2 },
+  { id: 'basement-north', x: 0, z: 35, width: 24.35, depth: .35, height: 3.2 },
+  { id: 'basement-south', x: 0, z: 49, width: 24.35, depth: .35, height: 3.2 },
+  { id: 'roof-west', x: -10, z: -26, width: .3, depth: 14.3, height: 1.15 },
+  { id: 'roof-east', x: 10, z: -26, width: .3, depth: 14.3, height: 1.15 },
+  { id: 'roof-north', x: 0, z: -33, width: 20.3, depth: .3, height: 1.15 },
+  { id: 'roof-south', x: 0, z: -19, width: 20.3, depth: .3, height: 1.15 },
   ...[-4.5, 4.5].flatMap((x) => [-2.7, 4.5].map((z) => ({ id: `column-${x}-${z}`, x, z, width: .45, depth: .45, height: 4.6 }))),
 ]);
 
@@ -167,6 +195,8 @@ export const OBSTACLES = Object.freeze([
 ]);
 
 export function zoneAt(x, z) {
+  if (Math.abs(x - BASEMENT.x) <= BASEMENT.width / 2 && Math.abs(z - BASEMENT.z) <= BASEMENT.depth / 2) return ZONES.find((zone) => zone.id === 'basement');
+  if (Math.abs(x - ROOF.x) <= ROOF.width / 2 && Math.abs(z - ROOF.z) <= ROOF.depth / 2) return ZONES.find((zone) => zone.id === 'roof');
   if (x >= -17.5 && x <= -5.5 && z >= 9.2 && z <= 14) return RANGERS_AREA;
   if (x > MAC_ROOM.doorX && x <= 51 && z >= 14 && z <= 32) return ZONES.find((zone) => zone.id === 'mac-room');
   if (z > DESIGN_STUDIO.doorZ && z <= 28 && x >= 9 && x <= 27) return ZONES.find((zone) => zone.id === 'design');

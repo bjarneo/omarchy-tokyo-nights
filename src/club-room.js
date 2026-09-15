@@ -8,6 +8,8 @@ import { ClubSecurityRoom } from './club-security-room.js';
 import { ClubDesignRoom } from './club-design-room.js';
 import { ClubMacRoom } from './club-mac-room.js';
 import { ClubRangersDesk } from './club-rangers-room.js';
+import { ClubBasementRoom } from './club-basement-room.js';
+import { ClubRoofRoom } from './club-roof-room.js';
 
 const C = { wood: '#80604b', darkWood: '#503d36', beige: '#b7b29a', edge: '#777b73', plastic: '#d5d1b9', ink: '#16161e', dark: '#24283b', cyan: '#7dcfff', pink: '#f7768e', gold: '#e0af68', green: '#9ece6a', paper: '#c0caf5' };
 
@@ -24,6 +26,8 @@ export class ClubRoom {
     this.design = new ClubDesignRoom(this);
     this.mac = new ClubMacRoom(this);
     this.rangers = new ClubRangersDesk(this);
+    this.basement = new ClubBasementRoom(this);
+    this.roof = new ClubRoofRoom(this);
     STATIONS.forEach((station) => this.buildStation(station));
     FURNITURE.forEach((item) => this.buildFurniture(item));
     this.buildCharacters();
@@ -181,7 +185,7 @@ export class ClubRoom {
     this.box(x, y, z - .3, .012, .012, .5, '#16161e');
   }
 
-  crt(station, y, width = .68, height = .51, z = -.08, caseColor = C.beige, lcd = false) {
+  crt(station, y, width = .68, height = .51, z = -.08, caseColor = C.beige, lcd = false, resW = 256, resH = 192) {
     if (!lcd) {
     this.box(0, y, z - .08, width + .18, height + .19, .53, caseColor);
     this.box(0, y, z + .194, width + .05, height + .05, .035, '#333b3b');
@@ -196,7 +200,7 @@ export class ClubRoom {
       if (row < rows && col < cols) { const n = row * (cols + 1) + col; indices.push(n, n + 1, n + cols + 1, n + 1, n + cols + 2, n + cols + 1); }
     }
     geometry.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3)); geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); geometry.setIndex(indices);
-    const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 192;
+    const canvas = document.createElement('canvas'); canvas.width = resW; canvas.height = resH;
     const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; texture.magFilter = THREE.NearestFilter; texture.minFilter = THREE.LinearFilter; texture.generateMipmaps = false;
     const screen = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture, toneMapped: false }));
     const f = this.frame; screen.position.set(f.x + (z + .22) * Math.sin(f.yaw), y, f.z + (z + .22) * Math.cos(f.yaw)); screen.rotation.y = f.yaw;
@@ -205,6 +209,8 @@ export class ClubRoom {
   }
 
   buildStation(station) {
+    if (station.id.startsWith('basement-')) { this.basement.bench(station); return; }
+    if (station.id.startsWith('roof-')) { this.roof.bench(station); return; }
     if (station.kind === 'maclab') { this.mac.bench(station); return; }
     if (station.kind === 'design') { this.design.bench(station); return; }
     if (station.kind === 'security') { this.security.bench(station); return; }
@@ -300,6 +306,7 @@ export class ClubRoom {
 
   buildFurniture(item) {
     if (item.kind === 'malibu-chair' || item.kind === 'security-rack' || item.kind === 'design-easel' || item.kind === 'rangers') return;
+    if (item.kind === 'basement' || item.kind === 'roof') return;
     this.at(item.x, item.z);
     if (item.kind === 'sofa') {
       this.box(0, .28, 0, item.width, .45, item.depth, item.color);

@@ -13,14 +13,20 @@ function surface(width, height, worldWidth, worldHeight) {
   return { canvas, ctx: canvas.getContext('2d'), texture, mesh, buttons: [] };
 }
 
+const ENV_INSIDE = { bg: '#242536', fog: '#343342', fogNear: 34, fogFar: 70, hemiSky: '#dbd4d6', hemiGround: '#736152', hemi: 2.5, sun: '#ffe0b7', sunI: 1.5 };
+const ENV_ROOF = { bg: '#05070f', fog: '#0c1430', fogNear: 46, fogFar: 150, hemiSky: '#8fb0ff', hemiGround: '#14141f', hemi: 1.15, sun: '#a9c3ff', sunI: 0.85 };
+const ROOF_CENTER = { x: 0, z: -26 };
+
 export class ClubScene {
   constructor(canvas, { onAction = () => {}, onTarget = () => {}, onTeleport = () => {} } = {}) {
     Object.assign(this, { canvas, onAction, onTarget, onTeleport });
     this.renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
     this.renderer.setPixelRatio(Math.min(devicePixelRatio, 1.4)); this.renderer.xr.enabled = true; this.renderer.outputColorSpace = THREE.SRGBColorSpace;
-    this.scene = new THREE.Scene(); this.scene.background = new THREE.Color('#242536'); this.scene.fog = new THREE.Fog('#343342', 34, 70);
-    this.scene.add(new THREE.HemisphereLight('#dbd4d6', '#736152', 2.5));
-    const light = new THREE.DirectionalLight('#ffe0b7', 1.5); light.position.set(-4, 9, 8); this.scene.add(light);
+    this.scene = new THREE.Scene(); this.scene.background = new THREE.Color(ENV_INSIDE.bg); this.scene.fog = new THREE.Fog(ENV_INSIDE.fog, ENV_INSIDE.fogNear, ENV_INSIDE.fogFar);
+    this.hemi = new THREE.HemisphereLight(ENV_INSIDE.hemiSky, ENV_INSIDE.hemiGround, ENV_INSIDE.hemi); this.scene.add(this.hemi);
+    this.sun = new THREE.DirectionalLight(ENV_INSIDE.sun, ENV_INSIDE.sunI); this.sun.position.set(-4, 9, 8); this.scene.add(this.sun);
+    this.envMix = 0;
+    this.envColor = new THREE.Color();
     this.camera = new THREE.PerspectiveCamera(75, 1, .04, 220); this.camera.position.y = CLUB.eyeHeight;
     this.rig = new THREE.Group(); this.rig.position.set(ENTRY.x, 0, ENTRY.z); this.rig.add(this.camera); this.scene.add(this.rig);
     this.art = new VRArt(); this.room = new ClubRoom(this.art); this.scene.add(this.room.root);
@@ -36,7 +42,8 @@ export class ClubScene {
     this.quaternion = new THREE.Quaternion(); this.temp = new THREE.Vector3();
     this.lookYaw = 0; this.pitch = 0; this.hover = null; this.lastPanel = ''; this.lastScreens = -Infinity;
     this.lastTooltip = ''; this.teleportTarget = null; this.teleportController = null;
-    this.makeControllers(); this.makeTeleport(); this.makeFade();
+    this.makeControllers(); this.makeTeleport(); this.makeFade(); this.makeComfort(); this.makeHands();
+    this.comfortAmount = 0; this.dwellTarget = null; this.dwellStart = 0; this.screensUpdated = 0; this.avatarsVisible = 0; this.screenCursor = 0;
   }
 
   makeControllers() {
@@ -46,6 +53,10 @@ export class ClubScene {
       const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(0, 0, -1)]), new THREE.LineBasicMaterial({ color: i ? '#e0af68' : '#7dcfff', transparent: true, opacity: .65 }));
       line.scale.z = 3; ray.add(line);
       const handle = new THREE.Mesh(new THREE.BoxGeometry(.045, .045, .11), new THREE.MeshLambertMaterial({ color: i ? '#e0af68' : '#7dcfff' })); grip.add(handle);
+      const trigger = new THREE.Mesh(new THREE.BoxGeometry(.02, .05, .02), new THREE.MeshLambertMaterial({ color: '#16161e' }));
+      trigger.position.set(0, -.02, -.05); grip.add(trigger);
+      const stick = new THREE.Mesh(new THREE.CylinderGeometry(.012, .012, .03, 8), new THREE.MeshLambertMaterial({ color: '#c0caf5' }));
+      stick.position.set(0, .035, .02); grip.add(stick);
       ray.addEventListener('connected', (event) => { ray.userData.hand = event.data.handedness; });
       ray.addEventListener('selectstart', () => {
         if (!this.game) return;
@@ -78,6 +89,23 @@ export class ClubScene {
     this.fade.frustumCulled = false; this.fade.renderOrder = 1000; this.fade.visible = false; this.scene.add(this.fade); this.fadeTime = 0;
   }
 
+  makeComfort() {
+    this.comfort = new THREE.Mesh(new THREE.PlaneGeometry(2, 2), new THREE.ShaderMaterial({
+      uniforms: { amount: { value: 0 } }, transparent: true, depthTest: false, depthWrite: false,
+      vertexShader: 'varying vec2 vUv;void main(){vUv=uv;gl_Position=vec4(position.xy,0.,1.);}',
+      fragmentShader: 'varying vec2 vUv;uniform float amount;void main(){float d=distance(vUv,vec2(.5));float edge=smoothstep(.32,.62,d)*amount;gl_FragColor=vec4(0.086,0.086,0.118,edge);}',
+    }));
+    this.comfort.frustumCulled = false; this.comfort.renderOrder = 999; this.comfort.visible = false; this.scene.add(this.comfort);
+  }
+
+  makeHands() {
+    this.handDots = [];
+    for (let i = 0; i < 2; i++) {
+      const dot = new THREE.Mesh(new THREE.SphereGeometry(.012, 8, 6), new THREE.MeshBasicMaterial({ color: i ? '#e0af68' : '#7dcfff', depthTest: false, transparent: true, opacity: .9 }));
+      dot.renderOrder = 150; dot.visible = false; this.scene.add(dot); this.handDots.push(dot);
+    }
+  }
+
   resize(width, height) {
     if (this.renderer.xr.isPresenting || width <= 0 || height <= 0) return;
     this.renderer.setSize(width, height, false); this.camera.aspect = width / height; this.camera.updateProjectionMatrix();
@@ -88,6 +116,22 @@ export class ClubScene {
   setNotice(message) {
     this.notice.ctx.fillStyle = '#16161e'; this.notice.ctx.fillRect(0, 0, 1024, 192);
     paragraph(this.notice.ctx, message, 30, 57, 964, 28, '#e0af68'); this.notice.texture.needsUpdate = true; this.noticeTime = 4.5;
+  }
+
+  updateEnvironment(dt) {
+    const onRoof = Math.abs(this.head.x - ROOF_CENTER.x) <= 10.4 && Math.abs(this.head.z - ROOF_CENTER.z) <= 7.4 ? 1 : 0;
+    this.envMix += (onRoof - this.envMix) * Math.min(1, Math.max(0, dt) * 2.2);
+    if (Math.abs(onRoof - this.envMix) < 0.002) this.envMix = onRoof;
+    const m = this.envMix;
+    this.scene.background.set(ENV_INSIDE.bg).lerp(this.envColor.set(ENV_ROOF.bg), m);
+    this.scene.fog.color.set(ENV_INSIDE.fog).lerp(this.envColor.set(ENV_ROOF.fog), m);
+    this.scene.fog.near = ENV_INSIDE.fogNear + (ENV_ROOF.fogNear - ENV_INSIDE.fogNear) * m;
+    this.scene.fog.far = ENV_INSIDE.fogFar + (ENV_ROOF.fogFar - ENV_INSIDE.fogFar) * m;
+    this.hemi.color.set(ENV_INSIDE.hemiSky).lerp(this.envColor.set(ENV_ROOF.hemiSky), m);
+    this.hemi.groundColor.set(ENV_INSIDE.hemiGround).lerp(this.envColor.set(ENV_ROOF.hemiGround), m);
+    this.hemi.intensity = ENV_INSIDE.hemi + (ENV_ROOF.hemi - ENV_INSIDE.hemi) * m;
+    this.sun.color.set(ENV_INSIDE.sun).lerp(this.envColor.set(ENV_ROOF.sun), m);
+    this.sun.intensity = ENV_INSIDE.sunI + (ENV_ROOF.sunI - ENV_INSIDE.sunI) * m;
   }
 
   headPose() {
@@ -126,7 +170,72 @@ export class ClubScene {
     this.rig.rotation.y += angle; this.scene.updateMatrixWorld(true);
     this.headPose();
     this.rig.position.x += before.x - this.head.x; this.rig.position.z += before.z - this.head.z;
-    this.fadeTime = .1;
+    this.fadeTime = .1; this.turning = true;
+  }
+
+  smoothTurn(rate, dt) {
+    if (!rate || !dt) return;
+    this.headPose(); const before = this.head.clone();
+    this.rig.rotation.y += rate * dt; this.scene.updateMatrixWorld(true);
+    this.headPose();
+    this.rig.position.x += before.x - this.head.x; this.rig.position.z += before.z - this.head.z;
+    this.turning = true;
+  }
+
+  updateDwell(aimed, immersive) {
+    if (!this.dwellEnabled || !immersive) { this.dwellTarget = null; return; }
+    const action = this.buttonAt(aimed);
+    const now = performance.now();
+    if (action && action === this.dwellTarget && now - this.dwellStart > 900) {
+      this.onAction(action); this.dwellTarget = null; return;
+    }
+    if (action !== this.dwellTarget) { this.dwellTarget = action; this.dwellStart = now; }
+  }
+
+  updateScreens(game, quality, reducedMotion) {
+    const nearHz = quality?.screenNearHz ?? 12;
+    const farHz = quality?.screenFarHz ?? 4;
+    const nearCount = quality?.screenNearCount ?? 8;
+    const nearInterval = 1 / nearHz; const farInterval = 1 / farHz;
+    const revisionChanged = this.lastScreenRevision !== game.revision;
+    const ranked = STATIONS.map((station) => ({ station, distance: Math.hypot(station.x - this.head.x, station.z - this.head.z) })).sort((a, b) => a.distance - b.distance);
+    this.screensUpdated = 0;
+    game.nearPowered = ranked.filter(({ station, distance }) => distance < 8 && game.devices[station.id]?.power).map(({ station }) => station);
+    for (const [rank, { station, distance }] of ranked.entries()) {
+      const key = station.id;
+      const last = this.screenTimes?.get(key) ?? -Infinity;
+      const interval = rank < nearCount ? nearInterval : farInterval;
+      if (!revisionChanged && game.elapsed - last < interval) continue;
+      if (distance > 28 && !revisionChanged) continue;
+      const screen = this.room.screens.get(station.id);
+      if (!screen) continue;
+      drawStation(screen.ctx, station, game.devices[station.id], game.selected?.id === station.id ? game.arcade : null, game.jukebox, game.design, reducedMotion, this.art.renderer.logo, { best: game.best, posts: game.posts, pours: game.pours });
+      screen.texture.needsUpdate = true;
+      this.screenTimes ??= new Map();
+      this.screenTimes.set(key, game.elapsed);
+      this.screensUpdated++;
+    }
+    this.lastScreens = game.elapsed; this.lastScreenRevision = game.revision;
+  }
+
+  updateAvatars(game, quality, reducedMotion) {
+    const cull = quality?.avatarCull ?? 30;
+    this.avatarsVisible = 0;
+    this.room.characters.forEach((avatar, i) => {
+      const npc = game.crew[i];
+      const distance = Math.hypot(this.head.x - npc.x, this.head.z - npc.z);
+      const visible = distance < cull;
+      avatar.visible = visible;
+      if (!visible) return;
+      this.avatarsVisible++;
+      const far = distance > 12;
+      const last = avatar.userData.lastAnimate ?? -Infinity;
+      if (far && game.elapsed - last < 1 / 15) return;
+      avatar.userData.lastAnimate = game.elapsed;
+      this.room.avatarFactory.animate(avatar, npc, { state: game.state, reducedMotion, viewer: this.head });
+      avatar.tag.visible = distance < 9;
+      if (avatar.tag.visible) avatar.tag.lookAt(this.head);
+    });
   }
 
   teleport(point, yaw) {
@@ -192,7 +301,8 @@ export class ClubScene {
     const hit = this.gazeHit();
     if (this.select(hit)) return;
     this.headPose();
-    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS, ...CLUB_OBJECTS, ...(this.game ? [this.game.virus] : [])].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= 3).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
+    const range = this.game?.INTERACT_RANGE || 3;
+    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS, ...CLUB_OBJECTS, ...(this.game ? [this.game.virus] : [])].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= range).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
     if (target) this.onTarget(target.id);
   }
 
@@ -350,41 +460,44 @@ export class ClubScene {
     }
   }
 
-  update(game, { immersive = false, reducedMotion = false } = {}, dt = 0) {
+  update(game, { immersive = false, reducedMotion = false, quality = null, comfort = true, speedAmount = 0 } = {}, dt = 0) {
     this.game = game;
     if (!this.renderer.xr.isPresenting) { this.camera.position.set(0, CLUB.eyeHeight, 0); this.camera.rotation.set(this.pitch, this.lookYaw, 0, 'YXZ'); }
     this.scene.updateMatrixWorld(true); this.headPose();
     game.position.x = this.head.x; game.position.z = this.head.z;
-    if (game.elapsed - this.lastScreens > .08 || this.lastScreenRevision !== game.revision) {
-      for (const station of STATIONS) {
-        const screen = this.room.screens.get(station.id);
-        if (Math.hypot(station.x - this.head.x, station.z - this.head.z) > 22 && this.lastScreenRevision === game.revision) continue;
-        drawStation(screen.ctx, station, game.devices[station.id], game.selected?.id === station.id ? game.arcade : null, game.jukebox, game.design, reducedMotion, this.art.renderer.logo); screen.texture.needsUpdate = true;
-      }
-      this.lastScreens = game.elapsed; this.lastScreenRevision = game.revision;
-    }
-    this.room.characters.forEach((avatar, i) => {
-      this.room.avatarFactory.animate(avatar, game.crew[i], { state: game.state, reducedMotion, viewer: this.head });
-      const distance = Math.hypot(this.head.x - avatar.position.x, this.head.z - avatar.position.z);
-      avatar.tag.visible = distance < 9;
-      if (avatar.tag.visible) avatar.tag.lookAt(this.head);
-    });
+    this.updateScreens(game, quality, reducedMotion);
+    this.updateAvatars(game, quality, reducedMotion);
+    this.updateEnvironment(dt);
     this.room.malibu.update(game.elapsed, reducedMotion);
     this.room.security.update(game.virus, reducedMotion, this.head, game.state === 'device' && game.selected?.id === game.virus.id);
     this.room.design.update(game.design, reducedMotion);
+    this.room.roof.update(game.elapsed, reducedMotion);
     this.hover = null;
     let aimed = null;
-    for (const { ray, line } of this.controllers) {
+    for (const [index, { ray, line }] of this.controllers.entries()) {
       const hit = ray.visible && immersive ? this.controllerHit(ray) : null;
       line.visible = immersive && this.teleportController !== ray; line.scale.z = Math.min(4, hit?.distance || 4);
       if (hit) { aimed = hit; this.hover = this.buttonAt(hit) || this.hover; }
+      const dot = this.handDots[index];
+      if (dot) {
+        if (immersive && ray.visible) {
+          ray.getWorldPosition(dot.position);
+          ray.getWorldDirection(this.temp); dot.position.addScaledVector(this.temp, Math.min(4, hit?.distance || 1)); dot.visible = true;
+        } else dot.visible = false;
+      }
     }
     const gaze = this.gazeHit();
     if (!aimed) aimed = gaze;
+    this.updateDwell(aimed, immersive);
     this.cursor.visible = !immersive || !this.controllers.some(({ ray }) => ray.visible);
     this.drawPanel(game, immersive, reducedMotion); this.updateTeleport(); this.headPose(); this.drawTooltip(aimed, immersive);
     this.fadeTime = Math.max(0, this.fadeTime - dt); this.fade.visible = this.fadeTime > 0;
     this.fade.material.uniforms.opacity.value = Math.min(1, this.fadeTime / .1);
+    const target = comfort && immersive ? Math.min(.85, speedAmount * .9 + (this.turning ? .5 : 0)) : 0;
+    this.comfortAmount += (target - this.comfortAmount) * Math.min(1, dt * 6);
+    this.comfort.visible = this.comfortAmount > .02;
+    this.comfort.material.uniforms.amount.value = this.comfortAmount;
+    this.turning = false;
     this.noticeTime = Math.max(0, this.noticeTime - dt); this.notice.mesh.visible = immersive && this.noticeTime > 0;
     this.renderer.render(this.scene, this.camera); this.headPose();
   }

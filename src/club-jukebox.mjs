@@ -7,6 +7,7 @@ export class ClubJukebox {
     Object.assign(this, { tracks, audioFactory, onChange, onPlay });
     this.queue = []; this.index = -1; this.selection = 0; this.page = 0; this.view = 'library';
     this.audio = null; this.detach = []; this.request = 0; this.pending = false; this.intent = false; this.error = ''; this.disposed = false;
+    this.favorites = new Set(); this.shuffle = false; this.queueStartCount = 0; this.spatial = null;
   }
 
   get track() { return this.tracks[this.index]; }
@@ -14,6 +15,13 @@ export class ClubJukebox {
   get active() { return this.intent && (this.pending || this.playing); }
   get toggleLabel() { return this.pending ? 'CANCEL LOAD' : this.playing ? 'PAUSE MUSIC' : this.track ? 'RESUME MUSIC' : this.queue.length ? 'PLAY QUEUE' : 'PLAY MUSIC'; }
   notify() { if (!this.disposed) this.onChange(this); }
+
+  attachSpatial(connector) {
+    this.spatial = connector || null;
+    if (this.audio && this.spatial) {
+      try { this.spatial(this.audio); } catch { this.spatial = null; }
+    }
+  }
 
   prepare() {
     if (this.audio && !this.audio.error) return this.audio;
@@ -34,6 +42,9 @@ export class ClubJukebox {
     listen('error', () => { if (this.intent) this.fail('This track cannot play. Select Play now to retry, or choose Next track.'); });
     globalThis.document?.body?.append(audio);
     audio.src = new URL(`../assets/radio/${this.track.file}`, import.meta.url).href;
+    if (this.spatial) {
+      try { this.spatial(audio); } catch { this.spatial = null; }
+    }
     return audio;
   }
 
@@ -75,7 +86,16 @@ export class ClubJukebox {
   }
 
   next(autoplay = this.active) {
-    if (this.tracks.length) this.select(this.queue.length ? this.queue.shift() : (this.index + 1) % this.tracks.length, autoplay);
+    if (!this.tracks.length) return;
+    if (this.queue.length) this.select(this.queue.shift(), autoplay);
+    else if (this.shuffle) this.select(Math.floor(Math.random() * this.tracks.length), autoplay);
+    else this.select((this.index + 1) % this.tracks.length, autoplay);
+  }
+
+  toggleFavorite(index) {
+    if (!Number.isInteger(index) || !this.tracks[index]) return;
+    if (this.favorites.has(index)) this.favorites.delete(index); else this.favorites.add(index);
+    this.notify();
   }
 
   add(index) {
@@ -98,10 +118,16 @@ export class ClubJukebox {
     if (action === 'page' && Number.isInteger(index)) this.page = Math.max(0, Math.min(this.pageCount - 1, index));
     if (action === 'remove' && Number.isInteger(index) && index >= 0 && index < this.queue.length) this.queue.splice(index, 1);
     if (action === 'clear') this.queue = [];
+    if (action === 'favorite' && Number.isInteger(index)) this.toggleFavorite(index);
+    if (action === 'favorites') { this.view = 'favorites'; this.page = 0; }
+    if (action === 'shuffle') this.shuffle = !this.shuffle;
     this.page = Math.min(this.page, this.pageCount - 1); this.notify();
   }
 
-  get pageCount() { return Math.max(1, Math.ceil((this.view === 'queue' ? this.queue.length : this.tracks.length) / PAGE_SIZE)); }
+  get pageCount() {
+    const length = this.view === 'queue' ? this.queue.length : this.view === 'favorites' ? this.favorites.size : this.tracks.length;
+    return Math.max(1, Math.ceil(length / PAGE_SIZE));
+  }
 
   panel() {
     const option = (id, label, extra = {}) => ({ id: `jukebox:${id}`, label, ...extra });
@@ -111,24 +137,28 @@ export class ClubJukebox {
       const track = this.tracks[this.selection];
       if (!track) return { title: 'OMARCHY JUKEBOX', text: 'The local track library is empty.', options: [back] };
       return {
-        title: 'OMARCHY JUKEBOX', subtitle: `TRACK ${this.selection + 1} OF ${this.tracks.length}${track.explicit ? ' · EXPLICIT' : ''}`,
+        title: 'OMARCHY JUKEBOX', subtitle: `TRACK ${this.selection + 1} OF ${this.tracks.length}${track.explicit ? ' · EXPLICIT' : ''}${this.favorites.has(this.selection) ? ' · FAVORITE' : ''}`,
         text: `${track.title} · ${track.artist} · ${this.error || `${this.queue.length} ${this.queue.length === 1 ? 'track' : 'tracks'} in the queue.`}`,
-        options: [option(`play:${this.selection}`, 'PLAY NOW'), option(`add:${this.selection}`, 'ADD TO QUEUE'), option('toggle', this.toggleLabel), option('next', 'NEXT TRACK'), option('library', 'TRACK LIBRARY'), option('queue', `VIEW QUEUE · ${this.queue.length}`), back],
+        options: [option(`play:${this.selection}`, 'PLAY NOW'), option(`add:${this.selection}`, 'ADD TO QUEUE'), option(`favorite:${this.selection}`, this.favorites.has(this.selection) ? 'REMOVE FAVORITE' : 'ADD FAVORITE'), option('toggle', this.toggleLabel), option('next', 'NEXT TRACK'), option('library', 'TRACK LIBRARY'), option('queue', `VIEW QUEUE · ${this.queue.length}`), back],
       };
     }
     const queued = this.view === 'queue';
-    const list = queued ? this.queue.map((index) => this.tracks[index]) : this.tracks;
+    const favorited = this.view === 'favorites';
+    const favoriteList = [...this.favorites].sort((a, b) => a - b);
+    const list = queued ? this.queue.map((index) => this.tracks[index]) : favorited ? favoriteList.map((index) => this.tracks[index]) : this.tracks;
+    const realIndex = (row) => (queued ? this.queue[offset + row] : favorited ? favoriteList[offset + row] : offset + row);
     const offset = this.page * PAGE_SIZE;
-    const rows = list.slice(offset, offset + PAGE_SIZE).map((track, i) => option(`${queued ? 'remove' : 'pick'}:${offset + i}`, `${String(offset + i + 1).padStart(2, '0')}  ${track.title}`, {
-      detail: `${track.artist}${track.explicit ? ' · EXPLICIT' : ''}`, primary: !queued && offset + i === this.index,
+    const rows = list.slice(offset, offset + PAGE_SIZE).map((track, i) => option(`${queued ? 'remove' : 'pick'}:${offset + i}`, `${String(realIndex(i) + 1).padStart(2, '0')}  ${track.title}`, {
+      detail: `${track.artist}${track.explicit ? ' · EXPLICIT' : ''}${this.favorites.has(realIndex(i)) ? ' · FAVORITE' : ''}`, primary: !queued && offset + i === this.index,
     }));
     const controls = [option(`page:${this.page - 1}`, 'PREVIOUS PAGE', { disabled: this.page === 0 }), option(`page:${this.page + 1}`, 'NEXT PAGE', { disabled: this.page >= this.pageCount - 1 })];
     if (queued) controls.push(option('clear', 'CLEAR QUEUE', { disabled: !this.queue.length }), option('toggle', this.toggleLabel, { primary: true }), option('library', 'TRACK LIBRARY'));
-    else controls.push(option('toggle', this.toggleLabel, { primary: true }), option('queue', `VIEW QUEUE · ${this.queue.length}`), option('current', 'NOW PLAYING', { disabled: !this.track }));
+    else controls.push(option('toggle', this.toggleLabel, { primary: true }), option('shuffle', this.shuffle ? 'SHUFFLE ON' : 'SHUFFLE OFF'), option('queue', `VIEW QUEUE · ${this.queue.length}`), option('favorites', `FAVORITES · ${this.favorites.size}`), option('current', 'NOW PLAYING', { disabled: !this.track }));
     controls.push(back);
+    const title = queued ? 'THE PLAY QUEUE' : favorited ? 'FAVORITE TRACKS' : 'OMARCHY JUKEBOX';
     return {
-      title: queued ? 'THE PLAY QUEUE' : 'OMARCHY JUKEBOX', subtitle: `${list.length} ${list.length === 1 ? 'TRACK' : 'TRACKS'} · PAGE ${this.page + 1} OF ${this.pageCount}`,
-      text: queued ? this.queue.length ? 'Select a queued track to remove it. The queue plays in the order shown.' : 'The queue is empty. Choose Track library to add music.' : current,
+      title, subtitle: `${list.length} ${list.length === 1 ? 'TRACK' : 'TRACKS'} · PAGE ${this.page + 1} OF ${this.pageCount}`,
+      text: queued ? this.queue.length ? 'Select a queued track to remove it. The queue plays in the order shown.' : 'The queue is empty. Choose Track library to add music.' : favorited ? this.favorites.size ? 'Your favorite tracks. Select a track to play it.' : 'No favorites yet. Open a track and add it.' : current,
       layout: 'jukebox', rows: rows.length, footerColumns: 3, options: [...rows, ...controls],
     };
   }

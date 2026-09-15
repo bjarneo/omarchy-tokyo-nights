@@ -78,6 +78,12 @@ export class VRSession {
     } finally { this.pending = false; }
   }
 
+  get isImmersive() { return Boolean(this.session); }
+
+  setFramebufferScale(scale) {
+    try { this.renderer?.xr?.setFramebufferScaleFactor(scale); } catch { /* Optional. */ }
+  }
+
   async exit() {
     if (!this.session) return;
     try { await this.session.end(); }

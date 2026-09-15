@@ -102,13 +102,15 @@ export function createVirus() {
   return { id: 'byte-virus', name: 'BYTE · lab virus', software: 'virus', detail: 'Meet BYTE, the simulated computer virus. Quarantine it or let it patrol the security room.', x: -2, z: 18, height: 1.1, clock: 0, yaw: Math.PI / 2, quarantined: false };
 }
 
-export function updateVirus(virus, dt, held = false) {
+export function updateVirus(virus, dt, held = false, canStandAt = null) {
   if (held || virus.quarantined) return;
   virus.clock += Math.max(0, Math.min(.25, dt));
   const points = [[-2, 18], [2, 18], [2, 22], [-2, 22]];
   const phase = virus.clock * .22; const index = Math.floor(phase) % points.length;
   const from = points[index]; const to = points[(index + 1) % points.length]; const amount = phase % 1;
-  virus.x = from[0] + (to[0] - from[0]) * amount; virus.z = from[1] + (to[1] - from[1]) * amount;
+  const x = from[0] + (to[0] - from[0]) * amount; const z = from[1] + (to[1] - from[1]) * amount;
+  if (typeof canStandAt === 'function' && !canStandAt(x, z)) return;
+  virus.x = x; virus.z = z;
   virus.yaw = Math.atan2(to[0] - from[0], to[1] - from[1]);
 }
 

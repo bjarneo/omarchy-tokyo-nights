@@ -11,7 +11,8 @@ import { MAC_CREW, MAC_MODELS } from '../src/club-mac.mjs';
 import { RANGERS, RANGER_CONTROLS } from '../src/club-rangers.mjs';
 
 test('every character and machine has an accessible interaction point from the entrance', () => {
-  const queue = [{ x: 0, z: 10.5 }]; const seen = new Set(['0,10.5']);
+  const seeds = [{ x: 0, z: 10.5 }, { x: 0, z: 44 }, { x: 0, z: -22.5 }];
+  const queue = [...seeds]; const seen = new Set(seeds.map((point) => `${point.x},${point.z}`));
   for (let index = 0; index < queue.length; index++) {
     const current = queue[index];
     for (const [dx, dz] of [[.5, 0], [-.5, 0], [0, .5], [0, -.5]]) {
@@ -113,7 +114,7 @@ test('pause preserves the current conversation or game', () => {
 
 test('invalid stored scores fall back to zero', () => {
   assert.doesNotThrow(() => new ClubGame({ best: null }));
-  assert.deepEqual(new ClubGame({ best: { star: Infinity, brick: -100, snake: 'wrong' } }).best, { star: 0, brick: 0, snake: 0 });
+  assert.deepEqual(new ClubGame({ best: { star: Infinity, brick: -100, snake: 'wrong' } }).best, { star: 0, brick: 0, snake: 0, pong: 0 });
 });
 
 test('snap turns trigger once until the stick returns to neutral', () => {
@@ -170,7 +171,7 @@ test('the crew takes short walks without entering obstacles or reserved approach
   for (let i = 0; i < 1200; i++) {
     game.update(.05);
     for (const npc of game.crew) {
-      assert.ok(Math.hypot(npc.x - npc.homeX, npc.z - npc.homeZ) <= .86, npc.id);
+      assert.ok(Math.hypot(npc.x - npc.homeX, npc.z - npc.homeZ) <= 1.21, npc.id);
       assert.ok(canStand(npc.x, npc.z, npc.avoid, CLUB.crewRadius), npc.id);
     }
   }

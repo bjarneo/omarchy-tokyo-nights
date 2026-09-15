@@ -3,9 +3,15 @@ import { ClubInput } from './club-controls.mjs';
 import { CLUB, CLUB_CREW, STATIONS } from './club-data.mjs';
 import { VRSession } from './vr-session.mjs';
 import { seatOffset } from './vr-world.mjs';
+import { pulseControllers } from './vr-controls.mjs';
 import { ClubAudio } from './club-audio.js';
 import { ClubJukebox } from './club-jukebox.mjs';
 import { ClubCinema } from './club-cinema.js';
+import { ClubQuests } from './club-quests.mjs';
+import { ClubElevator } from './club-elevator.mjs';
+import { ClubQuality } from './club-quality.mjs';
+import { loadSettings, saveSettings, walkSpeed, snapRadians } from './club-settings.mjs';
+import { barkFor } from './club-barks.mjs';
 import { SongPlayer, updateSongButton, updateSongStatus } from './song-player.js';
 import { drawMap, drawCabinet } from './club-screens.js';
 import { drawDesignPoster } from './club-design-art.js';
@@ -22,9 +28,27 @@ const keys = new Set(); const touch = new Set();
 let scene; let vr; let jukebox; let baseSpace; let needsCenter = false; let lastFrame = null; let lastUI = 0; let disposed = false; let contextLost = false;
 let soundPreferred = storage.get('sound', 'false') === 'true';
 let reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
-let feedbackTimer; let lastState = '';
-let videoOpening = false;
+let feedbackTimer; let lastState = ''; let toastTimer; let captionTimer; let titleTimer;
+let videoOpening = false; let mapFloor = 'L1'; let lastZone = ''; let sources = [];
+let settings = loadSettings(storage);
+const quality = new ClubQuality({ mode: settings.quality, immersive: false });
+const debugPerf = new URLSearchParams(location.search).has('debug');
+const quests = new ClubQuests({
+  save: (() => { try { return JSON.parse(storage.get('club.quests', 'null')); } catch { return null; } })(),
+  onChange: (progress) => storage.set('club.quests', JSON.stringify(progress)),
+});
+const elevator = new ClubElevator({ onChange: () => {} });
 const announce = (text) => { $('club-announcer').textContent = text; };
+const pulse = (list, strength, duration) => { if (settings.haptics) pulseControllers(list, strength, duration); };
+const toast = (text) => {
+  $('club-toast').textContent = text; $('club-toast').hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { $('club-toast').hidden = true; }, 3500);
+};
+const caption = (text) => {
+  if (!settings.captions) return;
+  $('club-caption').textContent = text; $('club-caption').hidden = false;
+  clearTimeout(captionTimer); captionTimer = setTimeout(() => { $('club-caption').hidden = true; }, 4000);
+};
 const feedback = (text) => {
   $('club-feedback').textContent = text; $('club-feedback').hidden = false; announce(text);
   scene?.setNotice(text);
@@ -40,9 +64,30 @@ const game = new ClubGame({
     if (event.type === 'interact' || event.type === 'speech') {
       announce(`${event.target.name}. ${event.text}`);
       audio.tone(event.target, event.target.topics ? 440 : 880, .06);
+      if (event.target.topics && event.target.id === game.crew[0]?.id) quests.completeStep('tour', 0);
+      if (event.target.id === 'byte-virus') quests.completeStep('byte', 1);
     }
     if (event.type === 'beep') audio.tone(event.target);
     if (event.type === 'modem') audio.modem(event.target);
+    if (event.type === 'design') storage.set('club.design', JSON.stringify(event.design));
+    if (event.type === 'badge') {
+      storage.set('club.badges', JSON.stringify(game.badges));
+      toast(`LAB BADGE: ${String(event.lab).toUpperCase()}`);
+      audio.ui('quest', scene?.head);
+    }
+    if (event.type === 'quest' && !event.armed) {
+      const result = quests.completeStep(event.quest, event.step);
+      if (result) {
+        toast(result.done ? `BADGE EARNED: ${result.quest.title}` : `QUEST UPDATED: ${result.quest.title} ${result.count}/${result.total}`);
+        audio.ui('quest', scene?.head);
+        pulse(sources, .7, 60);
+        announce(`Quest ${result.quest.title}. Step ${result.count} of ${result.total} complete.`);
+      }
+    }
+    if (event.type === 'bbs-post') {
+      const text = prompt('Post a note to the club BBS (80 chars max):', 'HELLO FROM THE CLUB');
+      if (text && game.addPost(text)) { storage.set('club.bbs', JSON.stringify(game.posts)); feedback('Your note is on the bulletin board.'); }
+    }
   },
 });
 const song = new SongPlayer({
@@ -55,9 +100,21 @@ const song = new SongPlayer({
 });
 jukebox = new ClubJukebox({
   onPlay: () => song.pause(),
-  onChange(state) { audio.musicEnabled = !song.playing && !state.active; game.changed(); },
+  onChange(state) {
+    audio.musicEnabled = !song.playing && !state.active; game.changed();
+    if (state.queue.length >= 3) { state.queueStartCount = Math.max(state.queueStartCount, 3); }
+    if (state.queue.length >= 3 || state.queueStartCount >= 3) quests.completeStep('mixtape', 0);
+  },
 });
 game.jukebox = jukebox;
+try {
+  const saved = JSON.parse(storage.get('club.jukebox', 'null'));
+  if (saved) {
+    jukebox.favorites = new Set((saved.favorites || []).filter((index) => Number.isInteger(index)));
+    jukebox.shuffle = saved.shuffle === true;
+    if (Number.isInteger(saved.last)) jukebox.selection = saved.last;
+  }
+} catch { /* Saved jukebox prefs are optional. */ }
 
 function toggleSong() { jukebox.pause(); song.toggle(); }
 
@@ -85,7 +142,7 @@ async function openCinema() {
 
 async function setSound(enabled) {
   soundPreferred = await audio.setEnabled(enabled); storage.set('sound', soundPreferred);
-  $('club-sound').textContent = soundPreferred ? 'SOUND ON' : 'SOUND OFF';
+  if (soundPreferred) jukebox.attachSpatial((element) => audio.spatialize(element, { x: 3.3, y: 1.4, z: 9 }));  $('club-sound').textContent = soundPreferred ? 'SOUND ON' : 'SOUND OFF';
   $('club-sound').setAttribute('aria-pressed', String(soundPreferred));
   $('club-sound').setAttribute('aria-label', soundPreferred ? 'Turn sound off' : 'Turn sound on');
   if (!audio.available) { $('club-sound').disabled = true; feedback('Audio is unavailable in this browser.'); }
@@ -132,6 +189,8 @@ function act(id) {
   if (!scene || contextLost) return;
   if (id === 'song') { toggleSong(); return; }
   if (id === 'video') { void openCinema(); return; }
+  if (id.startsWith('floor:')) { rideElevator(id.slice(6)); return; }
+  if (id.startsWith('quest:')) { startQuest(id.slice(6)); return; }
   if (id.startsWith('jukebox:') && game.state === 'device' && game.selected?.software === 'jukebox') { jukebox.action(id); return; }
   if (id === 'read') { readAloud(); return; }
   if (id === 'center') { centerView(); return; }
@@ -150,17 +209,35 @@ function useTarget(id) {
   if (!scene) return;
   scene.headPose();
   if (!game.interact(id, scene.head)) feedback('Move closer to the character or machine. Use the open aisles to approach it.');
+  else { audio.ui('select', scene.head); pulse(sources, .4, 30); }
+}
+
+function rideElevator(floor) {
+  if (!elevator.request(floor)) return;
+  audio.ui('elevator', scene.head);
+  game.back();
+  toast(`ELEVATOR TO ${floor}. DOORS CLOSING.`);
+}
+
+function startQuest(id) {
+  if (quests.start(id)) {
+    toast(`QUEST STARTED: ${id.toUpperCase()}`);
+    audio.ui('quest', scene.head);
+    game.back();
+  }
 }
 
 function teleport(point) {
   if (game.state !== 'explore' || !scene?.teleport(point)) return;
   game.position.x = point.x; game.position.z = point.z; announce(`Enter ${game.zone.name}.`);
+  audio.ui('teleport', scene.head); pulse(sources, .5, 40);
 }
 
 function syncUI() {
   const changed = lastState !== game.state;
   if (changed) { clearControls(); lastState = game.state; }
   document.body.dataset.state = game.state;
+  document.body.dataset.text = settings.text;
   $('club-entry').hidden = game.state !== 'entry';
   const panel = game.panel();
   $('club-panel').hidden = !panel || game.state === 'entry';
@@ -169,6 +246,8 @@ function syncUI() {
   $('club-touch').hidden = !['explore', 'arcade', 'sketch'].includes(game.state) || Boolean(vr?.session);
   $('club-touch-use').textContent = game.state === 'arcade' ? 'FIRE' : 'USE';
   $('club-map-canvas').hidden = game.state !== 'map';
+  $('club-map-tabs').hidden = game.state !== 'map';
+  document.querySelectorAll('#club-map-tabs button').forEach((button) => button.setAttribute('aria-pressed', String(button.dataset.floor === mapFloor)));
   $('club-design-canvas').hidden = game.state !== 'device' || !game.selected?.studio;
   $('club-game-canvas').hidden = game.state !== 'arcade';
   $('club-game-stats').hidden = game.state !== 'arcade';
@@ -197,7 +276,7 @@ function syncUI() {
       $('club-panel-actions').append(button);
       if (focused === option.id && !changed && !vr?.session) button.focus({ preventScroll: true });
     }
-    if (game.state === 'map') drawMap($('club-map-canvas').getContext('2d'), 0, 0, 600, 250, game.position);
+    if (game.state === 'map') drawMap($('club-map-canvas').getContext('2d'), 0, 0, 800, 400, { ...game.position, yaw: scene?.rig.rotation.y ?? 0 }, { floor: mapFloor, crew: game.crew });
     if (!$('club-design-canvas').hidden) drawDesignPoster($('club-design-canvas').getContext('2d'), game.design, 768, 432, reducedMotion);
     if (changed && !vr?.session) $('club-panel-actions').querySelector('button')?.focus({ preventScroll: true });
   } else if (changed && game.state === 'explore' && !vr?.session) $('club-canvas').focus({ preventScroll: true });
@@ -222,6 +301,9 @@ document.addEventListener('visibilitychange', () => {
 document.addEventListener('keydown', (event) => {
   if (cinema.open || videoOpening) return;
   if (event.metaKey || event.ctrlKey || event.altKey || /^(INPUT|TEXTAREA|SELECT)$/.test(event.target.tagName)) return;
+  if (game.state === 'device' && game.selected && game.devices[game.selected.id]?.mode === 'typein' && /^[a-z0-9 ]$/i.test(event.key) && event.key.length === 1) {
+    game.typeChar(event.key.toUpperCase()); return;
+  }
   if (['KeyW', 'KeyA', 'KeyS', 'KeyD', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'Space'].includes(event.code) && ['explore', 'arcade'].includes(game.state)) {
     event.preventDefault(); keys.add(event.code);
     if (event.code === 'Space' && !event.repeat && game.state === 'arcade' && game.arcade.state !== 'playing') act('start-game');
@@ -292,35 +374,73 @@ function animate(timestamp, xrFrame) {
   const visible = vr?.session?.visibilityState === 'visible';
   if (document.hidden && !visible) { lastFrame = null; return; }
   const tracking = xrState(xrFrame);
+  sources = tracking.sources;
   if (vr.session && (!visible || !tracking.tracked)) {
     if (game.state !== 'paused') blur();
   } else {
-    const control = input.sample(tracking.sources, navigator.getGamepads?.() || []);
+    const control = input.sample(tracking.sources, navigator.getGamepads?.() || [], { turnMode: settings.turnMode, singleHand: settings.singleHand, panelOpen: Boolean(game.panel()) });
+    const speed = walkSpeed(settings) / CLUB.speed;
     const x = Math.max(-1, Math.min(1, control.x + Number(keys.has('KeyD') || keys.has('ArrowRight') || touch.has('right')) - Number(keys.has('KeyA') || keys.has('ArrowLeft') || touch.has('left'))));
     const z = Math.max(-1, Math.min(1, control.z + Number(keys.has('KeyS') || keys.has('ArrowDown') || touch.has('back')) - Number(keys.has('KeyW') || keys.has('ArrowUp') || touch.has('forward'))));
-    if (control.actions.back) act('back');
+    if (control.actions.back) { act('back'); audio.ui('back', scene.head); }
     if (control.actions.map) act('map');
     if (control.actions.center) centerView();
     if (control.actions.interact) use();
     if (game.state === 'explore') {
-      if (control.actions.leftTurn) scene.snapTurn(Math.PI / 6);
-      if (control.actions.rightTurn) scene.snapTurn(-Math.PI / 6);
-      if (!scene.teleportController) scene.move(x, z, dt);
-    }
+      if (settings.turnMode === 'smooth') scene.smoothTurn(control.smoothTurn * -Math.PI / 2, dt);
+      else {
+        if (control.actions.leftTurn) { scene.snapTurn(snapRadians(settings)); audio.ui('turn', scene.head); }
+        if (control.actions.rightTurn) { scene.snapTurn(-snapRadians(settings)); audio.ui('turn', scene.head); }
+      }
+      if (!scene.teleportController) scene.move(x * speed, z * speed, dt);
+      scene.speedAmount = Math.min(1, Math.hypot(x, z));
+    } else scene.speedAmount = 0;
     scene.gamepadTeleport(control.padTeleport);
     scene.headPose(); game.position.x = scene.head.x; game.position.z = scene.head.z;
+    const ride = elevator.update();
+    if (ride) {
+      const beacons = { B1: { x: 0, z: 44.6, yaw: 0 }, L1: { x: -15.5, z: 12, yaw: Math.PI }, R1: { x: 8.2, z: -21.9, yaw: 0 } };
+      const beacon = beacons[ride.to];
+      scene.teleport(beacon, beacon.yaw);
+      game.position.x = beacon.x; game.position.z = beacon.z;
+      elevator.floor = ride.to; mapFloor = ride.to;
+      toast(`FLOOR ${ride.to}. DOORS OPEN.`);
+      if (ride.to === 'R1') quests.completeStep('premiere', 0);
+      audio.ui('elevator', scene.head);
+    }
     game.update(dt, { x, z, fire: control.fire || keys.has('Space') || touch.has('fire'), reducedMotion });
   }
-  scene.update(game, { immersive: Boolean(vr.session), reducedMotion }, dt);
+  scene.dwellEnabled = settings.dwell;
+  scene.update(game, { immersive: Boolean(vr.session), reducedMotion, quality: quality.preset(), comfort: true, speedAmount: scene.speedAmount || 0 }, dt);
+  const autoResult = quality.updateAuto(timestamp, vr.session ? 72 : 60);
+  if (String(autoResult).startsWith('changed')) { quality.apply(scene.renderer, vr); toast(`QUALITY: ${quality.active.toUpperCase()}`); }
+  quality.record(scene.renderer, scene.screensUpdated, scene.avatarsVisible);
   audio.updateRoom(game, scene.head, scene.forward, scene.up);
   if (timestamp - lastUI > 100) {
     $('club-location').textContent = game.zone.name;
+    if (game.zone.id !== lastZone) {
+      lastZone = game.zone.id;
+      $('club-title-card').textContent = game.zone.name; $('club-title-card').hidden = false;
+      announce(`Enter ${game.zone.name}.`);
+      clearTimeout(titleTimer); titleTimer = setTimeout(() => { $('club-title-card').hidden = true; }, 2000);
+    }
+    const near = game.crew.find((npc) => Math.hypot(npc.x - game.position.x, npc.z - game.position.z) < 4);
+    if (near && settings.captions && game.state === 'explore') {
+      const line = barkFor(near.id, timestamp);
+      if (line) caption(`${near.name}: ${line}`);
+    }
+    const track = jukebox?.track;
+    $('club-now-playing').hidden = !track || !jukebox.playing;
+    if (track && jukebox.playing) $('club-now-playing').textContent = `NOW PLAYING: ${track.title} · ${track.artist}`;
     $('club-hint').hidden = !scene.hint || game.state !== 'explore'; $('club-hint').textContent = `${scene.hint} · E`;
     if (!$('club-design-canvas').hidden) drawDesignPoster($('club-design-canvas').getContext('2d'), game.design, 768, 432, reducedMotion);
+    if (game.state === 'map') drawMap($('club-map-canvas').getContext('2d'), 0, 0, 800, 400, { ...game.position, yaw: scene?.rig.rotation.y ?? 0 }, { floor: mapFloor, crew: game.crew });
     if (game.arcade && game.state === 'arcade') {
       drawCabinet($('club-game-canvas').getContext('2d'), game.arcade, 512, 384);
       $('club-game-score').textContent = String(game.arcade.score); $('club-game-best').textContent = String(game.best[game.arcade.kind]);
     }
+    if (debugPerf) $('club-perf').hidden = false;
+    if (debugPerf) $('club-perf').textContent = `FPS ${quality.stats.fps} · CALLS ${quality.stats.calls} · TRI ${quality.stats.triangles} · SCR ${quality.stats.screens} · AV ${quality.stats.avatars} · ${quality.active.toUpperCase()}`;
     lastUI = timestamp;
   }
 }
@@ -336,12 +456,37 @@ async function enterVR() {
   await vr.enter();
 }
 $('club-explore').addEventListener('click', () => act('explore'));
+$('club-tour').addEventListener('click', () => { quests.start('tour'); act('explore'); toast('QUEST STARTED: FIRST NIGHT'); });
 $('club-enter-vr').addEventListener('click', enterVR);
 $('club-vr').addEventListener('click', enterVR);
 $('club-map').addEventListener('click', () => act('map'));
 $('club-pause').addEventListener('click', togglePause);
 $('club-song').addEventListener('click', toggleSong);
 $('club-sound').addEventListener('click', () => { void setSound(!audio.enabled); });
+document.querySelectorAll('#club-map-tabs button').forEach((button) => button.addEventListener('click', () => { mapFloor = button.dataset.floor; syncUI(); }));
+const bindSetting = (id, key, parse = (value) => value) => {
+  const element = $(id);
+  if (!element) return;
+  if (element.type === 'checkbox') element.checked = Boolean(settings[key]);
+  else element.value = String(settings[key]);
+  element.addEventListener('change', () => {
+    settings = { ...settings, [key]: element.type === 'checkbox' ? element.checked : parse(element.value) };
+    saveSettings(storage, settings);
+    quality.setMode(settings.quality, Boolean(vr?.session));
+    quality.apply(scene?.renderer, vr);
+    syncUI();
+  });
+};
+bindSetting('setting-quality', 'quality');
+bindSetting('setting-turn', 'turnMode');
+bindSetting('setting-angle', 'snapAngle', Number);
+bindSetting('setting-speed', 'speed');
+bindSetting('setting-height', 'height');
+bindSetting('setting-text', 'text');
+bindSetting('setting-haptics', 'haptics');
+bindSetting('setting-captions', 'captions');
+bindSetting('setting-dwell', 'dwell');
+bindSetting('setting-single', 'singleHand');
 matchMedia('(prefers-reduced-motion: reduce)').addEventListener('change', (event) => { reducedMotion = event.matches; });
 
 async function initialize() {
@@ -362,17 +507,20 @@ async function initialize() {
       onStart() {
         baseSpace = scene.renderer.xr.getReferenceSpace(); baseSpace?.addEventListener('reset', centerView);
         needsCenter = true; lastFrame = null; clearControls({ resetInput: true }); scene.panelIdentity = ''; $('club-touch').hidden = true; audio.restore();
+        quality.setMode(settings.quality, true); quality.apply(scene.renderer, vr);
       },
       onEnd() {
         baseSpace?.removeEventListener('reset', centerView); baseSpace = null; needsCenter = false; lastFrame = null;
         game.pause(); clearControls({ resetInput: true }); stopSpeech(); audio.silence(); scene.teleportController = null;
+        quality.setMode(settings.quality, false); quality.apply(scene.renderer, vr);
         queueMicrotask(() => { if (!disposed) { scene.resetCamera(); resize(); syncUI(); } });
       },
       onVisibility(state) { if (state !== 'visible') blur(); else lastFrame = null; },
     });
     const observer = new ResizeObserver(resize); observer.observe($('club-main'));
     const chromeObserver = new ResizeObserver(chrome); chromeObserver.observe(document.querySelector('.club-header')); chromeObserver.observe(document.querySelector('.club-footer'));
-    chrome(); resize(); syncUI(); $('club-explore').disabled = false;
+    chrome(); resize(); syncUI(); $('club-explore').disabled = false; $('club-tour').disabled = false;
+    quality.apply(scene.renderer, vr);
     scene.renderer.setAnimationLoop(animate); void vr.check();
     void document.fonts.ready.then(() => { if (scene) scene.lastPanel = ''; });
     $('club-canvas').addEventListener('webglcontextlost', (event) => {
@@ -381,7 +529,10 @@ async function initialize() {
       feedback('The graphics context is lost. Reload the page to restore the room.');
     });
     window.addEventListener('pagehide', () => {
-      disposed = true; clearTimeout(feedbackTimer); observer.disconnect(); chromeObserver.disconnect(); stopSpeech(); song.dispose(); jukebox.dispose(); cinema.dispose(); audio.dispose(); vr.dispose(); scene.dispose();
+      disposed = true; clearTimeout(feedbackTimer); clearTimeout(toastTimer); observer.disconnect(); chromeObserver.disconnect(); stopSpeech(); song.dispose(); jukebox.dispose(); cinema.dispose(); audio.dispose(); vr.dispose(); scene.dispose();
+      storage.set('club.jukebox', JSON.stringify({ favorites: [...jukebox.favorites], last: jukebox.index, shuffle: jukebox.shuffle }));
+      storage.set('club.design', JSON.stringify(game.design));
+      storage.set('club.badges', JSON.stringify(game.badges));
     }, { once: true });
   } catch {
     document.body.dataset.xr = 'error'; $('club-support').textContent = 'The room cannot load. Enable WebGL2 and reload the page.';

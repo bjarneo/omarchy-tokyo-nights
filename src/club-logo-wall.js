@@ -54,6 +54,8 @@ export function addOpenSourceWalls(room) {
       panel.mesh.material.map.needsUpdate = true;
     }
     room.galleryLoaded = [...images.values()].filter(Boolean).length;
+    room.galleryError = room.galleryLoaded < manifest.groups.flatMap((group) => group.entries).length ? 'Some gallery marks cannot load. Select Retry gallery.' : '';
     return manifest;
-  }).catch(() => { room.galleryLoaded = 0; return null; });
+  }).catch(() => { room.galleryLoaded = 0; room.galleryError = 'The logo gallery cannot load. Select Retry gallery.'; return null; });
+  room.retryGallery = () => addOpenSourceWalls(room);
 }

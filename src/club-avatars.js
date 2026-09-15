@@ -95,8 +95,7 @@ export class ClubAvatarFactory {
       }
       avatar.model.add(leg); avatar.legs.push(leg);
     }
-    avatar.tag = this.art.nameTag(npc.name.toUpperCase()); avatar.tag.position.y = height + .17; avatar.add(avatar.tag);
-    avatar.pickTarget = new THREE.Mesh(new THREE.BoxGeometry(.7, height, .52), this.art.pickMaterial);
+    avatar.tag = this.art.nameTag(npc.name.toUpperCase()); avatar.tag.position.y = height + .17; avatar.add(avatar.tag);    avatar.pickTarget = new THREE.Mesh(new THREE.BoxGeometry(.7, height, .52), this.art.pickMaterial);
     avatar.pickTarget.position.y = height / 2; avatar.pickTarget.userData.id = npc.id; avatar.add(avatar.pickTarget);
     if (npc.seated) { avatar.chair = this.chair(); avatar.add(avatar.chair); }
     if (npc.gesture === 'coffee') avatar.prop = this.coffee();
