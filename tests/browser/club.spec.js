@@ -28,7 +28,7 @@ async function approach(page, id) {
   await page.evaluate(async (id) => {
     const { STATIONS, CLUB, CLUB_OBJECTS } = await import('/src/club-data.mjs');
     const { canStand, segmentHitsBox } = await import('/src/club-engine.mjs');
-    const target = STATIONS.find((item) => item.id === id) || clubModel.crew.find((item) => item.id === id) || CLUB_OBJECTS.find((item) => item.id === id) || (id === clubModel.virus.id ? clubModel.virus : null);
+    const target = STATIONS.find((item) => item.id === id) || clubModel.crew.find((item) => item.id === id) || CLUB_OBJECTS.find((item) => item.id === id) || (id === clubModel.virus.id ? clubModel.virus : null) || (id === clubModel.dragon.id ? clubModel.dragon : null);
     const point = target.stand || (target.seated ? { x: target.x, z: target.z - 2.8, yaw: Math.PI } : Array.from({ length: 16 }, (_, index) => {
       const yaw = index * Math.PI / 8;
       return { x: target.x + Math.sin(yaw) * 2, z: target.z + Math.cos(yaw) * 2, yaw };
@@ -922,7 +922,7 @@ test('the headset reaches the Mac room, meets an M-team cameo, and operates a Ma
   await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
 });
 
-test('the Dragon lab connects through the Mac room and includes all five Dragon cameos and machines', async ({ page }) => {
+test('the Dragon lab connects through the Mac room and includes all five Dragon cameos, machines, and the flying dragon', async ({ page }) => {
   test.setTimeout(150_000);
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
   const errors = []; page.on('pageerror', (error) => errors.push(error.message));
@@ -960,6 +960,19 @@ test('the Dragon lab connects through the Mac room and includes all five Dragon 
   await approach(page, 'dragon-laptop'); await page.keyboard.press('KeyE');
   await page.getByRole('button', { name: 'LOCAL TERMINAL', exact: true }).click();
   expect(await page.evaluate(() => clubModel.devices['dragon-laptop'].mode)).toBe('dragon-terminal');
+  await page.evaluate(async () => {
+    const { DRAGON_PATROL } = await import('/src/club-dragon.mjs');
+    Object.assign(clubModel.dragon, { x: DRAGON_PATROL.x, z: DRAGON_PATROL.z - 2, y: DRAGON_PATROL.height });
+  });
+  await approach(page, 'ember-dragon'); await page.keyboard.press('KeyE');
+  await expect(page.locator('#club-panel-title')).toHaveText('EMBER · LAB DRAGON');
+  await page.getByRole('button', { name: 'BREATHE FIRE', exact: true }).click();
+  await expect.poll(() => page.evaluate(() => clubModel.dragon.fire)).toBeGreaterThan(1);
+  await expect.poll(() => page.evaluate(() => clubView.room.dragon.fire.visible)).toBe(true);
+  await page.evaluate(() => { clubView.teleport({ x: 34, z: 41.5 }, -1.107); clubView.pitch = .14; clubModel.dragon.fire = 1.6; });
+  await page.waitForTimeout(180);
+  await page.screenshot({ path: '.impeccable/review/club-dragon-fire.png', fullPage: true });
+  await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
   await page.locator('#club-map').click(); await page.getByRole('button', { name: 'MAC ROOM · TEAM M', exact: true }).click();
   await expect(page.locator('#club-location')).toHaveText('MAC ROOM · TEAM M'); expect(errors).toEqual([]);
 });

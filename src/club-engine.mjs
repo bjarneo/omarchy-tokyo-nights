@@ -4,6 +4,7 @@ import { createClubCrew, updateClubCrew } from './club-motion.mjs';
 import { SECURITY_LABS, createLabState, chooseLab, labPanel, createVirus, updateVirus, quarantineVirus } from './club-security.mjs';
 import { createDesignState, selectDesign, designPanel } from './club-design.mjs';
 import { MAC_MODES } from './club-mac.mjs';
+import { createDragon, triggerDragonFire, updateDragon } from './club-dragon.mjs';
 import { RANGER_CONTROLS } from './club-rangers.mjs';
 
 export function canStand(x, z, obstacles = OBSTACLES, radius = CLUB.radius) {
@@ -85,6 +86,7 @@ export class ClubGame {
     this.clearSpaces = [...ZONES.map((zone) => zone.beacon), ...STATIONS.map((station) => station.stand), ...CLUB_OBJECTS.map((object) => object.stand)];
     this.dialogueSpace = null;
     this.virus = createVirus();
+    this.dragon = createDragon();
     this.design = createDesignState();
     this.INTERACT_RANGE = CLUB_INTERACT_RANGE;
   }
@@ -102,7 +104,7 @@ export class ClubGame {
 
   interact(id, player = this.position) {
     if (this.state !== 'explore' && this.state !== 'sketch') return false;
-    const target = this.crew.find((item) => item.id === id) || STATIONS.find((item) => item.id === id) || CLUB_OBJECTS.find((item) => item.id === id) || (id === this.virus.id ? this.virus : null);
+    const target = this.crew.find((item) => item.id === id) || STATIONS.find((item) => item.id === id) || CLUB_OBJECTS.find((item) => item.id === id) || (id === this.virus.id ? this.virus : null) || (id === this.dragon.id ? this.dragon : null);
     if (!target || Math.hypot(target.x - player.x, target.z - player.z) > CLUB_INTERACT_RANGE) return false;
     const from = { x: player.x, y: player.y ?? CLUB.eyeHeight, z: player.z };
     const to = { x: target.x, y: target.eyeHeight || target.height, z: target.z };
@@ -170,6 +172,9 @@ export class ClubGame {
       else if (id === 'virus:release') Object.assign(this.virus, createVirus());
       else return;
       this.changed(); return;
+    }
+    if (id === 'dragon:fire' && this.state === 'device' && this.selected?.id === this.dragon.id) {
+      triggerDragonFire(this.dragon); this.changed(); this.onEvent({ type: 'beep', target: this.selected }); return;
     }
     if (id === 'start-game' && this.arcade) { this.arcade.reset(); this.arcade.start(); this.changed(); this.onEvent({ type: 'quest', quest: 'tour', step: 6 }); this.onEvent({ type: 'quest', quest: 'score', step: 0, armed: true }); return; }
     if (id.startsWith('game:') && this.selected && !this.selected.topics) {
@@ -249,6 +254,7 @@ export class ClubGame {
     });
     if (this.state === 'entry') return;
     updateVirus(this.virus, dt, input.reducedMotion || this.state === 'device' && this.selected?.id === this.virus.id, (x, z) => canStand(x, z, STATIC_OBSTACLES, CLUB.crewRadius));
+    updateDragon(this.dragon, dt, input.reducedMotion, this.state === 'device' && this.selected?.id === this.dragon.id);
     if (this.design.motion && !input.reducedMotion) this.design.clock += Math.min(dt, .25);
     this.elapsed += Math.min(dt, .25);
     for (const device of Object.values(this.devices)) if (device.power) device.clock += Math.min(dt, .25);
@@ -293,6 +299,7 @@ export class ClubGame {
       if (station.software === 'design') return designPanel(station, this.design);
       if (station.software === 'security') return labPanel(station, this.devices[station.id]);
       if (station.software === 'virus') return { title: 'BYTE · LAB VIRUS', subtitle: this.virus.quarantined ? 'QUARANTINED' : 'PATROL ACTIVE', text: this.virus.quarantined ? 'BYTE stays inside the containment field. Release the simulated virus to resume its patrol through the security room.' : 'A pixel computer virus patrols the lab. Its body, eyes, and antennae are part of the room simulation. Quarantine BYTE to stop its patrol.', options: [option(this.virus.quarantined ? 'virus:release' : 'virus:quarantine', this.virus.quarantined ? 'RELEASE BYTE' : 'QUARANTINE BYTE'), option('back', 'BACK TO THE ROOM')] };
+      if (station.id === this.dragon.id) return { title: 'EMBER · LAB DRAGON', subtitle: this.dragon.fire > 0 ? 'FIRE BREATH' : 'PATROL ACTIVE', text: this.dragon.detail, options: [option('dragon:fire', 'BREATHE FIRE'), option('back', 'BACK TO THE ROOM')] };
       if (station.software === 'jukebox' && this.jukebox) return this.jukebox.panel();
       const device = this.devices[station.id];
       let controls = [];

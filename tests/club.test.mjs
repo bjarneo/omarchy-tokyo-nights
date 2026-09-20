@@ -8,7 +8,7 @@ import { gestureAt } from '../src/club-motion.mjs';
 import { SECURITY_LABS, SECURITY_CREW } from '../src/club-security.mjs';
 import { DESIGN_CREW, DESIGN_DESKS } from '../src/club-design.mjs';
 import { MAC_CREW, MAC_MODELS } from '../src/club-mac.mjs';
-import { DRAGON_CREW, DRAGON_MODELS } from '../src/club-dragon.mjs';
+import { DRAGON_CREW, DRAGON_MODELS, DRAGON_PATROL } from '../src/club-dragon.mjs';
 import { RANGERS, RANGER_CONTROLS } from '../src/club-rangers.mjs';
 
 test('every character and machine has an accessible interaction point from the entrance', () => {
@@ -396,6 +396,41 @@ test('all three Dragon machines expose working desktop, terminal, hardware, and 
       assert.equal(game.devices[station.id].power, true); assert.equal(game.state, 'explore');
     }
   }
+});
+
+test('the Dragon lab dragon flies clear of the furniture and breathes fire on a cycle', () => {
+  const game = new ClubGame(); game.enter();
+  const dragon = game.dragon;
+  let sawFire = false;
+  for (let i = 0; i < 600; i++) {
+    game.update(.05);
+    assert.ok(dragon.x >= 30.5 && dragon.x <= 47.5, `x ${dragon.x}`);
+    assert.ok(dragon.z >= 35 && dragon.z <= 47, `z ${dragon.z}`);
+    assert.ok(dragon.y > 2 && dragon.y < 2.9, `y ${dragon.y}`);
+    if (dragon.fireAmount > 0) sawFire = true;
+  }
+  assert.ok(sawFire); assert.ok(dragon.clock > 0);
+  const position = { x: dragon.x, y: dragon.y, z: dragon.z };
+  game.pause(); game.update(.25);
+  assert.deepEqual({ x: dragon.x, y: dragon.y, z: dragon.z }, position);
+  game.resume();
+  dragon.fire = 0; dragon.fireInterval = DRAGON_PATROL.fireInterval;
+  game.update(.25, { reducedMotion: true });
+  assert.deepEqual({ x: dragon.x, y: dragon.y, z: dragon.z }, position);
+  assert.equal(dragon.fireAmount, 0);
+  Object.assign(dragon, { x: 39, z: 39, y: 2.45, fire: 0, fireAmount: 0 });
+  game.position = { x: 39, z: 40.3 };
+  assert.ok(game.interact(dragon.id));
+  assert.equal(game.panel().title, 'EMBER · LAB DRAGON');
+  assert.equal(game.panel().subtitle, 'PATROL ACTIVE');
+  assert.ok(game.panel().options.some((option) => option.id === 'dragon:fire'));
+  game.action('dragon:fire');
+  assert.equal(dragon.fire, DRAGON_PATROL.fireDuration);
+  for (let i = 0; i < 20; i++) game.update(.05);
+  assert.deepEqual([dragon.x, dragon.y, dragon.z], [39, 2.45, 39]);
+  assert.ok(dragon.fireAmount > 0);
+  assert.equal(game.panel().subtitle, 'FIRE BREATH');
+  game.back(); assert.equal(game.state, 'explore');
 });
 
 test('the Rangers remain seated and provide real movement help and room shortcuts', () => {

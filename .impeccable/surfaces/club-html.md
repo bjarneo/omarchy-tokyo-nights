@@ -79,6 +79,7 @@ The user approves a Snapdragon lab with the five Dragon team cameos and ARM64 ha
 The `24 × 18m` lab connects through the Mac room's south wall and adds a twelfth map destination.
 A warm gridded floor, three ARM workstations, a Snapdragon team board, and the cached Omarchy logo distinguish the lab.
 Three machine models offer local desktop, terminal, and hardware-card demos through the existing native and spatial controls.
+Ember, a flying pixel dragon, circles the benches and breathes a short flame from its mouth.
 Original voxel cameos follow the official profile references, including the illustrated green-cap profile.
 This code-led Experience extension inherits seed `6ddbd526`, the shared movement model, and the Tokyo Night interface.
 
@@ -581,6 +582,10 @@ The Rangers extension adds no shipping rasters or runtime profile-image requests
 - `ClubDragonRoom` in `src/club-dragon-room.js` places the original cached Omarchy block logo on an `11.5 × 3.45m` east-wall plane.
 - The logo plane sits at `[50.76, 2.65, 41]`. `drawDragonDisplay` in `src/club-dragon-screen.js` reuses that original logo on every ARM desktop texture.
 - A team board shows all five cameos with their official names and country labels.
+- Ember, a flying pixel dragon, circles the lab above the benches and breathes a short voxel flame.
+- `DRAGON_PATROL` in `src/club-dragon.mjs` defines the closed flight path, flame duration, and interval. `updateDragon` moves the body and `ClubDragonRoom.update` animates the wings, tail, and flames.
+- The dragon is a selectable target. `BREATHE FIRE` triggers a manual flame. Patrol and fire stop during pause and interaction holds.
+- Reduced motion stops the flight, wing flaps, and autonomous fire. The manual `BREATHE FIRE` action still shows a static flame.
 - The Mac room `APPLE SILICON` wall sign moves to `x: 44.5` to clear the new doorway.
 - Native and spatial panels reuse the existing Tokyo Night UI, Arcade headings, Courier New text, rectangular controls, gold selection, and cyan focus.
 
@@ -619,8 +624,8 @@ Source graphics use procedural Canvas, voxels, and local geometry. The extension
 
 #### Dragon lab checks
 
-- The Dragon browser check walks through the Mac room doorway, meets all five cameos, and opens all three hardware cards and the local terminal.
-- `tests/club.test.mjs` covers the doorway in both directions, solid walls, teleport arcs, map travel, the five cameos, and every machine control.
+- The Dragon browser check walks through the Mac room doorway, meets all five cameos, opens all three hardware cards and the local terminal, and triggers the dragon flame.
+- `tests/club.test.mjs` covers the doorway in both directions, solid walls, teleport arcs, map travel, the five cameos, every machine control, the dragon flight bounds, pause, reduced motion, and the manual fire action.
 - The spatial map panel uses a `51px` button height so all fourteen destinations and `CLOSE MAP` fit the `1024 × 640` texture.
 
 ## Verification evidence

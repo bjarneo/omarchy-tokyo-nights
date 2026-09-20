@@ -302,7 +302,7 @@ export class ClubScene {
     if (this.select(hit)) return;
     this.headPose();
     const range = this.game?.INTERACT_RANGE || 3;
-    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS, ...CLUB_OBJECTS, ...(this.game ? [this.game.virus] : [])].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= range).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
+    const target = [...(this.game?.crew || CLUB_CREW), ...STATIONS, ...CLUB_OBJECTS, ...(this.game ? [this.game.virus, this.game.dragon] : [])].filter((item) => Math.hypot(item.x - this.head.x, item.z - this.head.z) <= range).sort((a, b) => Math.hypot(a.x - this.head.x, a.z - this.head.z) - Math.hypot(b.x - this.head.x, b.z - this.head.z))[0];
     if (target) this.onTarget(target.id);
   }
 
@@ -449,7 +449,7 @@ export class ClubScene {
   drawTooltip(hit, immersive) {
     let text = '';
     if (hit?.object.userData.id && this.game.state === 'explore') {
-      const target = [...this.game.crew, ...STATIONS, ...CLUB_OBJECTS, this.game.virus].find((item) => item.id === hit.object.userData.id);
+      const target = [...this.game.crew, ...STATIONS, ...CLUB_OBJECTS, this.game.virus, this.game.dragon].find((item) => item.id === hit.object.userData.id);
       if (target) { const distance = Math.hypot(target.x - this.head.x, target.z - this.head.z); text = distance <= 3 ? `${target.topics ? 'TALK TO' : 'USE'} ${target.name.toUpperCase()}` : distance <= 5 ? 'MOVE CLOSER' : ''; }
     }
     this.hint = text;
@@ -470,6 +470,7 @@ export class ClubScene {
     this.updateEnvironment(dt);
     this.room.malibu.update(game.elapsed, reducedMotion);
     this.room.security.update(game.virus, reducedMotion, this.head, game.state === 'device' && game.selected?.id === game.virus.id);
+    this.room.dragon.update(game.dragon, reducedMotion, this.head, game.state === 'device' && game.selected?.id === game.dragon.id);
     this.room.design.update(game.design, reducedMotion);
     this.room.roof.update(game.elapsed, reducedMotion);
     this.hover = null;

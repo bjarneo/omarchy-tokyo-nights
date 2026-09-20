@@ -30,3 +30,51 @@ export const DRAGON_MODELS = Object.freeze([
   { id: 'dragon-tablet', name: 'Snapdragon 8cx tablet', year: 2024, model: 'tablet', chip: 'Snapdragon 8cx Gen 3 · ARM64', x: 39, z: 47.2, yaw: Math.PI },
   { id: 'dragon-desktop', name: 'Snapdragon dev kit', year: 2023, model: 'desktop', chip: 'Snapdragon 8cx Gen 3 · ARM64', x: 47, z: 47.2, yaw: Math.PI },
 ].map((model) => Object.freeze(model)));
+
+export const DRAGON_PATROL = Object.freeze({ x: 39, z: 41, radiusX: 8, radiusZ: 5.5, height: 2.45, speed: .32, fireDuration: 1.6, fireInterval: 9 });
+
+export function createDragon() {
+  return {
+    id: 'ember-dragon', name: 'Ember · lab dragon', software: 'ember',
+    detail: 'Ember is the lab’s flying pixel dragon. Watch it circle the Snapdragon benches and breathe a short flame from its mouth.',
+    x: DRAGON_PATROL.x, y: DRAGON_PATROL.height, z: DRAGON_PATROL.z, yaw: 0, height: 1.2, eyeHeight: 2.1,
+    clock: 0, fire: 0, fireAmount: 0, fireInterval: 6,
+  };
+}
+
+export function triggerDragonFire(dragon) {
+  dragon.fire = DRAGON_PATROL.fireDuration; dragon.fireInterval = DRAGON_PATROL.fireInterval;
+}
+
+export function updateDragon(dragon, dt, reducedMotion = false, engaged = false) {
+  const step = Math.max(0, Math.min(.25, dt));
+  if (reducedMotion) {
+    if (dragon.fire > 0) {
+      dragon.fire = Math.max(0, dragon.fire - step);
+      dragon.fireAmount = Math.sin((1 - dragon.fire / DRAGON_PATROL.fireDuration) * Math.PI);
+    } else {
+      dragon.fireAmount = 0; dragon.fireInterval = DRAGON_PATROL.fireInterval;
+    }
+    return;
+  }
+  dragon.clock += step;
+  if (!engaged) {
+    const phase = dragon.clock * DRAGON_PATROL.speed;
+    const x = DRAGON_PATROL.x + Math.sin(phase) * DRAGON_PATROL.radiusX;
+    const z = DRAGON_PATROL.z + Math.sin(phase * .7 + 1) * DRAGON_PATROL.radiusZ;
+    const y = DRAGON_PATROL.height + Math.sin(phase * 1.3) * .3;
+    const dx = x - dragon.x; const dz = z - dragon.z;
+    dragon.x = x; dragon.z = z; dragon.y = y;
+    if (Math.hypot(dx, dz) > .001) {
+      const yaw = Math.atan2(dx, dz);
+      dragon.yaw += Math.atan2(Math.sin(yaw - dragon.yaw), Math.cos(yaw - dragon.yaw)) * Math.min(1, step * 3);
+    }
+  }
+  if (dragon.fire > 0) {
+    dragon.fire = Math.max(0, dragon.fire - step);
+    dragon.fireAmount = Math.sin((1 - dragon.fire / DRAGON_PATROL.fireDuration) * Math.PI);
+  } else {
+    dragon.fireAmount = 0; dragon.fireInterval -= step;
+    if (dragon.fireInterval <= 0) triggerDragonFire(dragon);
+  }
+}

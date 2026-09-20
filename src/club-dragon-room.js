@@ -28,6 +28,7 @@ export class ClubDragonRoom {
     this.teamBoard = room.plane(commandBoard(DRAGON_CREW, 'TEAM DRAGON', 'BRINGING OMARCHY TO SNAPDRAGON'), 7.2, 2.25, 45.5, 3.08, 32.26);
     this.teamBoard.name = 'dragon-team-board';
     this.makeLogo();
+    this.makeDragon();
   }
 
   makeLogo() {
@@ -53,6 +54,78 @@ export class ClubDragonRoom {
     room.box(0, 1.42, -.12, 1.14, .76, .09, C.silver); room.box(0, 1.44, -.068, 1.08, .65, .02, '#16161e');
     room.box(0, 1.02, -.16, .08, .38, .08, C.edge); room.box(0, .84, -.12, .45, .045, .3, C.silver);
     room.crt(station, 1.44, 1.02, .57, -.275, C.dark, true);
+  }
+
+  makeDragon() {
+    const room = this.room; const art = room.art;
+    this.dragon = new THREE.Group(); this.dragon.name = 'ember-lab-dragon'; room.root.add(this.dragon);
+    this.dragonBody = new THREE.Group(); this.dragon.add(this.dragonBody);
+    art.box(this.dragonBody, 0, 0, 0, .62, .5, 1.1, C.pink);
+    art.box(this.dragonBody, 0, .16, .45, .36, .32, .6, C.pink);
+    art.box(this.dragonBody, 0, .34, .82, .34, .34, .5, C.pink);
+    art.box(this.dragonBody, 0, .3, 1.18, .22, .18, .36, C.gold);
+    art.box(this.dragonBody, 0, .4, 1.34, .16, .05, .1, '#ffe0b7', true);
+    for (const side of [-1, 1]) {
+      art.box(this.dragonBody, side * .13, .42, .98, .1, .1, .06, C.gold, true);
+      art.box(this.dragonBody, side * .13, .41, 1.01, .05, .06, .03, '#16161e');
+      art.box(this.dragonBody, side * .14, .58, .72, .07, .22, .07, C.gold);
+    }
+    for (const side of [-1, 1]) for (const z of [-.35, .2]) {
+      art.box(this.dragonBody, side * .3, -.3, z, .12, .3, .12, '#c26a8a');
+      art.box(this.dragonBody, side * .34, -.42, z + .06, .2, .07, .18, C.gold);
+    }
+    this.tail = new THREE.Group(); this.tail.position.set(0, 0, -.6); this.dragonBody.add(this.tail);
+    let parent = this.tail; let size = .4;
+    for (let i = 0; i < 4; i++) {
+      const segment = new THREE.Group(); segment.position.set(0, 0, -size * .8);
+      art.box(segment, 0, 0, 0, size, size * .75, size * 1.1, i % 2 ? C.pink : '#c26a8a');
+      art.box(segment, 0, size * .4, 0, .07, .16, .07, C.gold);
+      parent.add(segment); parent = segment; size *= .72;
+    }
+    this.wings = [];
+    for (const side of [-1, 1]) {
+      const wing = new THREE.Group(); wing.position.set(side * .28, .2, .1);
+      art.box(wing, side * .55, .05, -.05, 1.1, .07, .7, '#c26a8a');
+      art.box(wing, side * .98, .02, -.02, .28, .05, .5, C.pink);
+      art.box(wing, side * .2, .06, -.3, .5, .05, .35, C.gold);
+      this.dragonBody.add(wing); this.wings.push({ wing, side });
+    }
+    this.fire = new THREE.Group(); this.fire.position.set(0, .32, 1.36); this.dragonBody.add(this.fire);
+    this.flames = [];
+    const flameColors = [C.gold, C.pink, '#ffe0b7', C.gold, C.pink, C.gold, C.pink];
+    for (let i = 0; i < 7; i++) {
+      const flame = new THREE.Group(); flame.position.set(i % 2 ? .05 : -.05, (i % 3) * .04 - .04, i * .28);
+      const length = .3 - i * .028;
+      art.box(flame, 0, 0, 0, length, length, length * 1.15, flameColors[i], true);
+      this.fire.add(flame); this.flames.push(flame);
+    }
+    this.fire.visible = false;
+    const tag = art.nameTag('EMBER · LAB DRAGON'); tag.position.y = 1.05; this.dragon.add(tag); this.dragon.tag = tag;
+    const target = new THREE.Mesh(new THREE.BoxGeometry(1.7, 1.5, 2.6), art.pickMaterial);
+    target.userData.id = 'ember-dragon'; this.dragon.add(target); room.targets.push(target);
+  }
+
+  update(dragon, reducedMotion, viewer, engaged = false) {
+    this.dragon.position.set(dragon.x, dragon.y, dragon.z);
+    const toward = Math.atan2(viewer.x - dragon.x, viewer.z - dragon.z);
+    const face = engaged ? toward : dragon.yaw;
+    this.dragon.rotation.y += Math.atan2(Math.sin(face - this.dragon.rotation.y), Math.cos(face - this.dragon.rotation.y)) * .12;
+    const beat = reducedMotion ? 0 : dragon.clock;
+    for (const { wing, side } of this.wings) wing.rotation.z = side * (.3 + Math.sin(beat * 9) * .5);
+    this.tail.rotation.y = Math.sin(beat * 1.4) * .18;
+    this.dragonBody.position.y = reducedMotion ? 0 : Math.sin(beat * 2.4) * .06;
+    const amount = dragon.fireAmount;
+    this.fire.visible = amount > .02;
+    if (this.fire.visible) {
+      this.fire.scale.set(.6 + amount * .5, .6 + amount * .4, .35 + amount * 1.15);
+      this.flames.forEach((flame, i) => {
+        const flicker = reducedMotion ? 1 : .78 + Math.sin(beat * 21 + i * 1.7) * .22;
+        flame.scale.setScalar(amount * flicker);
+        flame.position.x = (i % 2 ? .05 : -.05) * (1 + amount);
+      });
+    }
+    this.dragon.tag.visible = Math.hypot(viewer.x - dragon.x, viewer.z - dragon.z) < 12;
+    if (this.dragon.tag.visible) this.dragon.tag.lookAt(viewer);
   }
 
   bench(station) {
