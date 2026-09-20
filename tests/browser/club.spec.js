@@ -922,6 +922,48 @@ test('the headset reaches the Mac room, meets an M-team cameo, and operates a Ma
   await page.evaluate(() => xrDevice.activeSession.end()); expect(errors).toEqual([]);
 });
 
+test('the Dragon lab connects through the Mac room and includes all five Dragon cameos and machines', async ({ page }) => {
+  test.setTimeout(150_000);
+  await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });
+  const errors = []; page.on('pageerror', (error) => errors.push(error.message));
+  await page.goto('/club.html'); await expect(page.locator('#club-explore')).toBeEnabled(); await observe(page);
+  await page.evaluate(() => Promise.all([clubView.room.dragon.logoReady, document.fonts.ready])); await page.locator('#club-explore').click();
+  await page.evaluate(() => { if (!clubView.teleport({ x: 35.5, z: 30.5 }, Math.PI)) throw new Error('The Dragon doorway approach is blocked.'); });
+  await page.keyboard.down('KeyW');
+  try { await expect.poll(() => page.evaluate(() => clubView.head.z), { timeout: 15000 }).toBeGreaterThan(33.2); }
+  finally { await page.keyboard.up('KeyW'); }
+  await expect(page.locator('#club-location')).toHaveText('DRAGON LAB · SNAPDRAGON');
+  expect(await page.evaluate(() => clubView.room.dragon.logoWall.userData.originalLogo)).toBe(true);
+  expect(await page.evaluate(() => clubView.room.dragon.teamBoard.name)).toBe('dragon-team-board');
+  await page.evaluate(() => { clubView.teleport({ x: 39, z: 37 }, 0); clubView.pitch = -.06; }); await page.waitForTimeout(250);
+  await page.screenshot({ path: '.impeccable/review/club-dragon-desktop.png', fullPage: true });
+  const crew = await page.evaluate(() => clubModel.crew.filter((npc) => npc.team === 'dragon').map(({ id, name, country }) => ({ id, name, country })));
+  expect(crew).toHaveLength(5); const portraits = [];
+  for (const npc of crew) {
+    await approach(page, npc.id); await page.keyboard.press('KeyE');
+    await expect(page.locator('#club-panel-title')).toHaveText(npc.name.toUpperCase());
+    await expect(page.locator('#club-panel-subtitle')).toContainText(npc.country);
+    await page.locator('[data-action="topic:0"]').click(); await expect(page.locator('#club-panel-text')).toContainText(npc.name);
+    portraits.push(await page.locator('#club-portrait').evaluate((canvas) => canvas.toDataURL()));
+    if (npc.id === 'bob-prendergast') await page.screenshot({ path: '.impeccable/review/club-dragon-cameo.png', fullPage: true });
+    await page.getByRole('button', { name: 'BACK TO THE ROOM', exact: true }).click();
+  }
+  expect(new Set(portraits).size).toBe(5);
+  for (const id of ['dragon-laptop', 'dragon-tablet', 'dragon-desktop']) {
+    await approach(page, id); await page.keyboard.press('KeyE');
+    const before = await page.evaluate((key) => clubView.room.screens.get(key).canvas.toDataURL(), id);
+    await page.getByRole('button', { name: 'HARDWARE CARD', exact: true }).click();
+    await expect.poll(() => page.evaluate((key) => clubModel.devices[key].mode, id)).toBe('dragon-hardware');
+    await expect.poll(() => page.evaluate((key) => clubView.room.screens.get(key).canvas.toDataURL(), id)).not.toBe(before);
+    if (id === 'dragon-laptop') await page.screenshot({ path: '.impeccable/review/club-dragon-machine.png', fullPage: true });
+  }
+  await approach(page, 'dragon-laptop'); await page.keyboard.press('KeyE');
+  await page.getByRole('button', { name: 'LOCAL TERMINAL', exact: true }).click();
+  expect(await page.evaluate(() => clubModel.devices['dragon-laptop'].mode)).toBe('dragon-terminal');
+  await page.locator('#club-map').click(); await page.getByRole('button', { name: 'MAC ROOM · TEAM M', exact: true }).click();
+  await expect(page.locator('#club-location')).toHaveText('MAC ROOM · TEAM M'); expect(errors).toEqual([]);
+});
+
 test('the Rangers front desk has seated guides, useful help, and an open elevator', async ({ page }) => {
   test.setTimeout(90_000);
   await page.setViewportSize({ width: 1440, height: 1000 }); await page.emulateMedia({ reducedMotion: 'reduce' });

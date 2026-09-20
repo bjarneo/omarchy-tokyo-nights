@@ -182,7 +182,7 @@ export class ClubGame {
     }
     if (id.startsWith('mode:') && this.selected && this.devices[this.selected.id]) {
       const mode = id.slice(5);
-      const allowed = ['workbench', 'boing', 'starfield', 'copper', 'typein', 'basic', 'list', 'directory', 'spectrum', 'load', 'gem', 'midi', 'terminal', 'dial', 'messages', 'users', 'mac', 'sketch', 'console', 'coastal-desktop', 'coastal-view', 'telescope', 'trailer', 'leaderboard', 'snacks', 'lookout'];
+      const allowed = ['workbench', 'boing', 'starfield', 'copper', 'typein', 'basic', 'list', 'directory', 'spectrum', 'load', 'gem', 'midi', 'terminal', 'dial', 'messages', 'users', 'mac', 'sketch', 'console', 'coastal-desktop', 'coastal-view', 'telescope', 'trailer', 'leaderboard', 'snacks', 'lookout', 'dragon-desktop', 'dragon-terminal', 'dragon-hardware'];
       if (!allowed.includes(mode)) return;
       const device = this.devices[this.selected.id];
       device.power = true; device.mode = mode; device.clock = 0;
@@ -317,6 +317,7 @@ export class ClubGame {
       else if (station.software === 'snake') controls = [option('game:snake', 'PLAY SNAKE')];
       else if (station.software === 'coastal') controls = [option('mode:coastal-desktop', 'DESKTOP DEMO'), option('mode:coastal-view', 'COASTAL WALLPAPER')];
       else if (station.software === 'maclab') controls = [option('mac:desktop', 'OMARCHY DESKTOP'), option('mac:terminal', 'LOCAL TERMINAL'), option('mac:hardware', 'HARDWARE CARD')];
+      else if (station.software === 'dragon') controls = [option('mode:dragon-desktop', 'OMARCHY DESKTOP'), option('mode:dragon-terminal', 'LOCAL TERMINAL'), option('mode:dragon-hardware', 'HARDWARE CARD')];
       else controls = [option(`game:${station.id === 'brick-break' || station.id === 'atari2600' ? 'brick' : 'star'}`, 'PLAY THE CLUB GAME'), option('mode:console', 'COLOR & SPRITE TEST')];
       return { title: station.name.toUpperCase(), subtitle: `${station.year ? `${station.year} · ` : ''}${device.power ? 'POWER ON' : 'POWER OFF'}`, text: station.detail, options: [...controls, option('power', device.power ? 'POWER OFF' : 'POWER ON'), option('back', 'BACK TO THE ROOM')] };
     }

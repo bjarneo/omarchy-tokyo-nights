@@ -3,6 +3,7 @@ import { drawMalibuDisplay } from './club-malibu-screen.js';
 import { drawSecurityDisplay } from './club-security-screen.js';
 import { drawDesignPoster } from './club-design-art.js';
 import { drawMacDisplay } from './club-mac-screen.js';
+import { drawDragonDisplay } from './club-dragon-screen.js';
 
 const C = { ink: '#16161e', paper: '#c0caf5', cyan: '#7dcfff', gold: '#e0af68', pink: '#f7768e', purple: '#bb9af7', green: '#9ece6a', muted: '#9aa5ce' };
 const hash = (n) => { const value = Math.sin(n * 93.7) * 43758.54; return value - Math.floor(value); };
@@ -177,6 +178,7 @@ export function drawStation(ctx, station, state, game, jukebox, design, reducedM
   ctx.fillStyle = '#0b1015'; ctx.fillRect(0, 0, 256, 192);
   if (!state.power) return;
   if (station.software === 'maclab') { drawMacDisplay(ctx, station, state, logo); return; }
+  if (station.software === 'dragon') { drawDragonDisplay(ctx, station, state, logo); return; }
   if (station.software === 'design') {
     ctx.save(); ctx.translate(0, 24); drawDesignPoster(ctx, design, 256, 144, reducedMotion); ctx.restore();
     label(ctx, station.name.toUpperCase(), 10, 15, 10, C.gold);
@@ -359,6 +361,7 @@ export function drawMap(ctx, x, y, width, height, player, extras = {}) {
   label(ctx, 'SECURITY', px(0), pz(21.5), 11, C.cyan, 'center');
   label(ctx, 'DESIGN', px(18), pz(21.5), 11, C.gold, 'center');
   label(ctx, 'MAC · M', px(39), pz(23), 11, C.paper, 'center');
+  label(ctx, 'DRAGON · ARM', px(39), pz(41), 11, C.green, 'center');
   if (floor === 'B1') label(ctx, 'BASEMENT ARCADE', px(0), pz(42), 11, C.pink, 'center');
   if (floor === 'R1') label(ctx, 'ROOFTOP CINEMA', px(0), pz(-26), 11, C.cyan, 'center');
   const yaw = player.yaw ?? 0;

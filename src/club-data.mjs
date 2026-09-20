@@ -2,6 +2,7 @@ import { CHARACTERS } from './characters.mjs';
 import { SECURITY, SECURITY_CREW, SECURITY_LABS } from './club-security.mjs';
 import { DESIGN_STUDIO, DESIGN_CREW, DESIGN_DESKS } from './club-design.mjs';
 import { MAC_ROOM, MAC_CREW, MAC_MODELS } from './club-mac.mjs';
+import { DRAGON_ROOM, DRAGON_CREW, DRAGON_MODELS } from './club-dragon.mjs';
 import { RANGERS, RANGERS_AREA, RANGERS_FURNITURE, ELEVATOR, ELEVATOR_CABIN } from './club-rangers.mjs';
 import { BASEMENT, BASEMENT_CREW, BASEMENT_STATIONS, BASEMENT_ELEVATOR, BASEMENT_ELEVATOR_CABIN } from './club-basement.mjs';
 import { ROOF, ROOF_CREW, ROOF_STATIONS, ROOF_ELEVATOR, ROOF_ELEVATOR_CABIN } from './club-roof.mjs';
@@ -9,7 +10,7 @@ import { ROOF, ROOF_CREW, ROOF_STATIONS, ROOF_ELEVATOR, ROOF_ELEVATOR_CABIN } fr
 export const CLUB = Object.freeze({ width: 36, depth: 28, height: 4.6, eyeHeight: 1.65, playerHeight: 1.95, radius: .3, speed: 4.2, crewRadius: .36 });
 export const ENTRY = Object.freeze({ x: 0, z: 10.8, yaw: 0 });
 export const CLUB_OBJECTS = Object.freeze([ELEVATOR, ELEVATOR_CABIN, BASEMENT_ELEVATOR, BASEMENT_ELEVATOR_CABIN, ROOF_ELEVATOR, ROOF_ELEVATOR_CABIN]);
-export const FLOORS = Object.freeze([{ x: 0, z: 0, width: CLUB.width, depth: CLUB.depth }, SECURITY, DESIGN_STUDIO, MAC_ROOM, BASEMENT, ROOF]);
+export const FLOORS = Object.freeze([{ x: 0, z: 0, width: CLUB.width, depth: CLUB.depth }, SECURITY, DESIGN_STUDIO, MAC_ROOM, DRAGON_ROOM, BASEMENT, ROOF]);
 export const MALIBU = Object.freeze({ x: 15.65, z: -11.65, yaw: -Math.PI / 8, northStart: 13.3, eastEnd: -9.25, sill: .16, lintel: 4.18, chairX: .42, chairZ: 1.03, approach: Object.freeze({ x: 14.6, z: -10.1, yaw: Math.atan2(-1.05, 1.55) }) });
 
 export const ZONES = Object.freeze([
@@ -23,6 +24,7 @@ export const ZONES = Object.freeze([
   { id: 'security', name: 'SECURITY ROOM', ...SECURITY, beacon: { x: 0, z: 16, yaw: Math.PI } },
   { id: 'design', name: 'DESIGN STUDIO', ...DESIGN_STUDIO, beacon: { x: 12.5, z: 16, yaw: -Math.PI * .75 } },
   { id: 'mac-room', name: 'MAC ROOM · TEAM M', ...MAC_ROOM, beacon: { x: 28.8, z: 25.5, yaw: -Math.PI / 2 } },
+  { id: 'dragon', name: 'DRAGON LAB · SNAPDRAGON', ...DRAGON_ROOM, beacon: { x: 35.5, z: 33.6, yaw: 0 } },
   RANGERS_AREA,
   { id: 'basement', name: 'BASEMENT ARCADE', ...BASEMENT, beacon: { x: 0, z: 44.6, yaw: 0 }, floor: 'B1' },
   { id: 'roof', name: 'ROOFTOP CINEMA', ...ROOF, beacon: { x: 8.2, z: -21.9, yaw: 0 }, floor: 'R1' },
@@ -54,6 +56,7 @@ const hardware = [
   ...Object.entries(SECURITY_LABS).map(([id, lab]) => [`security-${id}`, lab.title, null, 'security', 'security', lab.x, lab.z, lab.yaw, lab.intro, id]),
   ...Object.entries(DESIGN_DESKS).map(([id, desk]) => [`design-${id}`, desk.title, null, 'design', 'design', desk.x, desk.z, desk.yaw, desk.detail, id]),
   ...MAC_MODELS.map((mac) => [mac.id, mac.name, mac.year, 'maclab', 'maclab', mac.x, mac.z, mac.yaw, `${mac.chip}. Choose the Omarchy desktop, local terminal, or hardware card. These are club display demos.`, 'mac-desktop']),
+  ...DRAGON_MODELS.map((dragon) => [dragon.id, dragon.name, dragon.year, 'dragon', 'dragonlab', dragon.x, dragon.z, dragon.yaw, `${dragon.chip}. Choose the Omarchy desktop, local terminal, or hardware card. These are club display demos.`, 'dragon-desktop']),
 ];
 
 export const STATIONS = Object.freeze([...hardware.map(([id, name, year, software, kind, x, z, yaw, detail, initial]) => Object.freeze({
@@ -61,6 +64,7 @@ export const STATIONS = Object.freeze([...hardware.map(([id, name, year, softwar
   ...(software === 'security' ? { lab: initial } : {}),
   ...(software === 'design' ? { studio: initial } : {}),
   ...(software === 'maclab' ? { mac: MAC_MODELS.find((mac) => mac.id === id) } : {}),
+  ...(software === 'dragon' ? { dragon: DRAGON_MODELS.find((dragon) => dragon.id === id) } : {}),
   height: kind === 'malibu' ? 1.43 : kind === 'video' ? 1.72 : kind === 'arcade' || kind === 'jukebox' ? 1.48 : kind === 'gameboy' ? .99 : 1.25,
   stand: kind === 'malibu' ? { ...MALIBU.approach } : { x: x + Math.sin(yaw) * 1.85, z: z + Math.cos(yaw) * 1.85, yaw },
 })), ...[...BASEMENT_STATIONS, ...ROOF_STATIONS].map((station) => Object.freeze({
@@ -74,6 +78,7 @@ const conversations = [
     ['The security room', 'Turn toward the entrance and walk through the doorway marked SECURITY ROOM. Meet the five security cameos, try the lab exercises, and find BYTE, the roaming pixel virus.'],
     ['The design studio', 'The design studio has its own doorway beyond the Nintendo corner. Meet the five design cameos and change the live poster at the creative desks.'],
     ['The Mac room', 'Walk through the design studio to its Mac room doorway. Meet the 15 M-team cameos beside classic Macs and Apple-silicon workstations.'],
+    ['The Dragon lab', 'Walk south through the Mac room to the Dragon lab doorway. Meet the five Dragon team cameos beside Snapdragon laptops, tablets, and dev kits.'],
   ] },
   { role: 'Console collector', x: 11.8, z: 4, greeting: 'The NES, Famicom, and Sega systems share this corner. The controllers are ready.', topics: [
     ['NES and Famicom', 'The Famicom arrives in Japan in 1983. The gray NES follows in North America in 1985. Their cartridge connectors differ.'],
@@ -117,7 +122,7 @@ const conversations = [
   ] },
 ];
 
-export const CLUB_CREW = Object.freeze([...CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })), ...SECURITY_CREW, ...DESIGN_CREW, ...MAC_CREW, ...RANGERS, ...BASEMENT_CREW, ...ROOF_CREW]);
+export const CLUB_CREW = Object.freeze([...CHARACTERS.map((character, index) => Object.freeze({ ...character, ...conversations[index] })), ...SECURITY_CREW, ...DESIGN_CREW, ...MAC_CREW, ...DRAGON_CREW, ...RANGERS, ...BASEMENT_CREW, ...ROOF_CREW]);
 
 export const FURNITURE = Object.freeze([
   { id: 'sofa-main', kind: 'sofa', x: 10, z: 7.4, width: 3.2, depth: 1.15, height: .9, color: '#59465a' },
@@ -163,7 +168,11 @@ export const WALLS = Object.freeze([
   { id: 'mac-lintel', x: 27, z: MAC_ROOM.doorZ, width: .35, depth: MAC_ROOM.doorWidth, height: 4.6, bottom: 3.2 },
   { id: 'mac-north', x: 39, z: 14, width: 24.35, depth: .35, height: 4.6 },
   { id: 'mac-east', x: 51, z: 23, width: .35, depth: 18.35, height: 4.6 },
-  { id: 'mac-south', x: 39, z: 32, width: 24, depth: .35, height: 4.6 },
+  ...[[27, DRAGON_ROOM.doorX - DRAGON_ROOM.doorWidth / 2], [DRAGON_ROOM.doorX + DRAGON_ROOM.doorWidth / 2, 51]].map(([start, end], index) => ({ id: `mac-south-${index}`, x: (start + end) / 2, z: 32, width: end - start, depth: .35, height: 4.6 })),
+  { id: 'mac-south-lintel', x: DRAGON_ROOM.doorX, z: 32, width: DRAGON_ROOM.doorWidth, depth: .35, height: 4.6, bottom: 3.2 },
+  { id: 'dragon-west', x: 27, z: 41, width: .35, depth: 18.35, height: 4.6 },
+  { id: 'dragon-east', x: 51, z: 41, width: .35, depth: 18.35, height: 4.6 },
+  { id: 'dragon-south', x: 39, z: 50, width: 24.35, depth: .35, height: 4.6 },
   { id: 'design-south', x: 18, z: 28, width: 18, depth: .35, height: 4.6 },
   { id: 'bbs-divider', x: -5.5, z: -9.5, width: .22, depth: 9, height: 3.5 },
   { id: 'amiga-divider', x: 5.5, z: -9.5, width: .22, depth: 9, height: 3.5 },
@@ -199,6 +208,7 @@ export function zoneAt(x, z) {
   if (Math.abs(x - ROOF.x) <= ROOF.width / 2 && Math.abs(z - ROOF.z) <= ROOF.depth / 2) return ZONES.find((zone) => zone.id === 'roof');
   if (x >= -17.5 && x <= -5.5 && z >= 9.2 && z <= 14) return RANGERS_AREA;
   if (x > MAC_ROOM.doorX && x <= 51 && z >= 14 && z <= 32) return ZONES.find((zone) => zone.id === 'mac-room');
+  if (x > MAC_ROOM.doorX && x <= 51 && z > 32 && z <= 50) return ZONES.find((zone) => zone.id === 'dragon');
   if (z > DESIGN_STUDIO.doorZ && z <= 28 && x >= 9 && x <= 27) return ZONES.find((zone) => zone.id === 'design');
   if (z > SECURITY.doorZ && Math.abs(x) <= SECURITY.width / 2 && z <= SECURITY.z + SECURITY.depth / 2) return ZONES.find((zone) => zone.id === 'security');
   if (x >= MALIBU.northStart && z <= MALIBU.eastEnd) return ZONES.find((zone) => zone.id === 'malibu');

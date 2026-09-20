@@ -424,7 +424,7 @@ export class ClubScene {
       });
       p.texture.needsUpdate = true; return;
     }
-    const buttonHeight = game.state === 'map' ? 58 : 62;
+    const buttonHeight = game.state === 'map' ? 51 : 62;
     const columns = game.state === 'arcade' || game.state === 'map' ? 3 : 2;
     const step = columns === 3 ? 318 : 484;
     const width = columns === 3 ? 304 : 460;

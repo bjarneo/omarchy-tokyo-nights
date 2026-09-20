@@ -8,6 +8,7 @@ import { gestureAt } from '../src/club-motion.mjs';
 import { SECURITY_LABS, SECURITY_CREW } from '../src/club-security.mjs';
 import { DESIGN_CREW, DESIGN_DESKS } from '../src/club-design.mjs';
 import { MAC_CREW, MAC_MODELS } from '../src/club-mac.mjs';
+import { DRAGON_CREW, DRAGON_MODELS } from '../src/club-dragon.mjs';
 import { RANGERS, RANGER_CONTROLS } from '../src/club-rangers.mjs';
 
 test('every character and machine has an accessible interaction point from the entrance', () => {
@@ -348,7 +349,7 @@ test('the Mac room supports both directions through its doorway and keeps the ex
   assert.ok(moveWithinRoom({ x: 25.5, z: 22 }, 3, 0).x < 27);
   assert.equal(teleportArc({ x: 26, y: 1.4, z: 25.5 }, { x: 1, y: -.1, z: 0 }).valid, true);
   assert.equal(teleportArc({ x: 26, y: 1.4, z: 22 }, { x: 1, y: -.1, z: 0 }).valid, false);
-  assert.equal(canStand(52, 23), false); assert.equal(canStand(39, 33), false);
+  assert.equal(canStand(52, 23), false); assert.equal(canStand(26, 33), false);
   const game = new ClubGame(); game.action('zone:mac-room'); assert.equal(game.zone.id, 'mac-room');
   assert.equal(MAC_CREW.length, 15); assert.equal(game.crew.filter((npc) => npc.team === 'mac').length, 15);
 });
@@ -363,6 +364,35 @@ test('all seven Mac models expose working desktop, terminal, hardware, and power
     for (const mode of ['desktop', 'terminal', 'hardware']) {
       if (game.state === 'explore') assert.ok(game.interact(station.id, station.stand));
       game.action(`mac:${mode}`); assert.equal(game.devices[station.id].mode, `mac-${mode}`);
+      assert.equal(game.devices[station.id].power, true); assert.equal(game.state, 'explore');
+    }
+  }
+});
+
+test('the Dragon lab connects through the Mac room and presents the five Dragon cameos', () => {
+  const inside = moveWithinRoom({ x: 35.5, z: 30.5 }, 0, 3);
+  assert.ok(Math.abs(inside.z - 33.5) < .001);
+  assert.ok(Math.abs(moveWithinRoom(inside, 0, -3).z - 30.5) < .001);
+  assert.ok(moveWithinRoom({ x: 39, z: 30.5 }, 0, 3).z < 32);
+  assert.equal(teleportArc({ x: 35.5, y: 1.4, z: 31 }, { x: 0, y: -.1, z: 1 }).valid, true);
+  assert.equal(teleportArc({ x: 39, y: 1.4, z: 31 }, { x: 0, y: -.1, z: 1 }).valid, false);
+  assert.equal(canStand(39, 51), false);
+  const game = new ClubGame(); game.action('zone:dragon');
+  assert.equal(game.zone.id, 'dragon');
+  assert.equal(DRAGON_CREW.length, 5);
+  assert.equal(game.crew.filter((npc) => npc.team === 'dragon').length, 5);
+});
+
+test('all three Dragon machines expose working desktop, terminal, hardware, and power controls', () => {
+  const game = new ClubGame(); game.enter();
+  assert.equal(DRAGON_MODELS.length, 3);
+  for (const station of STATIONS.filter((item) => item.dragon)) {
+    assert.ok(game.interact(station.id, station.stand), station.id);
+    game.action('mode:invalid'); assert.equal(game.state, 'device');
+    game.action('power'); assert.equal(game.devices[station.id].power, false);
+    for (const mode of ['desktop', 'terminal', 'hardware']) {
+      if (game.state === 'explore') assert.ok(game.interact(station.id, station.stand));
+      game.action(`mode:dragon-${mode}`); assert.equal(game.devices[station.id].mode, `dragon-${mode}`);
       assert.equal(game.devices[station.id].power, true); assert.equal(game.state, 'explore');
     }
   }

@@ -27,7 +27,7 @@ export class ClubMacRoom {
     });
     this.makeLogo();
     room.sign(['CLASSIC MACINTOSH', '68000 · POWERPC · COLOR CRTs'], 39, 1.35, 14.25, 3.9, C.gold);
-    room.sign(['APPLE SILICON', 'MACBOOK AIR · MINI · STUDIO'], 39, 3.3, 31.76, 9, C.cyan, Math.PI);
+    room.sign(['APPLE SILICON', 'MACBOOK AIR · MINI · STUDIO'], 44.5, 3.3, 31.76, 9, C.cyan, Math.PI);
   }
 
   makeLogo() {

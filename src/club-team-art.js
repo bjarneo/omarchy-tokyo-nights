@@ -61,7 +61,7 @@ export function makeTeamCharacter(npc, facing = 'smile') {
   if (p.bald) {
     ctx.clearRect(8, 0, 32, 16); rect(ctx, 13, 6, 23, 10, p.shade); rect(ctx, 15, 3, 19, 13, p.skin); rect(ctx, 18, 2, 13, 4, p.skin);
   }
-  if (p.cap) { rect(ctx, 12, 5, 25, 10, '#343b58'); rect(ctx, 16, 3, 17, 5, '#343b58'); rect(ctx, 11, 13, 28, 3, '#565f89'); }
+  if (p.cap) { rect(ctx, 12, 5, 25, 10, p.capColor || '#343b58'); rect(ctx, 16, 3, 17, 5, p.capColor || '#343b58'); rect(ctx, 11, 13, 28, 3, p.capBrim || '#565f89'); }
   if (p.glassesTop) { ctx.strokeStyle = C.ink; ctx.lineWidth = 1; ctx.strokeRect(13.5, 3.5, 9, 4); ctx.strokeRect(25.5, 3.5, 9, 4); rect(ctx, 23, 4, 2, 1, C.ink); }
   if (p.beanie) {
     rect(ctx, 11, 4, 27, 11, '#343b58'); rect(ctx, 14, 2, 21, 5, '#343b58');

@@ -2,7 +2,7 @@
 version: 1
 slug: "club-html"
 primary_target: "club.html"
-related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/club-design.mjs", "src/club-design-art.js", "src/club-design-room.js", "src/club-mac.mjs", "src/club-mac-room.js", "src/club-mac-screen.js", "src/club-rangers.mjs", "src/club-rangers-room.js", "src/club-team-art.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
+related_targets: ["club.css", "src/club-main.js", "src/club-scene.js", "src/club-room.js", "src/club-screens.js", "src/club-engine.mjs", "src/club-data.mjs", "src/club-controls.mjs", "src/club-games.mjs", "src/club-audio.js", "src/club-avatars.js", "src/club-motion.mjs", "src/club-logo-wall.js", "src/club-jukebox.mjs", "src/club-cinema.js", "src/club-security.mjs", "src/club-security-art.js", "src/club-security-room.js", "src/club-security-screen.js", "src/club-design.mjs", "src/club-design-art.js", "src/club-design-room.js", "src/club-mac.mjs", "src/club-mac-room.js", "src/club-mac-screen.js", "src/club-dragon.mjs", "src/club-dragon-room.js", "src/club-dragon-screen.js", "src/club-rangers.mjs", "src/club-rangers-room.js", "src/club-team-art.js", "src/vr-session.mjs", "src/vr-art.js", "src/song-player.js"]
 ---
 
 # Retro clubhouse
@@ -72,6 +72,15 @@ The elevator has a walk-in cabin and a usable directory control. Existing room s
 Seated models use bent knees, desk-height hands, and fixed chair positions. Their help panels stay below the guides' faces.
 The user also requests natural Mac-team groups near the workstations, with an open center aisle.
 This local code-led extension preserves the existing Tokyo Night Experience world and seed `6ddbd526`.
+
+### Dragon lab extension
+
+The user approves a Snapdragon lab with the five Dragon team cameos and ARM64 hardware demos.
+The `24 × 18m` lab connects through the Mac room's south wall and adds a twelfth map destination.
+A warm gridded floor, three ARM workstations, a Snapdragon team board, and the cached Omarchy logo distinguish the lab.
+Three machine models offer local desktop, terminal, and hardware-card demos through the existing native and spatial controls.
+Original voxel cameos follow the official profile references, including the illustrated green-cap profile.
+This code-led Experience extension inherits seed `6ddbd526`, the shared movement model, and the Tokyo Night interface.
 
 ### THESIS
 
@@ -561,6 +570,58 @@ The Rangers extension adds no shipping rasters or runtime profile-image requests
 - Standing conversations retain their side placement in `src/club-scene.js`.
 - `placements` in `src/club-mac.mjs` hand-places all 15 Mac members in irregular workstation groups with varied yaw. The center aisle stays clear.
 - All 15 members remain reachable. Their existing short walks retain collision checks, pause, and reduced-motion behavior.
+
+### Dragon lab
+
+- The separate `24 × 18m` lab occupies `x: [27, 51]`, `z: [32, 50]`, with solid exterior walls.
+- Its own doorway crosses the Mac room south wall at `x: 35.5`, `z: 32`, with `3.2m` width and `3.2m` clearance.
+- Smooth walk and arc teleport cross that doorway. `DRAGON LAB · SNAPDRAGON` is the twelfth map destination.
+- The Dragon extension brings the current club totals to 42 stations and 42 human cameos.
+- A warm gridded floor, silver ARM hardware, and a lit doorway frame open aisles beside the Mac room.
+- `ClubDragonRoom` in `src/club-dragon-room.js` places the original cached Omarchy block logo on an `11.5 × 3.45m` east-wall plane.
+- The logo plane sits at `[50.76, 2.65, 41]`. `drawDragonDisplay` in `src/club-dragon-screen.js` reuses that original logo on every ARM desktop texture.
+- A team board shows all five cameos with their official names and country labels.
+- The Mac room `APPLE SILICON` wall sign moves to `x: 44.5` to clear the new doorway.
+- Native and spatial panels reuse the existing Tokyo Night UI, Arcade headings, Courier New text, rectangular controls, gold selection, and cyan focus.
+
+`DRAGON_MODELS` in `src/club-dragon.mjs` defines three distinct local ARM models:
+
+| Model | Year | Processor |
+| --- | --- | --- |
+| Snapdragon X Elite laptop | 2024 | Snapdragon X Elite · ARM64 |
+| Snapdragon 8cx tablet | 2024 | Snapdragon 8cx Gen 3 · ARM64 |
+| Snapdragon dev kit | 2023 | Snapdragon 8cx Gen 3 · ARM64 |
+
+Every model exposes `OMARCHY DESKTOP`, `LOCAL TERMINAL`, `HARDWARE CARD`, `POWER OFF` or `POWER ON`, and `BACK TO THE ROOM`.
+A demo selection powers the station, updates its live `256 × 192` screen texture, and returns to exploration.
+The terminal displays fixed local examples. These are club display demos, with no native OS boot or hardware emulation.
+
+Keyboard, pointer, touch, gamepad, and XR controller inputs use the existing club controls.
+Dragon cameos reuse the existing crew motion. Pause freezes their clock, and reduced motion stops autonomous walks and gestures.
+
+#### Dragon source provenance
+
+The verified `DRAGON_CREW` in `src/club-dragon.mjs` matches all five names and country labels on the official [Dragon team roster](https://omarchy.org/teams/).
+Each entry stores the roster URL as `source` and its official photo URL as `imageSource`.
+Those photo URLs follow `https://omarchy.org/assets/images/team/<id>.webp` and match the official page. Miguel Cruz appears on both the M and Dragon rosters, so the Dragon cameo uses the distinct `miguel-cruz-dragon` id with the shared official photo URL.
+
+| Cameo | Official country label | Official photo reference |
+| --- | --- | --- |
+| Jim Martin | USA | [jim-martin.webp](https://omarchy.org/assets/images/team/jim-martin.webp) |
+| Birk Skyum | Switzerland | [birk-skyum.webp](https://omarchy.org/assets/images/team/birk-skyum.webp) |
+| Matt Gilg | USA | [matt-gilg.webp](https://omarchy.org/assets/images/team/matt-gilg.webp) |
+| Bob Prendergast | USA | [bob-prendergast.webp](https://omarchy.org/assets/images/team/bob-prendergast.webp) |
+| Miguel Cruz | USA | [miguel-cruz.webp](https://omarchy.org/assets/images/team/miguel-cruz.webp) |
+
+`src/club-team-art.js` adds optional `capColor` and `capBrim` values so Bob Prendergast's illustrated green cap follows the public profile.
+Original `48 × 104` Canvas sprites supply the shared voxel avatar factory. Cameo dialogue uses fictional club scripts.
+Source graphics use procedural Canvas, voxels, and local geometry. The extension adds no shipping rasters or runtime photo requests.
+
+#### Dragon lab checks
+
+- The Dragon browser check walks through the Mac room doorway, meets all five cameos, and opens all three hardware cards and the local terminal.
+- `tests/club.test.mjs` covers the doorway in both directions, solid walls, teleport arcs, map travel, the five cameos, and every machine control.
+- The spatial map panel uses a `51px` button height so all fourteen destinations and `CLOSE MAP` fit the `1024 × 640` texture.
 
 ## Verification evidence
 

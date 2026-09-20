@@ -7,6 +7,7 @@ import { MalibuCorner } from './club-malibu.js';
 import { ClubSecurityRoom } from './club-security-room.js';
 import { ClubDesignRoom } from './club-design-room.js';
 import { ClubMacRoom } from './club-mac-room.js';
+import { ClubDragonRoom } from './club-dragon-room.js';
 import { ClubRangersDesk } from './club-rangers-room.js';
 import { ClubBasementRoom } from './club-basement-room.js';
 import { ClubRoofRoom } from './club-roof-room.js';
@@ -25,6 +26,7 @@ export class ClubRoom {
     this.security = new ClubSecurityRoom(this);
     this.design = new ClubDesignRoom(this);
     this.mac = new ClubMacRoom(this);
+    this.dragon = new ClubDragonRoom(this);
     this.rangers = new ClubRangersDesk(this);
     this.basement = new ClubBasementRoom(this);
     this.roof = new ClubRoofRoom(this);
@@ -128,7 +130,7 @@ export class ClubRoom {
         continue;
       }
       const bottom = wall.bottom || 0;
-      this.box(wall.x, (wall.height + bottom) / 2, wall.z, wall.width, wall.height - bottom, wall.depth, wall.id.startsWith('mac-') ? '#b6bdc3' : wall.id.startsWith('design-') ? '#beb8a8' : wall.id.startsWith('security-') ? '#465463' : '#736f70');
+      this.box(wall.x, (wall.height + bottom) / 2, wall.z, wall.width, wall.height - bottom, wall.depth, wall.id.startsWith('mac-') ? '#b6bdc3' : wall.id.startsWith('dragon-') ? '#b5929a' : wall.id.startsWith('design-') ? '#beb8a8' : wall.id.startsWith('security-') ? '#465463' : '#736f70');
       if (!bottom) this.box(wall.x, .55, wall.z, wall.width + .06, 1.1, wall.depth + .06, wall.id.startsWith('security-') ? C.dark : C.darkWood);
     }
     this.box(0, 4.63, 0, 36, .14, 28, '#49444a');
@@ -212,6 +214,7 @@ export class ClubRoom {
     if (station.id.startsWith('basement-')) { this.basement.bench(station); return; }
     if (station.id.startsWith('roof-')) { this.roof.bench(station); return; }
     if (station.kind === 'maclab') { this.mac.bench(station); return; }
+    if (station.kind === 'dragonlab') { this.dragon.bench(station); return; }
     if (station.kind === 'design') { this.design.bench(station); return; }
     if (station.kind === 'security') { this.security.bench(station); return; }
     if (station.kind === 'malibu') { this.malibu = new MalibuCorner(this, station); return; }
